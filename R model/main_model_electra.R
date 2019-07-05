@@ -316,8 +316,8 @@ plot(tt,cos(0.05*tt)*cos(5*tt), type = "l")
 ########################################
 ###     Persistence rétinienne       ###
 ########################################
-
-plot_oneTime_persistence(t,persistenceTime,nb_point_persistence,100*v1, 100*v2, 100*v3, r1B, r1C, r2D, r2E, r3F, r3G, alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F)
+t=1
+plot_oneTime_persistence(t,persistenceTime,nb_point_persistence,10*v1, 10*v2, 10*v3, r1B, r1C, r2D, r2E, r3F, r3G, alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F)
 
 
 

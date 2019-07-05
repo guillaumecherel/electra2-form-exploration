@@ -167,13 +167,14 @@ create_df_persistence = function(t,persistenceTime,nb_point_persistence,v1,v2,v3
   persistenceTimes = seq(max(0,t-persistenceTime),t,length.out = nb_point_persistence)
   for (current_t in persistenceTimes){
     res = positions_t_NONsymetrique(current_t,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
-    temp_df = data.frame(Bx = res[1], By = res[2], Cx = res[3], Cy = res[4],
-                         Hx = res[5], Hy = res[6],
-                         Dx = res[7], Dy = res[8], Ex = res[9], Ey = res[10],
-                         Ix = res[11], Iy = res[12],
-                         Fx = res[13], Fy = res[14], Gx = res[15], Gy = res[16],
-                         time = res[17])
-    df = rbind.fill(df,temp_df)
+    # temp_df = data.frame(Bx = res[1], By = res[2], Cx = res[3], Cy = res[4],
+    #                      Hx = res[5], Hy = res[6],
+    #                      Dx = res[7], Dy = res[8], Ex = res[9], Ey = res[10],
+    #                      Ix = res[11], Iy = res[12],
+    #                      Fx = res[13], Fy = res[14], Gx = res[15], Gy = res[16],
+    #                      time = res[17])
+    # df = rbind.fill(df,temp_df)
+    df = rbind.fill(df,res)
   }
   return(df)
 }
