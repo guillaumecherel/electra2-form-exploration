@@ -27,7 +27,7 @@ source("utils_model_electra.R")
 ## Paramètres
 # vitesse moteur (tour/ seconde)
 v1 = 0.5
-v2 = 0.25
+v2 = -0.25
 v3 = 3
 
 # longueur tiges (rayon)
@@ -98,19 +98,19 @@ df = create_df(times,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,a
 
 
 # save plots for different times
-# dirRes = "plot1"
-# #dirRes = paste0("plot_","v1=",v1,"_v2=",v2,"_v3=",v3)
-# dir.create(dirRes)
-# #times = seq(0,4, by = 0.02)
-# #savePlot_index(times,dirRes,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
-# savePlot_index_and_paramsInFile(times,dirRes,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
+dirRes = "plot1"
+#dirRes = paste0("plot_","v1=",v1,"_v2=",v2,"_v3=",v3)
+dir.create(dirRes)
+#times = seq(0,4, by = 0.02)
+#savePlot_index(times,dirRes,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
+savePlot_index_and_paramsInFile(times,dirRes,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
 
 # command line in linux to create a video from images with index (adapt the framerate)
 # ffmpeg -framerate 1/0.02 -i plot_%01d.png -crf 15  output1.mp4
 
 
 # save current parameters
-# dirRes = "toto"
+# dirRes = "params"
 # save_params_in_file(dirRes,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
 
 
@@ -120,7 +120,9 @@ df = create_df(times,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,a
 
 
 
-
+# time
+timeStep = 0.005 # sec
+times = seq(0,5, by = timeStep)
 
 # param de reférence
 df = create_df(times,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)

@@ -212,10 +212,10 @@
 
 \begin{document}
 
-But du document: proposer un modèle pour l'étude de l'instrument développé par Laurent Bolognini.
+But du document: proposer un modèle pour l'étude de l'instrument développé par Laurent Bolognini: electra.
 
 \section{Description de l'instrument}
-Composé de 3 moteurs, de tiges de fer, de lumières.
+Composé de 3 moteurs, de tiges et de lumières.
 On peut agir sur la vitesse de rotation des 3 moteurs (et le sens) et l'intensité de chaque lumière.
 
 
@@ -228,10 +228,10 @@ On peut agir sur la vitesse de rotation des 3 moteurs (et le sens) et l'intensit
 
 \section{Méthode}
 Proposer un modèle de l'instrument. Un premier modèle consistera à décrire le mouvement dans son état non transitoire = stationnaire ? (donc sans variation des paramètres).
-On pourra ensuite éventuellement prendre en compte la persistence rétinienne, et les régimes transitoires (donc la possibilité de faire varier la vitesse de moteurs).
+On pourra ensuite éventuellement prendre en compte la persistance rétinienne, et les régimes transitoires (donc la possibilité de faire varier la vitesse de moteurs).
 L'implémenter et visualiser des réalisations du modèle.
 Caractériser les sorties du modèle: trouver des mesures (pertinentes) qui diffèrent entre les résultats issus de paramètres différents.
-Piste: utilisation du logiciel OpenMole (algorithme PSE) pour trouver les sorties attaignables: trouver le plus de configurations possibles qui donnent des résultats différents dans l'espace des mesures trouvées précédemment.
+Piste: utilisation du logiciel OpenMole (algorithme PSE) pour trouver les sorties atteignables: trouver le plus de configurations possibles qui donnent des résultats différents dans l'espace des mesures trouvées précédemment.
 
 
 \section{Modèle}
@@ -304,21 +304,21 @@ $B(\alpha v_1,t) = B(v_1,\alpha t)$,
 
 $D(\alpha v_1,\alpha v_2,t) = D(v_1,v_2,\alpha t)$
 
-Donc multiplier les 3 vitesses par un facteur identique ne changera pas la figure totale obtenue (l'image de tout les temps): il existe un temps (et on sait lequel), auquel le point sera au même endroit que pour l'autre vitesse. Une différence peut intervenir si l'on considère la persistence rétinienne.
+Donc multiplier les 3 vitesses par un facteur identique ne changera pas la figure totale obtenue (l'image de tout les temps): il existe un temps (et on sait lequel), auquel le point sera au même endroit que pour l'autre vitesse. Une différence peut intervenir si l'on considère la persistance rétinienne.
 
 
 
 
 \subsection{Persistance rétinienne}
 
-Il semblerait que l'oeil garde une image rémanente pendant 1/25 seconde sur la rétine.
+Il semblerait que l’oeil garde une image rémanente pendant 1/25 seconde sur la rétine.
 
-Dans le modèle, cela reviendrait non pas à avoir en sortie à l'instant $t$ la position des lumières à cet instant, mais l'ensemble des positions des lumières occupées durant les 1/25 secondes précédentes. Remarque, plus les vitesses des moteurs (donc de déplacement des lumières) sont importantes, plus les lumières parcourent de distance pendant ces 1/25 secondes, et donc plus les figurent ont une grande "longeur".
+Dans le modèle, cela reviendrait non pas à avoir en sortie à l'instant $t$ la position des lumières à cet instant, mais l'ensemble des positions des lumières occupées durant les 1/25 secondes précédentes. Remarque, plus les vitesses des moteurs (donc de déplacement des lumières) sont importantes, plus les lumières parcourent de distance pendant ces 1/25 secondes, et donc plus les figurent ont une grande "longueur".
 
 
 \subsection{Non transitoire}
 
-piste ? Relier la tension d'entrée du moteur à la sortie: vitesse angulaire. L'idée serait que quand on tourne le bouton, on fait varier la tension du moteur et donc sa vitesse (prendre en compte l'inertie). On pourrait donc chercher des fonction du temps comme controle du système (la position du bouton de controle du moteur).
+piste ? Relier la tension d'entrée du moteur à la sortie: vitesse angulaire. L'idée serait que quand on tourne le bouton, on fait varier la tension du moteur et donc sa vitesse (prendre en compte l'inertie). On pourrait donc chercher des fonction du temps comme contrôle du système (la position du bouton de contrôle du moteur).
 
 
 
