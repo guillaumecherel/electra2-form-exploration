@@ -236,16 +236,22 @@ Piste: utilisation du logiciel OpenMole (algorithme PSE) pour trouver les sortie
 
 \section{Modèle}
 
+\begin{figure}[H] 
+\center{\includegraphics[width=0.75\linewidth]{schema2}}
+\caption{Schéma du modèle}
+\end{figure}
+
+
 \subsection{Non transitoire}
 
 \FL{Mettre un schéma, + une image de l'instrument?}
 
 Paramètres fixes: 
-rayons: $r_B$, $r_C$, $r2_D$, $r_E$, $r_F$, $r_G$
+rayons: $r_B$, $r_C$, $r_D$, $r_E$, $r_F$, $r_G$
  
 "rayons" de points intermédiaires : $\alpha_H$, $\alpha_I$. 
 
-Si $\alpha_H=1$, $H=B$, si $\alpha_H \rightarrow \infty$, $B=A$.
+Si $\alpha_H=1$, $H=B$, $\alpha_H=2$, $H$ est le milieu du segment $[BC]$, si $\alpha_H \rightarrow \infty$, $B=A$.
 
 
 paramètres input: 
@@ -277,6 +283,19 @@ $I(x_I,y_I) = ( \frac{r_C}{\alpha_I} \cos(2 \pi v_1 t + \phi_B + \pi), \frac{r_C
 Pour déterminer la position des points $D,E,F,G$, on utilise les points intermédiaires ($H$ et $I$), (utilise le changement de repère  orthonormale centrée en H et de vecteurs directeurs un  de même direction que $\overrightarrow{AH}$, l'autre orthogonal, dans lequel $\overrightarrow{HD} =  rD( \cos(2 \pi v_2 t + \phi_D), \sin(2 \pi v_2 t + \phi_D))$ au repère usuel)
 
 $ D(t) = (x_D(t),y_D(t)) = (\frac{r_B}{\alpha_H} \cos(2 \pi v_1 t + \phi_B) + r_D \cos(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)), \frac{r_B}{\alpha_H} \sin(2 \pi v_1 t + \phi_B ) + r_D \sin(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  )$
+
+$
+D=
+\begin{pmatrix}
+x(D) \\ 
+y(D)
+\end{pmatrix}
+=
+\begin{pmatrix}
+\frac{r_B}{\alpha_H} \cos(2 \pi v_1 t + \phi_B) + r_D \cos(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B) \\ 
+\frac{r_B}{\alpha_H} \sin(2 \pi v_1 t + \phi_B ) + r_D \sin(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  
+\end{pmatrix}
+$
 
 %$ \overrightarrow{HD} = (r_D \cos(2 \pi v_2 t + \phi_D),r_D \sin(2 \pi v_2 t + \phi_D))$
 %
@@ -321,9 +340,26 @@ Dans le modèle, cela reviendrait non pas à avoir en sortie à l'instant $t$ la
 piste ? Relier la tension d'entrée du moteur à la sortie: vitesse angulaire. L'idée serait que quand on tourne le bouton, on fait varier la tension du moteur et donc sa vitesse (prendre en compte l'inertie). On pourrait donc chercher des fonction du temps comme contrôle du système (la position du bouton de contrôle du moteur).
 
 
+\section{Étude mathématique}
+Courbe paramétrée pour la dynamique de chacun de points. On se concentre d'abord sur la courbe paramétrée produite par un point, on pourra ensuite éventuellement s'intéresser à la figure produite par tous les points (union des courbes paramétrées).
+
+Étude des points singulier: condition nécessaire pour en avoir.
+
+Étude de la périodicité
+
+Étude de de la monotonie de chaque composantes ($x$ et $y$) 
+
+
+
 
 \section{Mesures}
+La corube est elle fermée (périodicité)
 
+boucles
+
+point de rebroussement
+
+ligne droite
 
 
 %%%%%%%%%%%%%%%%%%           END      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
