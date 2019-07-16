@@ -103,7 +103,7 @@ dirRes = "plot1"
 dir.create(dirRes)
 #times = seq(0,4, by = 0.02)
 #savePlot_index(times,dirRes,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
-savePlot_index_and_paramsInFile(times,dirRes,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
+# savePlot_index_and_paramsInFile(times,dirRes,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
 
 # command line in linux to create a video from images with index (adapt the framerate)
 # ffmpeg -framerate 1/0.02 -i plot_%01d.png -crf 15  output1.mp4
@@ -178,7 +178,7 @@ p <- ggplot(df) + coord_fixed(ratio=1) +
 p
 
 
-v1*r1B/alphaH - (v1+2*v2)*r2D
+v1*r1B/alphaH - (v1+v2)*r2D
 
 
 # mesures
@@ -244,31 +244,34 @@ p
 
 
 
+########################################
+###     Persistence rétinienne       ###
+########################################
+t=1
+plot_oneTime_persistence(t,persistenceTime,nb_point_persistence,10*v1, 10*v2, 10*v3, r1B, r1C, r2D, r2E, r3F, r3G, alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F)
+
+
 
 
 ##########################################
-###   Dépendance condition initiales   ###
+###   Dépendance condition initiales ? ###
 ##########################################
 
 
 
 
 
-
-
-
-##  ggplot / animate
-
-
+##########################################
+###     Animation avec gganimate       ###
+##########################################
+# 1, partial
 p <- ggplot(df, aes(x = Bx, y=By) ) +
   geom_point(show.legend = FALSE) 
 p
-
 p + transition_time(time) 
   
-  
 
-
+# 2, complet  
 p <- ggplot(df) +
   geom_point(aes(x=Bx, y=By), col="yellow") +
   geom_point(aes(x=Cx, y=Cy), col="yellow") +
@@ -284,45 +287,73 @@ p + transition_time(time)
   
   
 
+##########################################
+###   find different patterns by hand  ###
+##########################################
+plot_test <- function(tt,a,b,u,v) {
+  x= a*cos(2*pi*tt*u+angleIni_B) + b*cos(2*pi*tt*(u+v)+angleIni_B+angleIni_D) 
+  y= a*sin(2*pi*tt*u+angleIni_B) + b*sin(2*pi*tt*(u+v)+angleIni_B+angleIni_D) 
+  plot(x,y, type="l")    
+}  
 
-
-# test 
-tt = seq(0,200,by=0.001)
+#tt = seq(0,200,by=0.001)
+#tt = seq(0,500,by=0.001)
 tt = seq(0,6,by=0.001)
+ttt = seq(0,1,by=0.001)
+#tt = seq(0,1,by=0.01)
+epsilon = 0.012
+
 a=2
 b=1
-u=1 
+# u
 u=0.5
-u=1.5
-epsilon = 0.012
-v=0.5 
+# v
 v=0.5 + epsilon
-v= 3.4
-  
-x= a*cos(2*pi*tt*u+angleIni_B) + b*cos(2*pi*tt*(u+v)+angleIni_B+angleIni_D) 
-y= a*sin(2*pi*tt*u+angleIni_B) + b*sin(2*pi*tt*(u+v)+angleIni_B+angleIni_D) 
-plot(x,y, type="l")  
-  
+
+
+plot_test(tt,a=2,b=1,u=0.5,v=0.5)
+plot_test(tt,a=2,b=1,u=0.5,v=0.5+epsilon)
+plot_test(tt,a=2,b=1,u=1,v=0.5)
+plot_test(tt,a=2,b=1,u=1.5,v=0.5)
+plot_test(tt,a=2,b=1,u=2.5,v=0.5)
+plot_test(tt,a=2,b=1,u=10/3,v=0.5)
+plot_test(tt,a=2,b=1,u=pi,v=0.5)
+plot_test(tt,a=2,b=1,u=sqrt(2),v=0.5)
+plot_test(tt,a=2,b=1,u=4,v=0.5)
+
+# cercles délimitant l'expace si trajectoire dense ?
+points((a-b)*cos(2*pi*ttt),(a-b)*sin(2*pi*ttt), col="red", type = "l")
+points((a+b)*cos(2*pi*ttt),(a+b)*sin(2*pi*ttt), col="red", type = "l")
+
+# vitesse u negative
+plot_test(tt,a=2,b=1,u=-0.5,v=0.5)
+plot_test(tt,a=2,b=1,u=-0.5,v=0.5+epsilon)
+
+# vitesse v negative
+plot_test(tt,a=2,b=1,u=0.5,v=-0.5)
+plot_test(tt,a=2,b=1,u=0.5,v=-0.5+epsilon)
 
 a*u - b*(u+v)
 
 
-derivX = -2*pi*u*a*sin(2*pi*tt*a*u+angleIni_B) -2*pi*(u+v)*b*cos(2*pi*tt*(u+v)+angleIni_B+angleIni_D)
+
+tt=seq(0,100,by=0.01)
+derivX = -2*pi*u*a*sin(2*pi*tt*u+angleIni_B) -2*pi*(u+v)*b*cos(2*pi*tt*(u+v)+angleIni_B+angleIni_D)
 plot(tt,derivX, type = "l")
 
 
-plot(tt,cos(0.05*tt)*cos(5*tt), type = "l")
 
 
 
-########################################
-###     Persistence rétinienne       ###
-########################################
-t=1
-plot_oneTime_persistence(t,persistenceTime,nb_point_persistence,10*v1, 10*v2, 10*v3, r1B, r1C, r2D, r2E, r3F, r3G, alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F)
 
 
 
+
+
+
+######################################
+###       Find loop points         ###
+######################################
 
 
 
