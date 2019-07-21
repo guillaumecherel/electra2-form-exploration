@@ -61,6 +61,10 @@
 %\usepackage[retainorgcmds]{IEEEtrantools}         					tableaux
 %
 \usepackage{natbib}
+
+
+\usepackage{hyperref}
+
  
 % fourier soit stmaryrd 
 %\usepackage{fourier}
@@ -238,7 +242,7 @@ Piste: utilisation du logiciel OpenMole (algorithme PSE) pour trouver les sortie
 
 \begin{figure}[H] 
 \center{\includegraphics[width=0.75\linewidth]{schema2}}
-\caption{Schéma du modèle}
+\caption{Schéma du modèle, réalisé avec le logiciel GeoGebra}
 \end{figure}
 
 
@@ -280,15 +284,15 @@ $H(x_H,y_H) = ( \frac{r_B}{\alpha_H} \cos(2 \pi v_1 t + \phi_B),\frac{r_B}{\alph
 De même,
 $I(x_I,y_I) = ( \frac{r_C}{\alpha_I} \cos(2 \pi v_1 t + \phi_B + \pi), \frac{r_C}{\alpha_I} \sin(2 \pi v_1 t + \phi_B + \pi))$
 
-Pour déterminer la position des points $D,E,F,G$, on utilise les points intermédiaires ($H$ et $I$), (utilise le changement de repère  orthonormale centrée en H et de vecteurs directeurs un  de même direction que $\overrightarrow{AH}$, l'autre orthogonal, dans lequel $\overrightarrow{HD} =  rD( \cos(2 \pi v_2 t + \phi_D), \sin(2 \pi v_2 t + \phi_D))$ au repère usuel)
+Pour déterminer la position des points $D,E,F,G$, on utilise les points intermédiaires ($H$ et $I$), (utilise le changement de repère  orthonormale centrée en H et de vecteurs directeurs un  de même direction que $\overrightarrow{AH}$, l'autre orthogonal, dans lequel $\overrightarrow{HD} =  rD( \cos(2 \pi v_2 t + \phi_D), \sin(2 \pi v_2 t + \phi_D))$)
 
-$ D(t) = (x_D(t),y_D(t)) = (\frac{r_B}{\alpha_H} \cos(2 \pi v_1 t + \phi_B) + r_D \cos(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)), \frac{r_B}{\alpha_H} \sin(2 \pi v_1 t + \phi_B ) + r_D \sin(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  )$
+%$ D(t) = (x_D(t),y_D(t)) = (\frac{r_B}{\alpha_H} \cos(2 \pi v_1 t + \phi_B) + r_D \cos(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)), \frac{r_B}{\alpha_H} \sin(2 \pi v_1 t + \phi_B ) + r_D \sin(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  )$
 
 $
-D=
+D(t)=
 \begin{pmatrix}
-x(D) \\ 
-y(D)
+x_D(t) \\ 
+y_D(t)
 \end{pmatrix}
 =
 \begin{pmatrix}
@@ -307,13 +311,40 @@ $
 
 Vitesse de $D$ au temps $t$:
 
-$ D'(t) = (x'_D(t),y'_D(t)) = (-\frac{r_B}{\alpha_H} 2 \pi v_1 \sin(2 \pi v_1 t + \phi_B) - r_D 2 \pi (v_2 + v _1) \sin(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)), \frac{r_B}{\alpha_H} 2 \pi  v_1 \cos(2 \pi v_1 t + \phi_B ) + r_D  2 \pi (v_2 + v _1) \cos(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  )$
+%$ D'(t) = (x'_D(t),y'_D(t)) = (-\frac{r_B}{\alpha_H} 2 \pi v_1 \sin(2 \pi v_1 t + \phi_B) - r_D 2 \pi (v_2 + v _1) \sin(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)), \frac{r_B}{\alpha_H} 2 \pi  v_1 \cos(2 \pi v_1 t + \phi_B ) + r_D  2 \pi (v_2 + v _1) \cos(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  )$
 
+
+$
+D'(t)=
+\begin{pmatrix}
+x'_D(t) \\ 
+y'_D(t)
+\end{pmatrix}
+=
+\begin{pmatrix}
+-\frac{r_B}{\alpha_H} 2 \pi v_1 \sin(2 \pi v_1 t + \phi_B) - r_D 2 \pi (v_2 + v _1) \sin(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)) \\ 
+\frac{r_B}{\alpha_H} 2 \pi  v_1 \cos(2 \pi v_1 t + \phi_B ) + r_D  2 \pi (v_2 + v _1) \cos(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  
+\end{pmatrix}
+$
 
 
 Accélération de $D$ au temps $t$:
 
 $ D''(t) = (x''_D(t),y''_D(t)) = (-\frac{r_B}{\alpha_H} (2 \pi v_1)^2 \cos(2 \pi v_1 t + \phi_B) - r_D  (2 \pi (v_2 + v _1))^2 \cos(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)), - \frac{r_B}{\alpha_H} (2 \pi  v_1)^2 \sin(2 \pi v_1 t + \phi_B ) - r_D  (2 \pi (v_2 + v _1))^2 \sin(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  )$
+
+
+$
+D''(t)=
+\begin{pmatrix}
+x''_D(t) \\ 
+y''_D(t)
+\end{pmatrix}
+=
+\begin{pmatrix}
+-\frac{r_B}{\alpha_H} (2 \pi v_1)^2 \cos(2 \pi v_1 t + \phi_B) - r_D  (2 \pi (v_2 + v _1))^2 \cos(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)) \\ 
+- \frac{r_B}{\alpha_H} (2 \pi  v_1)^2 \sin(2 \pi v_1 t + \phi_B ) - r_D  (2 \pi (v_2 + v _1))^2 \sin(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  )  
+\end{pmatrix}
+$
 
 
 
@@ -335,12 +366,62 @@ Il semblerait que l’oeil garde une image rémanente pendant 1/25 seconde sur l
 Dans le modèle, cela reviendrait non pas à avoir en sortie à l'instant $t$ la position des lumières à cet instant, mais l'ensemble des positions des lumières occupées durant les 1/25 secondes précédentes. Remarque, plus les vitesses des moteurs (donc de déplacement des lumières) sont importantes, plus les lumières parcourent de distance pendant ces 1/25 secondes, et donc plus les figurent ont une grande "longueur".
 
 
-\subsection{Non transitoire}
+\subsection{Transitoire}
 
-piste ? Relier la tension d'entrée du moteur à la sortie: vitesse angulaire. L'idée serait que quand on tourne le bouton, on fait varier la tension du moteur et donc sa vitesse (prendre en compte l'inertie). On pourrait donc chercher des fonction du temps comme contrôle du système (la position du bouton de contrôle du moteur).
+piste ? Relier la tension d'entrée du moteur $u$ à la sortie: vitesse angulaire $\omega$. L'idée serait que quand on tourne le bouton, on fait varier la tension du moteur et donc sa vitesse (prendre en compte l'inertie). On pourrait donc chercher des fonctions du temps comme contrôle du système (la position du bouton de contrôle du moteur).
+
+Une source pour les équations sur un moteur...
+\url{https://www.wikimeca.org/index.php/Moteur_\%C3\%A0_courant_continu}
+
+Les paramètres:
+
+Partie électrique:
+\begin{itemize}
+\item $R$ est la résistance électrique interne du moteur (Ohm)
+\item  $K_e$ est la constante de force électromotrice
+\end{itemize}
 
 
-\section{Étude mathématique}
+Partie mécanique
+\begin{itemize}
+\item $J$  rotor vu comme un volant d'inertie $J$  
+\item $K_c$ est la constante de couple  
+\item $f$ est le coefficient de frottement visqueux.
+\end{itemize}
+
+
+Les deux quantités qui interviennent dans l'équation différentielle simplifiée (pas d'inductance):
+
+$A =  \frac{K_c}{(R*f+K_c*K_e)}$
+
+$C = \frac{J*R}{(R*f+K_c*K_e)}$
+
+
+On suppose connu les valeurs de ces paramètres pour les trois moteur de l'installation (soit mesurés physiquement, soit c'est donné par le fabriquant, au pire par calibration?)
+
+La dynamique du moteur simplifiée est décrite par:
+
+point de vue fonction de transfert:
+$ H(p) = \frac{\Omega(p)}{U(p)} = \frac{A}{C*p+1}$
+
+point de vue EDO:
+$C * \omega'(t) + \omega(t) = A*u(t)$
+
+
+solution, en imposant $y(0) = \omega(0) = 0$: $\omega(t) := y(t) = e^{-\frac{t}{C}} * \int_0^t \frac{A}{C} u(x) e^{\frac{x}{C}} dx $
+
+
+On suppose les trois moteurs "indépendants", ils ont chacun leurs paramètres (électriques et mécaniques) mais fonctionnent selon les mêmes équations.
+Dans le régime stationnaire, on supposait la vitesse des moteurs constante au cours du temps (égale  respectivement à $v_1$, $v_2$ et $v_3$). Désormais, cette vitesse $\omega_1, \omega_2, \omega_3$ peut varier au cours du temps, en particulier, on suppose qu'elle est nulle initialement, puis qu'on applique une tension au moteur. Les équations de la dynamique dans le cadre stationnaire sont ainsi conservées, et seule la vitesse $v_i$ est remplacée par $\omega_i$.
+
+Remarque: Si on applique une tension constante $U$, la vitesse de rotation en sortie tend vers $U*A$. On peut déduire de cette dernière égalité la valeur de la tension à appliquer au moteur pour obtenir la vitesse de rotation désirée.
+
+
+
+
+\section{Étude mathématique...}
+... pour le modèle stationnaire
+
 Courbe paramétrée pour la dynamique de chacun de points. On se concentre d'abord sur la courbe paramétrée produite par un point, on pourra ensuite éventuellement s'intéresser à la figure produite par tous les points (union des courbes paramétrées).
 
 Étude des points singulier: condition nécessaire pour en avoir.
@@ -361,6 +442,11 @@ boucles
 point de rebroussement
 
 ligne droite
+
+Indice de Moran (agrégation spatiale?)
+
+Sur les vitesses, accélération ?
+
 
 
 %%%%%%%%%%%%%%%%%%           END      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

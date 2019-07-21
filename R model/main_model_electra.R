@@ -23,6 +23,14 @@ source("utils_model_electra.R")
 # create_df_persistence
 # plot_oneTime_persistence
 # scalarProdutRenormalized
+# vitesse_rotation_moteur
+# positions_t_TRANSITOIRE
+# plot_oneTime_TRANSITOIRE
+# create_df_TRANSITOIRE
+# savePlot_index_TRANSITOIRE
+# save_params_in_file_TRANSITOIRE
+# savePlot_index_and_paramsInFile_TRANSITOIRE
+
 
 ## Paramètres
 # vitesse moteur (tour/ seconde)
@@ -122,7 +130,7 @@ dir.create(dirRes)
 
 # time
 timeStep = 0.005 # sec
-times = seq(0,5, by = timeStep)
+times = seq(0,20, by = timeStep)
 
 # param de reférence
 df = create_df(times,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
@@ -264,6 +272,10 @@ plot_oneTime_persistence(t,persistenceTime,nb_point_persistence,10*v1, 10*v2, 10
 ##########################################
 ###     Animation avec gganimate       ###
 ##########################################
+timeStep = 0.01 # sec
+times = seq(0,3, by = timeStep)
+df = create_df(times,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
+
 # 1, partial
 p <- ggplot(df, aes(x = Bx, y=By) ) +
   geom_point(show.legend = FALSE) 
@@ -284,17 +296,36 @@ p <- ggplot(df) +
 p
 p + transition_time(time) 
 
-  
-  
+
+p + transition_states(time,
+                  transition_length = 2,
+                  state_length = 1)
+p
+
+
 
 ##########################################
 ###   find different patterns by hand  ###
+###         for a single light         ###
 ##########################################
-plot_test <- function(tt,a,b,u,v) {
+plot_test_0 <- function(tt,a,b,u,v) {
   x= a*cos(2*pi*tt*u+angleIni_B) + b*cos(2*pi*tt*(u+v)+angleIni_B+angleIni_D) 
   y= a*sin(2*pi*tt*u+angleIni_B) + b*sin(2*pi*tt*(u+v)+angleIni_B+angleIni_D) 
   plot(x,y, type="l")    
 }  
+
+plot_test <- function(tt,a,b,u,v) {
+  # creates points
+  x= a*cos(2*pi*tt*u+angleIni_B) + b*cos(2*pi*tt*(u+v)+angleIni_B+angleIni_D) 
+  y= a*sin(2*pi*tt*u+angleIni_B) + b*sin(2*pi*tt*(u+v)+angleIni_B+angleIni_D) 
+  res = data_frame(tt,x,y)
+  # plot
+  rayonMax = a+b
+    p <- ggplot(res) + expand_limits(x=c(-rayonMax,rayonMax), y=c(-rayonMax, rayonMax)) +
+    geom_point(aes(x=x, y=y), col="yellow", size = 1) 
+  p
+}  
+
 
 #tt = seq(0,200,by=0.001)
 #tt = seq(0,500,by=0.001)
@@ -316,14 +347,16 @@ plot_test(tt,a=2,b=1,u=0.5,v=0.5+epsilon)
 plot_test(tt,a=2,b=1,u=1,v=0.5)
 plot_test(tt,a=2,b=1,u=1.5,v=0.5)
 plot_test(tt,a=2,b=1,u=2.5,v=0.5)
+plot_test(tt,a=2,b=1,u=1,v=2)
 plot_test(tt,a=2,b=1,u=10/3,v=0.5)
 plot_test(tt,a=2,b=1,u=pi,v=0.5)
 plot_test(tt,a=2,b=1,u=sqrt(2),v=0.5)
 plot_test(tt,a=2,b=1,u=4,v=0.5)
 
+
 # cercles délimitant l'expace si trajectoire dense ?
+plot((a+b)*cos(2*pi*ttt),(a+b)*sin(2*pi*ttt), col="red", type = "l")
 points((a-b)*cos(2*pi*ttt),(a-b)*sin(2*pi*ttt), col="red", type = "l")
-points((a+b)*cos(2*pi*ttt),(a+b)*sin(2*pi*ttt), col="red", type = "l")
 
 # vitesse u negative
 plot_test(tt,a=2,b=1,u=-0.5,v=0.5)
@@ -348,9 +381,6 @@ plot(tt,derivX, type = "l")
 
 
 
-
-
-
 ######################################
 ###       Find loop points         ###
 ######################################
@@ -358,6 +388,152 @@ plot(tt,derivX, type = "l")
 
 
 
+
+
+######################################
+###       Non stationary           ###
+######################################
+# aim: changer la vitesse des moteurs au cours du temps, tenir compte de l'inertie
+# https://www.wikimeca.org/index.php/Moteur_%C3%A0_courant_continu
+
+# partie électrique
+R = 1 # R est la résistance électrique interne du moteur (Ohm);
+Ke = 1 # Ke est la constante de force électromotrice
+
+# partie mécanique
+J = 1 # rotor vu comme un volant d'inertie J  
+Kc = 1 # Kc est la constante de couple  
+f = 1 # f est le coefficient de frottement visqueux.
+
+A =  Kc /(R*f+Kc*Ke)
+C = J*R/(R*f+Kc*Ke)
+
+
+# time
+timeStep = 0.005 # sec
+timeStep = 0.02 # sec
+times = seq(0,5, by = timeStep)
+
+# u: tension imposée = vitesse demandée au moteur
+# u= rep(1,length(times)) 
+# temp = A/C*u*exp(1/C*times)
+
+u = function(t){
+  1*(t>0)*(t<1)+
+  0.5*(t>=1)*(t<2)+
+  2*(t>=2)*(t<3)+
+  0*(t>=3)  
+}
+
+plot(times,u(times), type = "l")
+
+# temp = function(t){
+#   A/C*u(t)*exp(1/C*t)
+# }
+
+# vitesse = exp(-1/C*times)
+# plot(times,vitesse, type = "l")
+
+# temp2 = unlist(sapply(times, function(t){integrate(temp,0,t)$value}))
+# integrate(temp,0,1)
+# integrate(temp,0,1)[1]
+# integrate(temp,0,1)$value
+
+
+# vitesse = exp(-1/C*times) * temp2
+# plot(times,vitesse, type = "l")
+
+t=1
+vitesse_rotation_moteur(t,u,A,C)
+res = vitesse_rotation_moteur(times,u,A,C)
+plot(times,res, type = "l")
+
+
+# moteur 1
+u1=u
+A1=A
+C1=C
+# moteur 2
+u2=u
+A2=A
+C2=C
+# moteur 3
+u3=u
+A3=A
+C3=C
+
+
+
+t=0
+t=1
+# positions at time t
+positions_t_TRANSITOIRE(t, r1B, r1C, r2D, r2E, r3F, r3G, 
+                                   alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+                                   A1,C1,A2,C2,A3,C3,
+                                   u1,u2,u3)
+
+
+# plot positions at time t
+plot_oneTime_TRANSITOIRE(t, r1B, r1C, r2D, r2E, r3F, r3G, 
+             alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+             A1,C1,A2,C2,A3,C3,
+             u1,u2,u3)
+
+
+
+timeStep = 0.005 
+finalTime = 10 
+times = seq(0,finalTime, by = timeStep)
+
+u1 = function(t){
+  1
+}
+
+
+u2 = function(t){
+  2
+}
+
+
+u3 = function(t){
+  3
+}
+
+
+# create data frame of positions % times
+df =create_df_TRANSITOIRE(times, r1B, r1C, r2D, r2E, r3F, r3G, 
+                      alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+                      A1,C1,A2,C2,A3,C3,
+                      u1,u2,u3)
+
+
+p <- ggplot(df) + coord_fixed(ratio=1) + 
+  theme(axis.title.x=element_blank(), axis.title.y=element_blank() ) + 
+  geom_point(aes(x=Bx, y=By), size=1) +
+  geom_point(aes(x=Cx, y=Cy), size=1) +
+  geom_point(aes(x=Dx, y=Dy), size=1, col= "red", shape = 3) +
+  geom_point(aes(x=Ex, y=Ey), size=1, col= "yellow") +
+  geom_point(aes(x=Fx, y=Fy), size=1, col= "blue") +
+  geom_point(aes(x=Gx, y=Gy), size=1, col= "green")
+p
+
+
+
+
+
+dirRes = "plot_transitoire"
+dir.create(dirRes)
+times = seq(0,4, by = 0.02)
+savePlot_index_and_paramsInFile_TRANSITOIRE(times, dirRes, r1B, r1C, r2D, r2E, r3F, r3G, 
+                                            alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+                                            A1,C1,A2,C2,A3,C3,
+                                            u1,u2,u3)
+
+
+# savePlot_index_and_paramsInFile(times,dirRes,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
+
+# command line in linux to create a video from images with index (adapt the framerate)
+# ffmpeg -framerate 1/0.02 -i plot_%01d.png -crf 15  output1.mp4
 
 
 

@@ -365,7 +365,274 @@ scalarProdutRenormalized = function(x1,y1,x2,y2){
 
 
 
+# renvoit la vitesse du moteur en fonction de la vitesse demandée
+vitesse_rotation_moteur <- function(times,u,A,C) {
+  temp = function(t){
+    A/C*u(t)*exp(1/C*t)
+  }
+  
+  temp2 = unlist(sapply(times, function(t){integrate(temp,0,t)$value}))
+  vitesse = exp(-1/C*times) * temp2
+}
 
 
+
+
+
+
+
+# TRANSITOIRE (LES VITESSES CHANGENT) Positions des loupiottes en fonction du temps 
+positions_t_TRANSITOIRE = function(t, r1B, r1C, r2D, r2E, r3F, r3G, 
+                                   alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+                                   A1,C1,A2,C2,A3,C3,
+                                   u1,u2,u3){
+  
+  vitesse1 = vitesse_rotation_moteur(t,u1,A1,C1) 
+  vitesse2 = vitesse_rotation_moteur(t,u2,A2,C2) 
+  vitesse3 = vitesse_rotation_moteur(t,u3,A3,C3) 
+  
+  # B,C
+  Bx = r1B * cos(2*pi*vitesse1*t + angleIni_B)    
+  By = r1B * sin(2*pi*vitesse1*t + angleIni_B)   
+  Cx = r1C * cos(2*pi*vitesse1*t + angleIni_B+pi)    
+  Cy = r1C * sin(2*pi*vitesse1*t + angleIni_B+pi)
+  
+  # H,I
+  Hx = Bx / alphaH 
+  Hy = By / alphaH 
+  Ix = Cx / alphaI   
+  Iy = Cy / alphaI 
+  # position de H sur AB: alpha in [1,+infty], =1 => B, =2 milieu de AB, =+infty => A
+  
+  # D,E
+  #r1H = r1B / alphaH 
+  HDx = r2D  * cos(2*pi*(vitesse2+vitesse1)*t + (angleIni_D+ angleIni_B))
+  HDy = r2D  * sin(2*pi*(vitesse2+vitesse1)*t + (angleIni_D+ angleIni_B))
+  HEx = r2E  * cos(2*pi*(vitesse2+vitesse1)*t + (angleIni_D+ angleIni_B) +pi)
+  HEy = r2E  * sin(2*pi*(vitesse2+vitesse1)*t + (angleIni_D+ angleIni_B) +pi)
+  
+  Dx = Hx + HDx
+  Dy = Hy + HDy
+  Ex = Hx + HEx
+  Ey = Hy + HEy
+  
+  # F,G
+  #r1I = r1C / alphaI 
+  IFx = r3F  * cos(2*pi*(vitesse3+vitesse1)*t + (angleIni_F+ (angleIni_B+pi)) )
+  IFy = r3F  * sin(2*pi*(vitesse3+vitesse1)*t + (angleIni_F+ (angleIni_B+pi)))
+  IGx = r3G  * cos(2*pi*(vitesse3+vitesse1)*t + (angleIni_F+ (angleIni_B+pi)) +pi)
+  IGy = r3G  * sin(2*pi*(vitesse3+vitesse1)*t + (angleIni_F+ (angleIni_B+pi)) +pi)
+  
+  Fx = Ix + IFx
+  Fy = Iy + IFy
+  Gx = Ix + IGx
+  Gy = Iy + IGy
+  
+  
+  return(data.frame(Bx = Bx, By = By, Cx = Cx, Cy = Cy,
+                    Hx = Hx, Hy = Hy,
+                    Dx = Dx, Dy = Dy, Ex = Ex, Ey = Ey,
+                    Ix = Ix, Iy = Iy,
+                    Fx = Fx, Fy = Fy, Gx = Gx, Gy = Gy,
+                    time = t))
+
+}
+
+
+
+
+
+
+
+# plot res at time t TRANSITOIRE
+plot_oneTime_TRANSITOIRE = function(t, r1B, r1C, r2D, r2E, r3F, r3G, 
+                                    alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+                                    A1,C1,A2,C2,A3,C3,
+                                    u1,u2,u3){
+  
+  res = positions_t_TRANSITOIRE(t, r1B, r1C, r2D, r2E, r3F, r3G, 
+                                     alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+                                     A1,C1,A2,C2,A3,C3,
+                                     u1,u2,u3)
+  
+  rayonMax = max(r1B,r1C) + max(r2D,r2E,r3F,r3G)
+  p <- ggplot(res) + labs(title= paste0("t = ",t)) +
+    geom_point(aes(x=Bx, y=By), col="yellow", size = 3) +
+    geom_point(aes(x=Cx, y=Cy), col="yellow", size = 3) +
+    geom_point(aes(x=Dx, y=Dy), col="yellow", size = 3) +
+    geom_point(aes(x=Ex, y=Ey), col="yellow", size = 3) +
+    geom_point(aes(x=Fx, y=Fy), col="yellow", size = 3) +
+    geom_point(aes(x=Gx, y=Gy), col="yellow", size = 3) #+
+  # geom_point(aes(x=Hx, y=Hy), col="black")  +
+  # geom_point(aes(x=Ix, y=Iy), col="black")
+  #p + xlim(rayonMax, rayonMax) + ylim(rayonMax,rayonMax) 
+  p + expand_limits(x=c(-rayonMax,rayonMax), y=c(-rayonMax, rayonMax)) +
+    coord_fixed(ratio=1) + 
+    theme(axis.text.y=element_blank(), axis.text.x=element_blank(),
+          axis.ticks=element_blank(),
+          axis.title.x=element_blank(), axis.title.y=element_blank(),legend.position="none",
+          #panel.background=element_blank(),
+          #panel.border=element_blank(), 
+          panel.grid.major=element_blank(),
+          panel.grid.minor=element_blank(),
+          plot.background=element_blank())
+}
+
+
+
+
+create_df_TRANSITOIRE = function(times, r1B, r1C, r2D, r2E, r3F, r3G, 
+                                 alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+                                 A1,C1,A2,C2,A3,C3,
+                                 u1,u2,u3){
+  
+  df = data.frame(Bx = double(), By = double(), Cx = double(), Cy = double(),
+                  Hx = double(), Hy = double(),
+                  Dx = double(), Dy = double(), Ex = double(), Ey = double(),
+                  Ix = double(),
+                  Iy = double(),
+                  Fx = double(), Fy = double(), Gx = double(), Gy = double(),
+                  time = double() #,
+                  # speedBx = double(), speedBy = double(),
+                  # speedCx = double(), speedCy = double(),
+                  # speedDx = double(), speedDy = double(),
+                  # speedEx = double(), speedEy = double(),
+                  # speedFx = double(), speedFy = double(),
+                  # speedGx = double(), speedGy = double(),
+                  # accBx = double(), accBy = double(),
+                  # accCx = double(), accCy = double(),
+                  # accDx = double(), accDy = double(),
+                  # accEx = double(), accEy = double(),
+                  # accFx = double(), accFy = double(),
+                  # accGx = double(), accGy = double()
+                  )
+  #times = seq(0,4, by = 0.005)
+  for (i in 1:length(times)){
+    t = times[i]
+    res = positions_t_TRANSITOIRE(t, r1B, r1C, r2D, r2E, r3F, r3G, 
+                                    alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+                                    A1,C1,A2,C2,A3,C3,
+                                    u1,u2,u3)
+    df = rbind.fill(df,res)
+  }
+  return(df)
+}
+
+
+
+# function to save all plots (%time)
+savePlot_index_TRANSITOIRE = function(times, dirRes, r1B, r1C, r2D, r2E, r3F, r3G, 
+                                      alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+                                      A1,C1,A2,C2,A3,C3,
+                                      u1,u2,u3){
+  
+  df = create_df_TRANSITOIRE(times, r1B, r1C, r2D, r2E, r3F, r3G, 
+                 alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+                 A1,C1,A2,C2,A3,C3,
+                 u1,u2,u3)
+    
+  rayonMax = max(r1B,r1C) + max(r2D,r2E,r3F,r3G)
+  for (i in 1:length(times)){
+    t=times[i]
+    p <- ggplot(df %>% filter(times == t)) + #labs(title= paste0("t = ",t)) +
+      geom_point(aes(x=Bx, y=By), col="yellow", size = 3) +
+      geom_point(aes(x=Cx, y=Cy), col="yellow", size = 3) +
+      geom_point(aes(x=Dx, y=Dy), col="yellow", size = 3) +
+      geom_point(aes(x=Ex, y=Ey), col="yellow", size = 3) +
+      geom_point(aes(x=Fx, y=Fy), col="yellow", size = 3) +
+      geom_point(aes(x=Gx, y=Gy), col="yellow", size = 3) #+
+    #geom_point(aes(x=Hx, y=Hy), col="black")  #+
+    #geom_point(aes(x=Ix, y=Iy), col="black")
+    #p + xlim(rayonMax, rayonMax) + ylim(rayonMax,rayonMax) 
+    p <- p + expand_limits(x=c(-rayonMax,rayonMax), y=c(-rayonMax, rayonMax)) +
+      coord_fixed(ratio=1) + 
+      theme(axis.text.y=element_blank(), axis.text.x=element_blank(),
+            axis.ticks=element_blank(),
+            axis.title.x=element_blank(), axis.title.y=element_blank(),legend.position="none",
+            #panel.background=element_blank(),
+            #panel.border=element_blank(), 
+            panel.grid.major=element_blank(),
+            panel.grid.minor=element_blank(),
+            plot.background=element_blank())
+    # save ggplot
+    plot_file_name = paste0(dirRes, "/plot_",i,".svg")
+    ggsave(plot_file_name,p, width = 8, height = 8, dpi = 72)
+    #dev.off()
+  }
+}
+
+
+
+
+save_params_in_file_TRANSITOIRE = function(dirRes, r1B, r1C, r2D, r2E, r3F, r3G, 
+                                           alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+                                           A1,C1,A2,C2,A3,C3,
+                                           u1,u2,u3){
+  
+  # sequence of string with parameter names and values  
+  txt <- c( 
+      "# rayons",
+    paste0("r1B = ", r1B, ", r1C = ", r1C),
+    paste0("r2D = ", r2D, ", r2E = ", r2E),
+    paste0("r3F = ", r3F, ", r3G = ", r3G),
+    "# position initiale (from angle)",
+    "A,B,C",
+    paste0("angleIni_B = ", angleIni_B),
+    "# H,I",
+    paste0("alphaH = ", alphaH),
+    paste0("alphaI = ", alphaI),
+    "# D,E",
+    paste0("angleIni_D = ", angleIni_D),
+    "# F,G", 
+    paste0("angleIni_F = ", angleIni_F),
+    "# paramètres moteurs",
+    "# moteur 1",
+    paste0("A1 = ", A1),
+    paste0("C1 = ", C1),
+    "# moteur 2",
+    paste0("A2 = ", A2),
+    paste0("C2 = ", C2),
+    "# moteur 3",
+    paste0("A3 = ", A3),
+    paste0("C3 = ", C3),
+    "# vitesse moteur (tour/ seconde)",
+    paste0("fonction vitesse rotation moteur 1: ", paste0(deparse(u1), collapse = " ")),
+    paste0("fonction vitesse rotation moteur 2: ", paste0(deparse(u2), collapse = " ")),
+    paste0("fonction vitesse rotation moteur 3: ", paste0(deparse(u3), collapse = " "))
+    )
+  
+  # save in txt file  
+  dir.create(dirRes)
+  fileName = "parameters.txt"
+  file = paste0(dirRes, "/", fileName)
+  writeLines(txt, file)
+}
+
+
+# dirRes = "toto"
+# save_params_in_file_TRANSITOIRE(dirRes, r1B, r1C, r2D, r2E, r3F, r3G, 
+#                                 alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+#                                 A1,C1,A2,C2,A3,C3,
+#                                 u1,u2,u3)
+
+
+
+
+# save plots with index (time) and parameters in a file  TRANSITOIRE
+savePlot_index_and_paramsInFile_TRANSITOIRE = function(times, dirRes, r1B, r1C, r2D, r2E, r3F, r3G, 
+                                                       alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+                                                       A1,C1,A2,C2,A3,C3,
+                                                       u1,u2,u3){
+
+  savePlot_index_TRANSITOIRE(times, dirRes, r1B, r1C, r2D, r2E, r3F, r3G, 
+                                              alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+                                              A1,C1,A2,C2,A3,C3,
+                                              u1,u2,u3) 
+  
+  save_params_in_file_TRANSITOIRE(dirRes, r1B, r1C, r2D, r2E, r3F, r3G, 
+                                   alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+                                   A1,C1,A2,C2,A3,C3,
+                                   u1,u2,u3)
+  }
 
 
