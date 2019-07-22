@@ -444,10 +444,14 @@ plot(times,u(times), type = "l")
 # plot(times,vitesse, type = "l")
 
 t=1
-vitesse_rotation_moteur(t,u,A,C)
+res = vitesse_rotation_moteur(t,u,A,C)
 res = vitesse_rotation_moteur(times,u,A,C)
 plot(times,res, type = "l")
 
+# angle
+angle_t =  integrate(function(x){vitesse_rotation_moteur(x,u,A,C)},0,t, stop.on.error = F)$value
+angle_all = sapply(times, function(a){integrate(function(x){vitesse_rotation_moteur(x,u,A,C)},0,a, stop.on.error = F)$value})
+plot(times,angle_all)
 
 # moteur 1
 u1=u
@@ -486,12 +490,12 @@ finalTime = 10
 times = seq(0,finalTime, by = timeStep)
 
 u1 = function(t){
-  1
+  2
 }
 
 
 u2 = function(t){
-  2
+  1
 }
 
 
@@ -518,22 +522,25 @@ p <- ggplot(df) + coord_fixed(ratio=1) +
 p
 
 
+res = vitesse_rotation_moteur(times,u1,A1,C1)
+plot(times, res, type = "l")
 
 
-
-dirRes = "plot_transitoire"
+dirRes = "plot_transitoire_1"
 dir.create(dirRes)
-times = seq(0,4, by = 0.02)
+times = seq(0,5, by = 0.02)
+start_time <- Sys.time()
 savePlot_index_and_paramsInFile_TRANSITOIRE(times, dirRes, r1B, r1C, r2D, r2E, r3F, r3G, 
                                             alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
                                             A1,C1,A2,C2,A3,C3,
                                             u1,u2,u3)
-
+end_time <- Sys.time()
+end_time - start_time
 
 # savePlot_index_and_paramsInFile(times,dirRes,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
 
 # command line in linux to create a video from images with index (adapt the framerate)
-# ffmpeg -framerate 1/0.02 -i plot_%01d.png -crf 15  output1.mp4
+# ffmpeg -framerate 1/0.02 -i plot_%01d.svg -crf 15  output1.mp4
 
 
 
