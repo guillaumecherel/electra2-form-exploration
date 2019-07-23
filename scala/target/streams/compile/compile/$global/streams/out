@@ -1,0 +1,9 @@
+[0m[[0m[31merror[0m] [0m[0m/home/francois/Bureau/electra/electra2-form-exploration/scala/src/main/scala/electra/electra.scala:267:41: missing argument list for method slaveSimu in object Model[0m
+[0m[[0m[31merror[0m] [0m[0mUnapplied methods are only converted to functions when a function type is expected.[0m
+[0m[[0m[31merror[0m] [0m[0mYou can make this conversion explicit by writing `slaveSimu _` or `slaveSimu(_)(_)(_,_,_,_)` instead of `slaveSimu`.[0m
+[0m[[0m[31merror[0m] [0m[0m    else slaveSimu(fixedParametersModel)(parametersTransitoire)[0m
+[0m[[0m[31merror[0m] [0m[0m                                        ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/francois/Bureau/electra/electra2-form-exploration/scala/src/main/scala/electra/electra.scala:268:103: (Int, Int, electra.DynmicalCurrentState, Double) does not take parameters[0m
+[0m[[0m[31merror[0m] [0m[0m    (iter + 1, Nmax, nextStepDynamic(fixedParametersModel)(parametersTransitoire)(res,deltaT),deltaT )()[0m
+[0m[[0m[31merror[0m] [0m[0m                                                                                                      ^[0m
+[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m

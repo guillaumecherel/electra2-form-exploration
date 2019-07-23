@@ -9,6 +9,7 @@ library(dplyr)
 library(ggplot2)
 library(gganimate)
 library(gifski)
+library(pracma)
 theme_set(theme_bw())
 
 ## import functions from utils
@@ -99,10 +100,6 @@ plot_oneTime(t,v1, v2, v3, r1B, r1C, r2D, r2E, r3F, r3G, alphaH, alphaI, angleIn
 
 
 
-# create a dataframe with positions at times prescribed
-df = create_df(times,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
-
-
 
 
 # save plots for different times
@@ -134,6 +131,10 @@ times = seq(0,20, by = timeStep)
 
 # param de reférence
 df = create_df(times,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
+df = create_df(times,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
+
+# astroide
+
 # influence vitesse: multiplication un même facteur
 df = create_df(times,3*v1,3*v2,3*v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
 # influence vitesse: seul v2 modifié 
@@ -146,7 +147,7 @@ df = create_df(times,v1,0,0,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,0,a
 # v1=0
 df = create_df(times,0,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
 
-df = create_df(times,v1,0.3,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,0,angleIni_F)
+df = create_df(times,v1,0.3,sqrt(2)*v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,0,angleIni_F)
 
 
 # mesures 
@@ -174,6 +175,35 @@ df = df %>% mutate( # distance
                     )
 
 # points
+
+
+# create a dataframe with positions at times prescribed
+
+
+# astroide
+timeStep = 0.005 # sec
+times = seq(0,5, by = timeStep)
+df = create_df(times,v1,v2=-3/4*v1,v3,r1B,r1C,r1B/8,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
+
+
+#p <- ggplot(df %>% filter(times < 1.5)) + coord_fixed(ratio=1) +  
+p <- ggplot(df) + coord_fixed(ratio=1) + 
+  theme(axis.title.x=element_blank(), axis.title.y=element_blank() ) + 
+  #geom_point(aes(x=Bx, y=By), size=1) +
+  #geom_point(aes(x=Cx, y=Cy), size=1) +
+  geom_point(aes(x=Dx, y=Dy), size=1, col= "red", shape = 3) #+
+  #geom_point(aes(x=Ex, y=Ey), size=1, col= "yellow") +
+  #geom_point(aes(x=Fx, y=Fy), size=1, col= "blue") +
+  #geom_point(aes(x=Gx, y=Gy), size=1, col= "green")
+p
+
+
+
+
+
+
+
+
 #p <- ggplot(df %>% filter(times < 1.5)) + coord_fixed(ratio=1) +  
 p <- ggplot(df) + coord_fixed(ratio=1) + 
   theme(axis.title.x=element_blank(), axis.title.y=element_blank() ) + 
@@ -415,8 +445,6 @@ timeStep = 0.02 # sec
 times = seq(0,5, by = timeStep)
 
 # u: tension imposée = vitesse demandée au moteur
-# u= rep(1,length(times)) 
-# temp = A/C*u*exp(1/C*times)
 
 u = function(t){
   1*(t>0)*(t<1)+
@@ -427,22 +455,6 @@ u = function(t){
 
 plot(times,u(times), type = "l")
 
-# temp = function(t){
-#   A/C*u(t)*exp(1/C*t)
-# }
-
-# vitesse = exp(-1/C*times)
-# plot(times,vitesse, type = "l")
-
-# temp2 = unlist(sapply(times, function(t){integrate(temp,0,t)$value}))
-# integrate(temp,0,1)
-# integrate(temp,0,1)[1]
-# integrate(temp,0,1)$value
-
-
-# vitesse = exp(-1/C*times) * temp2
-# plot(times,vitesse, type = "l")
-
 t=1
 res = vitesse_rotation_moteur(t,u,A,C)
 res = vitesse_rotation_moteur(times,u,A,C)
@@ -452,6 +464,7 @@ plot(times,res, type = "l")
 angle_t =  integrate(function(x){vitesse_rotation_moteur(x,u,A,C)},0,t, stop.on.error = F)$value
 angle_all = sapply(times, function(a){integrate(function(x){vitesse_rotation_moteur(x,u,A,C)},0,a, stop.on.error = F)$value})
 plot(times,angle_all)
+
 
 # moteur 1
 u1=u
@@ -485,10 +498,7 @@ plot_oneTime_TRANSITOIRE(t, r1B, r1C, r2D, r2E, r3F, r3G,
 
 
 
-timeStep = 0.005 
-finalTime = 10 
-times = seq(0,finalTime, by = timeStep)
-
+# des u differents
 u1 = function(t){
   2
 }
@@ -522,25 +532,42 @@ p <- ggplot(df) + coord_fixed(ratio=1) +
 p
 
 
-res = vitesse_rotation_moteur(times,u1,A1,C1)
-plot(times, res, type = "l")
+# res = vitesse_rotation_moteur(times,u1,A1,C1)
+# plot(times, res, type = "l")
 
 
-dirRes = "plot_transitoire_1"
+dirRes = "plot_transitoire_2"
 dir.create(dirRes)
 times = seq(0,5, by = 0.02)
-start_time <- Sys.time()
-savePlot_index_and_paramsInFile_TRANSITOIRE(times, dirRes, r1B, r1C, r2D, r2E, r3F, r3G, 
-                                            alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
-                                            A1,C1,A2,C2,A3,C3,
-                                            u1,u2,u3)
-end_time <- Sys.time()
-end_time - start_time
+# start_time <- Sys.time()
+# savePlot_index_and_paramsInFile_TRANSITOIRE(times, dirRes, r1B, r1C, r2D, r2E, r3F, r3G, 
+#                                             alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+#                                             A1,C1,A2,C2,A3,C3,
+#                                             u1,u2,u3)
+# end_time <- Sys.time()
+# end_time - start_time
 
 # savePlot_index_and_paramsInFile(times,dirRes,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
 
 # command line in linux to create a video from images with index (adapt the framerate)
 # ffmpeg -framerate 1/0.02 -i plot_%01d.svg -crf 15  output1.mp4
+
+
+
+# test other computation integral
+#quadinf(fun, -Inf, Inf, tol=1e-10)
+start_time <- Sys.time()
+angle_all = sapply(times, function(a){integrate(function(x){vitesse_rotation_moteur(x,u,A,C)},0,a, stop.on.error = F)$value})
+end_time <- Sys.time()
+end_time - start_time
+
+
+start_time <- Sys.time()
+angle_all = sapply(times, function(a){quadinf(function(x){vitesse_rotation_moteur(x,u,A,C)},0,a)$value})
+end_time <- Sys.time()
+end_time - start_time
+
+
 
 
 

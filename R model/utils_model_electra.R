@@ -9,6 +9,7 @@ library(dplyr)
 library(ggplot2)
 library(gganimate)
 library(gifski)
+library(pracma)
 theme_set(theme_bw())
 
 
@@ -364,6 +365,10 @@ scalarProdutRenormalized = function(x1,y1,x2,y2){
 
 
 
+#########################
+###    TRANSITOIRE    ###
+#########################
+
 
 # renvoit la vitesse du moteur en fonction de la vitesse demandée
 vitesse_rotation_moteur <- function(time,u,A,C) {
@@ -378,124 +383,61 @@ vitesse_rotation_moteur <- function(time,u,A,C) {
 
 
 
-
-
-
-# next_positions_t_TRANSITOIRE = function(t, r1B, r1C, r2D, r2E, r3F, r3G, 
-#                                    alphaH, alphaI, 
-#                                    #angleIni_B, angleIni_D, angleIni_F,
-#                                    A1,C1,A2,C2,A3,C3,
-#                                    u1,u2,u3,
-#                                    Bx,By,Cx,Cy,
-#                                    Hx,Hy,
-#                                    Dx,Dy,Ex,Ey,
-#                                    Ix,Iy,
-#                                    Fx,Fy,Gx,Gy,
-#                                    currentStateDf, deltaT){
-#   
-#   vitesse1 = vitesse_rotation_moteur(t,u1,A1,C1) 
-#   vitesse2 = vitesse_rotation_moteur(t,u2,A2,C2) 
-#   vitesse3 = vitesse_rotation_moteur(t,u3,A3,C3) 
-#   
-#   # B,C
-#   newBx = currentStateDf$Bx + r1B * cos(2*pi*vitesse1*deltaT)    
-#   newBy = currentStateDf$By + r1B * sin(2*pi*vitesse1*deltaT ) #+ angleIni_B   
-#   newCx = currentStateDf$Cx + r1C * cos(2*pi*vitesse1*deltaT ) #+angleIni_B+pi    
-#   newCy = currentStateDf$Cy + r1C * sin(2*pi*vitesse1*deltaT ) #+ angleIni_B+pi
-#   
-#   # H,I
-#   newHx = newBx / alphaH 
-#   newHy = newBy / alphaH 
-#   newIx = newCx / alphaI   
-#   newIy = newCy / alphaI 
-#   # position de H sur AB: alpha in [1,+infty], =1 => B, =2 milieu de AB, =+infty => A
-#   
-#   # D,E
-#   #r1H = r1B / alphaH 
-#   newHDx = currentStateDf$HDx + r2D  * cos(2*pi*(vitesse2+vitesse1)*deltaT) # + (angleIni_D+ angleIni_B))
-#   newHDy = currentStateDf$HDy + r2D  * sin(2*pi*(vitesse2+vitesse1)*deltaT) # + (angleIni_D+ angleIni_B))
-#   newHEx = currentStateDf$HEx + r2E  * cos(2*pi*(vitesse2+vitesse1)*deltaT) # + (angleIni_D+ angleIni_B) +pi)
-#   newHEy = currentStateDf$HEy + r2E  * sin(2*pi*(vitesse2+vitesse1)*deltaT) # + (angleIni_D+ angleIni_B) +pi)
-#   
-#   newDx = newHx + newHDx
-#   newDy = newHy + newHDy
-#   newEx = newHx + newHEx
-#   newEy = newHy + newHEy
-#   
-#   # F,G
-#   #r1I = r1C / alphaI 
-#   newIFx = currentStateDf$IFx + r3F  * cos(2*pi*(vitesse3+vitesse1)*deltaT) #+ (angleIni_F+ (angleIni_B+pi)) )
-#   newIFy = currentStateDf$IFy + r3F  * sin(2*pi*(vitesse3+vitesse1)*deltaT) #+ (angleIni_F+ (angleIni_B+pi)))
-#   newIGx = currentStateDf$IGx + r3G  * cos(2*pi*(vitesse3+vitesse1)*deltaT) #+ (angleIni_F+ (angleIni_B+pi)) +pi)
-#   newIGy = currentStateDf$IGy + r3G  * sin(2*pi*(vitesse3+vitesse1)*deltaT) #+ (angleIni_F+ (angleIni_B+pi)) +pi)
-#   
-#   newFx = newIx + newIFx
-#   newFy = newIy + newIFy
-#   newGx = newIx + newIGx
-#   newGy = newIy + newIGy
-#   
-#   
-#   return(data.frame(Bx = newBx, By = newBy, Cx = newCx, Cy = newCy,
-#                     Hx = newHx, Hy = newHy,
-#                     Dx = newDx, Dy = newDy, Ex = newEx, Ey = newEy,
-#                     Ix = newIx, Iy = newIy,
-#                     Fx = newFx, Fy = newFy, Gx = newGx, Gy = newGy,
-#                     time = t+deltaT))
-# 
-# }
-
-
-# create_position_ini_TRANSITOIRE = function(r1B, r1C, r2D, r2E, r3F, r3G, 
-#                                     alphaH, alphaI, 
-#                                     angleIni_B, angleIni_D, angleIni_F){
-#     
-#     # B,C
-#     Bx = r1B * cos(angleIni_B)    
-#     By = r1B * sin(angleIni_B)   
-#     Cx = r1C * cos(angleIni_B+pi)    
-#     Cy = r1C * sin(angleIni_B+pi)
-#     
-#     # H,I
-#     Hx = Bx / alphaH 
-#     Hy = By / alphaH 
-#     Ix = Cx / alphaI   
-#     Iy = Cy / alphaI 
-#     
-#     # D,E
-#     HDx = r2D  * cos((angleIni_D+ angleIni_B))
-#     HDy = r2D  * sin((angleIni_D+ angleIni_B))
-#     HEx = r2E  * cos((angleIni_D+ angleIni_B) +pi)
-#     HEy = r2E  * sin((angleIni_D+ angleIni_B) +pi)
-#     
-#     Dx = Hx + HDx
-#     Dy = Hy + HDy
-#     Ex = Hx + HEx
-#     Ey = Hy + HEy
-#     
-#     # F,G
-#     #r1I = r1C / alphaI 
-#     IFx = r3F  * cos((angleIni_F+ (angleIni_B+pi)) )
-#     IFy = r3F  * sin((angleIni_F+ (angleIni_B+pi)))
-#     IGx = r3G  * cos((angleIni_F+ (angleIni_B+pi)) +pi)
-#     IGy = r3G  * sin((angleIni_F+ (angleIni_B+pi)) +pi)
-#     
-#     Fx = Ix + IFx
-#     Fy = Iy + IFy
-#     Gx = Ix + IGx
-#     Gy = Iy + IGy
-#     
-#     
-#     return(data.frame(Bx = Bx, By = By, Cx = Cx, Cy = Cy,
-#                       Hx = Hx, Hy = Hy,
-#                       Dx = Dx, Dy = Dy, Ex = Ex, Ey = Ey,
-#                       Ix = Ix, Iy = Iy,
-#                       Fx = Fx, Fy = Fy, Gx = Gx, Gy = Gy,
-#                       time = 0)
-#     )  
-#   
-# }  
-    
-
+# position at time t transitoire
+positions_t_TRANSITOIRE= function(t, r1B, r1C, r2D, r2E, r3F, r3G, 
+                                  alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
+                                  A1,C1,A2,C2,A3,C3,
+                                  u1,u2,u3){
+  
+  angle1_t =  integrate(function(x){vitesse_rotation_moteur(x,u1,A1,C1)},0,t, stop.on.error = F)$value
+  angle2_t =  integrate(function(x){vitesse_rotation_moteur(x,u2,A2,C2)},0,t, stop.on.error = F)$value
+  angle3_t =  integrate(function(x){vitesse_rotation_moteur(x,u3,A3,C3)},0,t, stop.on.error = F)$value
+  
+  
+  # B,C
+  Bx = r1B * cos(2*pi*angle1_t + angleIni_B)    
+  By = r1B * sin(2*pi*angle1_t + angleIni_B)   
+  Cx = r1C * cos(2*pi*angle1_t + angleIni_B+pi)    
+  Cy = r1C * sin(2*pi*angle1_t + angleIni_B+pi)
+  
+  # H,I
+  Hx = Bx / alphaH 
+  Hy = By / alphaH 
+  Ix = Cx / alphaI   
+  Iy = Cy / alphaI 
+  # position de H sur AB: alpha in [1,+infty], =1 => B, =2 milieu de AB, =+infty => A
+  
+  # D,E
+  #r1H = r1B / alphaH 
+  HDx = r2D  * cos(2*pi*(angle1_t+angle2_t) + (angleIni_D+ angleIni_B))
+  HDy = r2D  * sin(2*pi*(angle1_t+angle2_t) + (angleIni_D+ angleIni_B))
+  HEx = r2E  * cos(2*pi*(angle1_t+angle2_t) + (angleIni_D+ angleIni_B) +pi)
+  HEy = r2E  * sin(2*pi*(angle1_t+angle2_t) + (angleIni_D+ angleIni_B) +pi)
+  
+  Dx = Hx + HDx
+  Dy = Hy + HDy
+  Ex = Hx + HEx
+  Ey = Hy + HEy
+  
+  # F,G
+  #r1I = r1C / alphaI 
+  IFx = r3F  * cos(2*pi*(angle1_t+angle3_t) + (angleIni_F+ (angleIni_B+pi)) )
+  IFy = r3F  * sin(2*pi*(angle1_t+angle3_t) + (angleIni_F+ (angleIni_B+pi)))
+  IGx = r3G  * cos(2*pi*(angle1_t+angle3_t) + (angleIni_F+ (angleIni_B+pi)) +pi)
+  IGy = r3G  * sin(2*pi*(angle1_t+angle3_t) + (angleIni_F+ (angleIni_B+pi)) +pi)
+  
+  Fx = Ix + IFx
+  Fy = Iy + IFy
+  Gx = Ix + IGx
+  Gy = Iy + IGy
+  
+  
+  return(data.frame(Bx = Bx, By = By, Cx = Cx, Cy = Cy,
+                    Hx = Hx, Hy = Hy,
+                    Dx = Dx, Dy = Dy, Ex = Ex, Ey = Ey,
+                    Ix = Ix, Iy = Iy,
+                    Fx = Fx, Fy = Fy, Gx = Gx, Gy = Gy) )
+}
 
 
 
@@ -534,6 +476,7 @@ plot_oneTime_TRANSITOIRE = function(t, r1B, r1C, r2D, r2E, r3F, r3G,
           panel.grid.minor=element_blank(),
           plot.background=element_blank())
 }
+
 
 
 
@@ -677,6 +620,7 @@ save_params_in_file_TRANSITOIRE = function(dirRes, r1B, r1C, r2D, r2E, r3F, r3G,
 
 
 
+
 # save plots with index (time) and parameters in a file  TRANSITOIRE
 savePlot_index_and_paramsInFile_TRANSITOIRE = function(times, dirRes, r1B, r1C, r2D, r2E, r3F, r3G, 
                                                        alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
@@ -699,60 +643,6 @@ savePlot_index_and_paramsInFile_TRANSITOIRE = function(times, dirRes, r1B, r1C, 
 
 
 
-positions_t_TRANSITOIRE= function(t, r1B, r1C, r2D, r2E, r3F, r3G, 
-                                  alphaH, alphaI, angleIni_B, angleIni_D, angleIni_F,
-                                  A1,C1,A2,C2,A3,C3,
-                                  u1,u2,u3){
-  
-  angle1_t =  integrate(function(x){vitesse_rotation_moteur(x,u1,A1,C1)},0,t, stop.on.error = F)$value
-  angle2_t =  integrate(function(x){vitesse_rotation_moteur(x,u2,A2,C2)},0,t, stop.on.error = F)$value
-  angle3_t =  integrate(function(x){vitesse_rotation_moteur(x,u3,A3,C3)},0,t, stop.on.error = F)$value
-  
-  
-  # B,C
-  Bx = r1B * cos(2*pi*angle1_t + angleIni_B)    
-  By = r1B * sin(2*pi*angle1_t + angleIni_B)   
-  Cx = r1C * cos(2*pi*angle1_t + angleIni_B+pi)    
-  Cy = r1C * sin(2*pi*angle1_t + angleIni_B+pi)
-  
-  # H,I
-  Hx = Bx / alphaH 
-  Hy = By / alphaH 
-  Ix = Cx / alphaI   
-  Iy = Cy / alphaI 
-  # position de H sur AB: alpha in [1,+infty], =1 => B, =2 milieu de AB, =+infty => A
-  
-  # D,E
-  #r1H = r1B / alphaH 
-  HDx = r2D  * cos(2*pi*(angle1_t+angle2_t) + (angleIni_D+ angleIni_B))
-  HDy = r2D  * sin(2*pi*(angle1_t+angle2_t) + (angleIni_D+ angleIni_B))
-  HEx = r2E  * cos(2*pi*(angle1_t+angle2_t) + (angleIni_D+ angleIni_B) +pi)
-  HEy = r2E  * sin(2*pi*(angle1_t+angle2_t) + (angleIni_D+ angleIni_B) +pi)
-  
-  Dx = Hx + HDx
-  Dy = Hy + HDy
-  Ex = Hx + HEx
-  Ey = Hy + HEy
-  
-  # F,G
-  #r1I = r1C / alphaI 
-  IFx = r3F  * cos(2*pi*(angle1_t+angle3_t) + (angleIni_F+ (angleIni_B+pi)) )
-  IFy = r3F  * sin(2*pi*(angle1_t+angle3_t) + (angleIni_F+ (angleIni_B+pi)))
-  IGx = r3G  * cos(2*pi*(angle1_t+angle3_t) + (angleIni_F+ (angleIni_B+pi)) +pi)
-  IGy = r3G  * sin(2*pi*(angle1_t+angle3_t) + (angleIni_F+ (angleIni_B+pi)) +pi)
-  
-  Fx = Ix + IFx
-  Fy = Iy + IFy
-  Gx = Ix + IGx
-  Gy = Iy + IGy
-  
-  
-  return(data.frame(Bx = Bx, By = By, Cx = Cx, Cy = Cy,
-                    Hx = Hx, Hy = Hy,
-                    Dx = Dx, Dy = Dy, Ex = Ex, Ey = Ey,
-                    Ix = Ix, Iy = Iy,
-                    Fx = Fx, Fy = Fy, Gx = Gx, Gy = Gy) )
-}
 
 
 

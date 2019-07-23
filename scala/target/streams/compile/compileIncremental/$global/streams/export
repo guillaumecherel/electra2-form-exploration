@@ -1,0 +1,1 @@
+scalac -bootclasspath /home/francois/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.13.0.jar -classpath /home/francois/Bureau/electra/electra2-form-exploration/scala/target/scala-2.13/classes /home/francois/Bureau/electra/electra2-form-exploration/scala/src/main/scala/electra/electra.scala
