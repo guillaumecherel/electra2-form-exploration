@@ -1,21 +1,25 @@
 package electra
 
-import com.sun.org.apache.xerces.internal.impl.xpath.XPath.Step
+
 //import electra.Model.integrate
+import java.awt.geom.Point2D
+
 import electra.NumericalIntegration._
 import electra.Model._
+import electra.Mesure._
+
 import scala.math._
-import org.openmole.spatialdata._   // grid.measures.GridMorphology // -> grid indicators
+import org.openmole.spatialdata._
 import org.openmole.spatialdata.grid.measures.GridMorphology
 import org.openmole.spatialdata.points.measures._ //SpatStat
 
 
 object Electra extends App {
 
-  // Stationnary
+  // 1 position: Stationnary
   /*
   val t = 1.0
-  val res = dynamicStationnary()(t,DefaultValuesParameterModel.v1, DefaultValuesParameterModel.v2, DefaultValuesParameterModel.v3)
+  val res = dynamicStationnary()(DefaultValuesParameterModel.v1, DefaultValuesParameterModel.v2, DefaultValuesParameterModel.v3)(t)
   println(res)
   //res.map(x=>Array(x.))
   val res2 = Array(res.Bx ,res.By)
@@ -24,7 +28,8 @@ object Electra extends App {
 
 
 
-  // Transitoire, avec next
+  // 1 position: Transitoire, avec next
+  /*
   val fixedParametersModel = new FixedParametersModel()
   val parametersTransitoire = new ParametersTransitoire()
   val Nmax = 100
@@ -32,68 +37,205 @@ object Electra extends App {
   val stepsTransitoryNext = HiddenParameters.stepsTransitoryNext
   val initialConditions = new InitialConditions()
   //val res = simu(fixedParametersModel)(parametersTransitoire)(Nmax,deltaT,initialConditions,stepsTransitoryNext )
-  val res = simu(fixedParametersModel)(new ParametersTransitoire(DefaultValuesParameterModel.u1_sin,
+  val res = simuTransitoire(fixedParametersModel)(new ParametersTransitoire(DefaultValuesParameterModel.u1_sin,
     DefaultValuesParameterModel.u2_sin,DefaultValuesParameterModel.u3_sin))(Nmax,deltaT,initialConditions,stepsTransitoryNext )
   println(res)
+  //println(res.Ex)
   //println( sqrt((res.Dx)*(res.Dx) + (res.Dy)*(res.Dy)))
+*/
 
 
-
-  // sans next
+  // 1 position: Transitoire, sans next
+  /*
   val stepsTransitory = HiddenParameters.stepsTransitory
   val t = Nmax*deltaT
   //val res2 =  dynamicTransitoire(stepsTransitory)()(t,DefaultValuesParameterModel.u1, DefaultValuesParameterModel.u2, DefaultValuesParameterModel.u3)
   val res2 =  dynamicTransitoire(stepsTransitory)()(t,DefaultValuesParameterModel.u1_sin, DefaultValuesParameterModel.u2_sin, DefaultValuesParameterModel.u3_sin)
   println(res2)
-
-
-  //
-  /*
-  println(res.Dx)
-  println(res2.Dx)
-  println(res.Dy)
-  println(res2.Dy)
-  println(sqrt((res.Dx)*(res.Dx) + (res.Dy)*(res.Dy)))
-  println(sqrt((res2.Dx)*(res2.Dx) + (res2.Dy)*(res2.Dy)))
-  */
-
-/*
-  println(res.Hx)
-  println(res2.Hx)
-  println(res.Hy)
-  println(res2.Hy)
-  println(res.HDx)
-  println(res2.HDx)
-  println(res.HDy)
-  println(res2.HDy)
+  //println(res2.Ex)
 */
+
+
+
+  // Trajectoire stationnaire
+
+  /*
+  val T = 0.02
+  val deltaT = 0.01
+  val res = dynamicTrajectoryStationnary()()(T,deltaT)
+  //println(res)
+  //println(res.map(_.Dx))
+
+  val res2 = convertResultStationnary(res)
+  println(res2)
+*/
+
+
+
+  // Trajectoire transitoire (next)
+  /*
+  val fixedParametersModel = new FixedParametersModel()
+  val parametersTransitoire = new ParametersTransitoire()
+  val Nmax = 2
+  val deltaT = 0.01
+  val initialConditions = new InitialConditions()
+  val stepsTransitoryNext = HiddenParameters.stepsTransitoryNext
+
+  val res2 = simuTrajectoireTransitoire(fixedParametersModel)(parametersTransitoire)(Nmax,deltaT,initialConditions,stepsTransitoryNext)
+  //print(res2)
+
+  //println(res2.map(_.time))
+*/
+
+
+
+  // Mesures
+  // points singuliers
+
+  /*
+  val T = 2.0
+  val deltaT = 0.005
+  val res = dynamicTrajectoryStationnary()(v1=2.0,v2=(-6.0))(T,deltaT)
+  //println(res)
+  val seuil = 2
+  val res2 = countSingularPoints(res, seuil)
+  println(res2)
+
+  val res3 = timesOfSingularPoints(res, seuil)
+  println(res3)
+*/
+
+
+  // loop points
+
+  /*
+  val T = 100.0
+  val deltaT = 0.005
+  val res = dynamicTrajectoryStationnary()(v1=2.0,v2=(-6.0))(T,deltaT)
+  val seuil = 1.0
+
+  val res2 = tempsPremierRetour(res,seuil)
+  //println(res2)
+
+  // la distribution des temps de retour
+  val res3 = res2.filter(_ != () )  // retire les vecteur vide
+  val res4 = res3.map{ case( ((a,b,c),d) )  => d}
+  println(res4)
+*/
+
+  /*
+  val res2 = convertResultStationnary(res)
+  val temp = res2.Bx.zip(res2.By)
+  //val res3 = temp.zipWithIndex.map(case( ((a,b),c) ) => (a,b,c) )
+  val res3 = temp.zipWithIndex.map( x => (x._1._1, x._1._2, x._2) )
+  val res4 = slaveTempsPremierRetour(res3(1),res3, seuil)
+  println(res4)
+*/
+
+
+  /*
+  val res2 = timeLoopPoints(res,seuil)
+  println(res2)
+  //val res3 = res2.map(x => x.length)
+  //println(res3)
+  //println(res2.collect{ case(x) if x.length >1 => x } )
+*/
+
+
+  // Array de Array pour Moran
+
+
+  //  densité
+  /*
+  val N = 20
+  val xmax = maxSquareForDensity()
+  val xmin = -xmax
+  val ymax = xmax
+  val ymin = xmin
+
+    val T = 1.0
+    val deltaT = 0.01
+    val res = dynamicTrajectoryStationnary()(v1=2.0,v2=(-6.0))(T,deltaT)
+
+    val res2 =  pointsDensitySquare(res,xmin,xmax,ymin,ymax,N)
+
+    println(res2)
+  */
+  //println(res2.map(_.mkString(" ")).mkString("\n"))
+
+
+  // Courbure
+
+  val T = 1.0
+  val deltaT = 0.01
+  val res = dynamicTrajectoryStationnary()(v1=2.0,v2=(-6.0))(T,deltaT)
+  val res2 = convertResultStationnary(res)
+  // point B
+  //val res3 = courbure(res2.speedBx,res2.speedBy,res2.accBx,res2.accBy)
+  //println(res3)
+
+
+
+
+  // Moran
+  val piMoranB = convertFromMoran(res2.Bx,res2.Bx)
+  //println(piMoranB .map(_.mkString(" ")).mkString("\n"))
+
+  val xForMoran = List.fill(piMoranB.length)(1.0).toArray
+  //println(xForMoran.mkString(""))
+
+  val resMoranB = Spatstat.moran(piMoranB,xForMoran)
+  //println(resMoranB)
+  // NaN ?
+
+  val piTestMoran = Array( Array(1.0,2.0),Array(3.0,4.0))
+  val xMoran = List.fill(2)(1.0).toArray
+  val resMoran = Spatstat.moran(piTestMoran,xMoran)
+  //println(resMoran)
+
 
 }
 
 
 
-case class DynmicalCurrentStateTransitory(time : Double, Bx: Double, By:Double, Cx:Double=0.0, Cy:Double=0.0, Dx:Double=0.0, Dy:Double=0.0,
-                                          Ex:Double=0.0, Ey:Double=0.0, Fx:Double=0.0, Fy:Double=0.0, Gx:Double=0.0, Gy:Double=0.0, Hx:Double=0.0, Hy:Double=0.0,
-                                          Ix:Double=0.0, Iy:Double=0.0,
-                                          HDx:Double=0.0, HDy:Double=0.0, HEx:Double=0.0, HEy:Double=0.0,
-                                          IFx:Double=0.0, IFy:Double=0.0, IGx:Double=0.0, IGy:Double=0.0,
-                                          angle1:Double=0.0, angle2:Double=0.0, angle3:Double=0.0,
-                                          vitesseMoteur1:Double=0.0, vitesseMoteur2:Double=0.0, vitesseMoteur3:Double=0.0,
-                                          currentIntegralMoteur1 :Double=0.0, currentIntegralMoteur2 :Double=0.0,currentIntegralMoteur3 :Double=0.0
+
+
+case class DynamicalCurrentStateTransitory(time : Double, Bx: Double, By:Double, Cx:Double=0.0, Cy:Double=0.0, Dx:Double=0.0, Dy:Double=0.0,
+                                           Ex:Double=0.0, Ey:Double=0.0, Fx:Double=0.0, Fy:Double=0.0, Gx:Double=0.0, Gy:Double=0.0, Hx:Double=0.0, Hy:Double=0.0,
+                                           Ix:Double=0.0, Iy:Double=0.0,
+                                           HDx:Double=0.0, HDy:Double=0.0, HEx:Double=0.0, HEy:Double=0.0,
+                                           IFx:Double=0.0, IFy:Double=0.0, IGx:Double=0.0, IGy:Double=0.0,
+                                           angle1:Double=0.0, angle2:Double=0.0, angle3:Double=0.0,
+                                           vitesseMoteur1:Double=0.0, vitesseMoteur2:Double=0.0, vitesseMoteur3:Double=0.0,
+                                           currentIntegralMoteur1 :Double=0.0, currentIntegralMoteur2 :Double=0.0, currentIntegralMoteur3 :Double=0.0
                                )
 
 
 
-case class DynmicalCurrentStateStationnary(time : Double=0.0, Bx: Double=0.0, By:Double=0.0, Cx:Double=0.0, Cy:Double=0.0, Dx:Double=0.0, Dy:Double=0.0,
-                                          Ex:Double=0.0, Ey:Double=0.0, Fx:Double=0.0, Fy:Double=0.0, Gx:Double=0.0, Gy:Double=0.0, Hx:Double=0.0, Hy:Double=0.0,
-                                          Ix:Double=0.0, Iy:Double=0.0,
-                                          HDx:Double=0.0, HDy:Double=0.0, HEx:Double=0.0, HEy:Double=0.0,
-                                          IFx:Double=0.0, IFy:Double=0.0, IGx:Double=0.0, IGy:Double=0.0,
+case class DynamicalCurrentStateStationary(time : Double=0.0, Bx: Double=0.0, By:Double=0.0, Cx:Double=0.0, Cy:Double=0.0, Dx:Double=0.0, Dy:Double=0.0,
+                                           Ex:Double=0.0, Ey:Double=0.0, Fx:Double=0.0, Fy:Double=0.0, Gx:Double=0.0, Gy:Double=0.0, Hx:Double=0.0, Hy:Double=0.0,
+                                           Ix:Double=0.0, Iy:Double=0.0,
+                                           HDx:Double=0.0, HDy:Double=0.0, HEx:Double=0.0, HEy:Double=0.0,
+                                           IFx:Double=0.0, IFy:Double=0.0, IGx:Double=0.0, IGy:Double=0.0,
                                            speedBx: Double=0.0, speedBy:Double=0.0, speedCx:Double=0.0, speedCy:Double=0.0, speedDx:Double=0.0, speedDy:Double=0.0,
                                            speedEx:Double=0.0, speedEy:Double=0.0, speedFx:Double=0.0, speedFy:Double=0.0, speedGx:Double=0.0, speedGy:Double=0.0,
                                            accBx: Double=0.0, accBy:Double=0.0, accCx:Double=0.0, accCy:Double=0.0, accDx:Double=0.0, accDy:Double=0.0,
                                            accEx:Double=0.0, accEy:Double=0.0, accFx:Double=0.0, accFy:Double=0.0, accGx:Double=0.0, accGy:Double=0.0
                                          )
+
+
+
+
+case class TrajectoryStationnary (time:Vector[Double], Bx:Vector[Double], By:Vector[Double], Cx:Vector[Double], Cy:Vector[Double],
+                                          Dx:Vector[Double], Dy:Vector[Double],Ex:Vector[Double], Ey:Vector[Double], Fx:Vector[Double],
+                                          Fy:Vector[Double], Gx:Vector[Double], Gy:Vector[Double],
+                                  speedBx:Vector[Double], speedBy:Vector[Double], speedCx:Vector[Double], speedCy:Vector[Double], speedDx:Vector[Double],
+                                  speedDy:Vector[Double], speedEx:Vector[Double], speedEy:Vector[Double], speedFx:Vector[Double], speedFy:Vector[Double],
+                                  speedGx:Vector[Double], speedGy:Vector[Double],
+                                  accBx:Vector[Double], accBy:Vector[Double], accCx:Vector[Double], accCy:Vector[Double], accDx:Vector[Double],
+                                  accDy:Vector[Double], accEx:Vector[Double], accEy:Vector[Double], accFx:Vector[Double], accFy:Vector[Double],
+                                  accGx:Vector[Double], accGy:Vector[Double]
+                                   )
 
 
 
@@ -125,7 +267,7 @@ object Model {
                          rE:Double = FixedParameterModel.rE, rF:Double = FixedParameterModel.rF, rG:Double = FixedParameterModel.rG,
                          rH:Double = FixedParameterModel.rH, rI:Double = FixedParameterModel.rI,
                          angleIni_B:Double = DefaultValuesParameterModel.angleIni_B, angleIni_D:Double = DefaultValuesParameterModel.angleIni_D,
-                         angleIni_F:Double = DefaultValuesParameterModel.angleIni_F)(t:Double,v1:Double, v2:Double, v3:Double) = {
+                         angleIni_F:Double = DefaultValuesParameterModel.angleIni_F)(v1:Double=DefaultValuesParameterModel.v1, v2:Double=DefaultValuesParameterModel.v2, v3:Double=DefaultValuesParameterModel.v3)(t:Double) = {
 
     // Position
     // B,C
@@ -205,7 +347,7 @@ object Model {
 
     //(Bx,By,Cx,Cy,Dx,Dy,Ex,Ey,Fx,Fy,Gx,Gy,Hx,Hy,Ix,Iy)
 
-    new DynmicalCurrentStateStationnary(time = t, Bx=Bx, By=By, Cx=Cx, Cy=Cy, Dx=Dx, Dy=Dy,
+    new DynamicalCurrentStateStationary(time = t, Bx=Bx, By=By, Cx=Cx, Cy=Cy, Dx=Dx, Dy=Dy,
     Ex=Ex, Ey=Ey, Fx=Fx, Fy=Fy, Gx=Gx, Gy=Gy, Hx=Hx, Hy=Hy,
     Ix=Ix, Iy=Iy,
     HDx=HDx, HDy=HDy, HEx=HEx, HEy=HEy,
@@ -215,6 +357,86 @@ object Model {
     accBx=accBx, accBy=accBy, accCx=accCx, accCy=accCy, accDx=accDx, accDy=accDy,
     accEx=accEx, accEy=accEy, accFx=accFx, accFy=accFy, accGx=accGx, accGy=accGy
     )
+  }
+
+
+
+  // compute a trajctory in stationary mode
+  def dynamicTrajectoryStationnary(rB: Double = FixedParameterModel.rB, rC: Double = FixedParameterModel.rC, rD:Double = FixedParameterModel.rD ,
+                                   rE:Double = FixedParameterModel.rE, rF:Double = FixedParameterModel.rF, rG:Double = FixedParameterModel.rG,
+                                   rH:Double = FixedParameterModel.rH, rI:Double = FixedParameterModel.rI,
+                                   angleIni_B:Double = DefaultValuesParameterModel.angleIni_B, angleIni_D:Double = DefaultValuesParameterModel.angleIni_D,
+                                   angleIni_F:Double = DefaultValuesParameterModel.angleIni_F)(v1:Double=DefaultValuesParameterModel.v1, v2:Double=DefaultValuesParameterModel.v2, v3:Double=DefaultValuesParameterModel.v3)(T:Double, deltaT:Double):Vector[DynamicalCurrentStateStationary] = {
+    val N = floor(T / deltaT).toInt
+    val vecTimes = (0 until N).map(x => x * deltaT) :+ T
+    val res = vecTimes.map(x => dynamicStationnary(rB,rC,rD,rE,rF,rG,rH,rI,angleIni_B,angleIni_D,angleIni_F)(v1,v2,v3)(x)).toVector
+    // type de res: Vector[DynamicalCurrentStateStationary]
+    res
+  }
+
+
+  // convert the result of dynamicTrajectoryStationnary from  Vector[DynamicalCurrentStateStationary]   to TrajectoryStationnary
+  def convertResultStationnary(res:Vector[DynamicalCurrentStateStationary])={
+
+    val time = res.map(_.time)
+
+    // Positions
+    val Bx = res.map(_.Bx)
+    val By = res.map(_.By)
+    val Cx = res.map(_.Cx)
+    val Cy = res.map(_.Cy)
+
+    val Dx = res.map(_.Dx)
+    val Dy = res.map(_.Dy)
+    val Ex = res.map(_.Ex)
+    val Ey = res.map(_.Ey)
+
+    val Fx = res.map(_.Fx)
+    val Fy = res.map(_.Fy)
+    val Gx = res.map(_.Gx)
+    val Gy = res.map(_.Gy)
+
+    // speed
+    val speedBx = res.map(_.speedBx)
+    val speedBy = res.map(_.speedBy)
+    val speedCx = res.map(_.speedCx)
+    val speedCy = res.map(_.speedCy)
+
+    val speedDx = res.map(_.speedDx)
+    val speedDy = res.map(_.speedDy)
+    val speedEx = res.map(_.speedEx)
+    val speedEy = res.map(_.speedEy)
+
+    val speedFx = res.map(_.speedFx)
+    val speedFy = res.map(_.speedFy)
+    val speedGx = res.map(_.speedGx)
+    val speedGy = res.map(_.speedGy)
+
+
+    // acc
+    val accBx = res.map(_.accBx)
+    val accBy = res.map(_.accBy)
+    val accCx = res.map(_.accCx)
+    val accCy = res.map(_.accCy)
+
+    val accDx = res.map(_.accDx)
+    val accDy = res.map(_.accDy)
+    val accEx = res.map(_.accEx)
+    val accEy = res.map(_.accEy)
+
+    val accFx = res.map(_.accFx)
+    val accFy = res.map(_.accFy)
+    val accGx = res.map(_.accGx)
+    val accGy = res.map(_.accGy)
+
+
+    new TrajectoryStationnary(time = time, Bx = Bx,By = By,Cx = Cx,Cy = Cy,Dx = Dx,Dy = Dy,
+      Ex = Ex,Ey = Ey,Fx = Fx,Fy = Fy,Gx = Gx,Gy = Gy,
+      speedBx = speedBx,speedBy = speedBy,speedCx = speedCx,speedCy = speedCy,speedDx = speedDx,speedDy = speedDy,
+      speedEx = speedEx,speedEy = speedEy,speedFx = speedFx,speedFy = speedFy,speedGx = speedGx,speedGy = speedGy,
+      accBx = accBx,accBy = accBy,accCx = accCx,accCy = accCy,accDx = accDx,accDy = accDy,
+      accEx = accEx,accEy = accEy,accFx = accFx,accFy = accFy,accGx = accGx,accGy = accGy)
+
   }
 
 
@@ -295,7 +517,7 @@ object Model {
 
     //(Bx,By,Cx,Cy,Dx,Dy,Ex,Ey,Fx,Fy,Gx,Gy,Hx,Hy,Ix,Iy)
 
-    new DynmicalCurrentStateTransitory(time = t,Bx = Bx, By= By, Cx = Cx, Cy= Cy,
+    new DynamicalCurrentStateTransitory(time = t,Bx = Bx, By= By, Cx = Cx, Cy= Cy,
       Hx = Hx, Hy = Hy, Ix = Ix, Iy = Iy,
       HDx = HDx, HDy = HDy, HEx = HEx, HEy = HEy,
       Dx = Dx, Dy = Dy, Ex = Ex, Ey = Ey,
@@ -311,96 +533,57 @@ object Model {
 
   // fonctions utiles pour nextStepDynamic
 
+  // calcul vitesse moteur
+  def integrandVitesseMoteur(A:Double,C:Double,u:Double=>Double)(t:Double):Double ={
+    A / C * u(t) * exp(t/C)
+  }
+
+  def slaveIntegralNewVitesseMoteur(stepsTransitoryNext:Int)(currentIntegral:Double,t:Double,deltaT:Double,f:Double=>Double) = {currentIntegral+ NumericalIntegration.integrate(f,t,t+deltaT,stepsTransitoryNext,simpson)}
+
+  def computeNewMotorSpeed(C:Double, intergralTerm:Double,x:Double) = {exp(-x/C)* intergralTerm}
+
+
+  // calcul angle
+  def integrandAngle(stepsTransitoryNext:Int)(C:Double,integrandVitesseMoteur:Double=>Double,t:Double)(tt: Double) = { exp(-tt/C)* NumericalIntegration.integrate(integrandVitesseMoteur,t,tt,stepsTransitoryNext,simpson)}
+
+  def computeNewAngle(stepsTransitoryNext:Int)(currentIntegralMotor:Double,t:Double,deltaT:Double, C:Double, integrandAngle:Double=>Double) = {currentIntegralMotor * C * (exp(-t/C)-exp(-(t+deltaT)/C)) + NumericalIntegration.integrate(integrandAngle,t,t+deltaT,stepsTransitoryNext,simpson)  }
+
+
+
+
 
   def nextStepDynamic(fixedParametersModel: FixedParametersModel)(parametersTransitoire: ParametersTransitoire)
-                     (dynmicalCurrentState: DynmicalCurrentStateTransitory, deltaT:Double, stepsTransitoryNext:Int)={
+                     (dynmicalCurrentState: DynamicalCurrentStateTransitory, deltaT:Double, stepsTransitoryNext:Int)={
 
 
     val t = dynmicalCurrentState.time
 
-    // vitesse moteur
-    // 1
-    //def tempVitesseMoteur1 (t:Double):Double ={
-    //  fixedParametersModel.A1 / fixedParametersModel.C1 * parametersTransitoire.u1(t) * exp(t/fixedParametersModel.C1)
-    //}
-
-    //val newVitesseMoteur1 = dynmicalCurrentState.vitesseMoteur1 + NumericalIntegration.integrate(tempVitesseMoteur1,max((t-deltaT),0),t,HiddenParameters.steps,simpson)
-
-    // 2
-    //def tempVitesseMoteur2 (t:Double):Double ={
-    //  fixedParametersModel.A2 / fixedParametersModel.C2 * parametersTransitoire.u2(t) * exp(t/fixedParametersModel.C2)
-    //}
-
-    //val newVitesseMoteur2 = dynmicalCurrentState.vitesseMoteur2 + NumericalIntegration.integrate(tempVitesseMoteur2,max((t-deltaT),0),t,HiddenParameters.steps,simpson)
-
-    // 3
-    //def tempVitesseMoteur3 (t:Double):Double ={
-    //  fixedParametersModel.A3 / fixedParametersModel.C3 * parametersTransitoire.u3(t) * exp(t/fixedParametersModel.C3)
-    //}
-    // dynmicalCurrentState.vitesseMoteur3 + NumericalIntegration.integrate(tempVitesseMoteur3,max((t-deltaT),0),t,HiddenParameters.steps,simpson)
-
-
-
-    // new
-    def integrandVitesseMoteur(A:Double,C:Double,u:Double=>Double)(t:Double):Double ={
-      A / C * u(t) * exp(t/C)
-    }
-
-    def slaveIntegralNewVitesseMoteur(currentIntegral:Double,t:Double,deltaT:Double,f:Double=>Double) = {currentIntegral+ NumericalIntegration.integrate(f,t,t+deltaT,stepsTransitoryNext,simpson)}
-
-
-    def computeNewMotorSpeed(C:Double, intergralTerm:Double,x:Double) = {exp(-x/C)* intergralTerm}
 
     // vitesse moteur
     // moteur 1
-    val newTempIntegralVitesseMotor1 = slaveIntegralNewVitesseMoteur(dynmicalCurrentState.currentIntegralMoteur1,t,deltaT,integrandVitesseMoteur(fixedParametersModel.A1,fixedParametersModel.C1,parametersTransitoire.u1))
+    val newTempIntegralVitesseMotor1 = slaveIntegralNewVitesseMoteur(stepsTransitoryNext)(dynmicalCurrentState.currentIntegralMoteur1,t,deltaT,integrandVitesseMoteur(fixedParametersModel.A1,fixedParametersModel.C1,parametersTransitoire.u1))
     val newVitesseMotor1 = computeNewMotorSpeed(fixedParametersModel.C1,newTempIntegralVitesseMotor1,t+deltaT)
     // moteur 2
-    val newTempIntegralVitesseMotor2 = slaveIntegralNewVitesseMoteur(dynmicalCurrentState.currentIntegralMoteur2,t,deltaT,integrandVitesseMoteur(fixedParametersModel.A2,fixedParametersModel.C2,parametersTransitoire.u2))
+    val newTempIntegralVitesseMotor2 = slaveIntegralNewVitesseMoteur(stepsTransitoryNext)(dynmicalCurrentState.currentIntegralMoteur2,t,deltaT,integrandVitesseMoteur(fixedParametersModel.A2,fixedParametersModel.C2,parametersTransitoire.u2))
     val newVitesseMotor2 = computeNewMotorSpeed(fixedParametersModel.C2,newTempIntegralVitesseMotor2,t+deltaT)
     // moteur 3
-    val newTempIntegralVitesseMotor3 = slaveIntegralNewVitesseMoteur(dynmicalCurrentState.currentIntegralMoteur3,t,deltaT,integrandVitesseMoteur(fixedParametersModel.A3,fixedParametersModel.C3,parametersTransitoire.u3))
+    val newTempIntegralVitesseMotor3 = slaveIntegralNewVitesseMoteur(stepsTransitoryNext)(dynmicalCurrentState.currentIntegralMoteur3,t,deltaT,integrandVitesseMoteur(fixedParametersModel.A3,fixedParametersModel.C3,parametersTransitoire.u3))
     val newVitesseMotor3 = computeNewMotorSpeed(fixedParametersModel.C3,newTempIntegralVitesseMotor3,t+deltaT)
 
 
     // angles
-    def integrandAngle(C:Double,integrandVitesseMoteur:Double=>Double,t:Double)(tt: Double) = { exp(-tt/C)* NumericalIntegration.integrate(integrandVitesseMoteur,t,tt,stepsTransitoryNext,simpson)}
-    def computeNewAngle(currentIntegralMotor:Double,t:Double,deltaT:Double, C:Double, integrandAngle:Double=>Double) = {currentIntegralMotor * C * (exp(-t/C)-exp(-(t+deltaT)/C)) + NumericalIntegration.integrate(integrandAngle,t,t+deltaT,stepsTransitoryNext,simpson)  }
-
     // angle 1
-    val tempAngle1 = computeNewAngle(dynmicalCurrentState.currentIntegralMoteur1,t,deltaT,fixedParametersModel.C1,
-      integrandAngle(fixedParametersModel.C1,integrandVitesseMoteur(fixedParametersModel.A1,fixedParametersModel.C1,parametersTransitoire.u1),t))
+    val tempAngle1 = computeNewAngle(stepsTransitoryNext)(dynmicalCurrentState.currentIntegralMoteur1,t,deltaT,fixedParametersModel.C1,
+      integrandAngle(stepsTransitoryNext)(fixedParametersModel.C1,integrandVitesseMoteur(fixedParametersModel.A1,fixedParametersModel.C1,parametersTransitoire.u1),t))
     val newAngle1 = dynmicalCurrentState.angle1 + tempAngle1
     // angle 2
-    val tempAngle2 = computeNewAngle(dynmicalCurrentState.currentIntegralMoteur2,t,deltaT,fixedParametersModel.C2,
-      integrandAngle(fixedParametersModel.C2,integrandVitesseMoteur(fixedParametersModel.A2,fixedParametersModel.C2,parametersTransitoire.u2),t))
+    val tempAngle2 = computeNewAngle(stepsTransitoryNext)(dynmicalCurrentState.currentIntegralMoteur2,t,deltaT,fixedParametersModel.C2,
+      integrandAngle(stepsTransitoryNext)(fixedParametersModel.C2,integrandVitesseMoteur(fixedParametersModel.A2,fixedParametersModel.C2,parametersTransitoire.u2),t))
     val newAngle2 = dynmicalCurrentState.angle2 + tempAngle2
     // angle 3
-    val tempAngle3 = computeNewAngle(dynmicalCurrentState.currentIntegralMoteur3,t,deltaT,fixedParametersModel.C3,
-      integrandAngle(fixedParametersModel.C3,integrandVitesseMoteur(fixedParametersModel.A3,fixedParametersModel.C3,parametersTransitoire.u3),t))
+    val tempAngle3 = computeNewAngle(stepsTransitoryNext)(dynmicalCurrentState.currentIntegralMoteur3,t,deltaT,fixedParametersModel.C3,
+      integrandAngle(stepsTransitoryNext)(fixedParametersModel.C3,integrandVitesseMoteur(fixedParametersModel.A3,fixedParametersModel.C3,parametersTransitoire.u3),t))
     val newAngle3 = dynmicalCurrentState.angle3 + tempAngle3
-
-
-    // angle
-    // angle 1
-    //def tempAngle1_1(tt: Double) = { exp(-tt/FixedParameterModel.C1)* NumericalIntegration.integrate(tempVitesseMoteur1,t,tt,HiddenParameters.steps,simpson)}
-    //val tempAngle1_2 = fixedParametersModel.C1 * (exp(-t/fixedParametersModel.C1)-exp(-(t+deltaT)/fixedParametersModel.C1)) * newVitesseMoteur1 + NumericalIntegration.integrate(tempAngle1_1,t,t+deltaT,HiddenParameters.steps,simpson)
-    //val tempAngle1_2 = fixedParametersModel.C1 * (exp(-t/fixedParametersModel.C1)-exp(-(t+deltaT)/fixedParametersModel.C1)) * NumericalIntegration.integrate(tempVitesseMoteur1,0,t,HiddenParameters.steps,simpson)  + NumericalIntegration.integrate(tempAngle1_1,t,t+deltaT,HiddenParameters.steps,simpson)
-
-    //val newAngle1 = dynmicalCurrentState.angle1 + tempAngle1_2
-
-
-    // angle 2
-    //def tempAngle2_1(tt: Double) = { exp(-tt/FixedParameterModel.C2)* NumericalIntegration.integrate(tempVitesseMoteur2,t,tt,HiddenParameters.steps,simpson)}
-    //val tempAngle2_2 = fixedParametersModel.C2 * (exp(-t/fixedParametersModel.C2)-exp(-(t+deltaT)/fixedParametersModel.C2)) * NumericalIntegration.integrate(tempVitesseMoteur2,0,t,HiddenParameters.steps,simpson)  + NumericalIntegration.integrate(tempAngle2_1,t,t+deltaT,HiddenParameters.steps,simpson)
-    //val newAngle2 = dynmicalCurrentState.angle2 + tempAngle2_2
-
-
-    // angle 3
-    //def tempAngle3_1(tt: Double) = { exp(-tt/FixedParameterModel.C3)* NumericalIntegration.integrate(tempVitesseMoteur3,t,tt,HiddenParameters.steps,simpson)}
-    //val tempAngle3_2 = fixedParametersModel.C3 * (exp(-t/fixedParametersModel.C3)-exp(-(t+deltaT)/fixedParametersModel.C3)) * NumericalIntegration.integrate(tempVitesseMoteur3,0,t,HiddenParameters.steps,simpson)  + NumericalIntegration.integrate(tempAngle3_1,t,t+deltaT,HiddenParameters.steps,simpson)
-    //val newAngle3 = dynmicalCurrentState.angle3 + tempAngle3_2
-
 
 
 
@@ -442,7 +625,7 @@ object Model {
     val newGy = newIy + newIGy
 
 
-    new DynmicalCurrentStateTransitory(time = t+deltaT,Bx = newBx, By=newBy, Cx = newCx, Cy=newCy,
+    new DynamicalCurrentStateTransitory(time = t+deltaT,Bx = newBx, By=newBy, Cx = newCx, Cy=newCy,
       Hx = newHx, Hy = newHy, Ix = newIx, Iy = newIy,
       HDx = newHDx, HDy = newHDy, HEx = newHEx, HEy = newHEy,
       Dx = newDx, Dy = newDy, Ex = newEx, Ey = newEy,
@@ -458,15 +641,23 @@ object Model {
 
 
 
-  def slaveSimu(fixedParametersModel: FixedParametersModel)(parametersTransitoire: ParametersTransitoire)
-  (iter:Int,Nmax:Int,deltaT:Double,stepsTransitoryNext:Int, res:DynmicalCurrentStateTransitory):DynmicalCurrentStateTransitory = {
+  def slaveSimuTransitoire(fixedParametersModel: FixedParametersModel)(parametersTransitoire: ParametersTransitoire)
+                          (iter:Int,Nmax:Int,deltaT:Double,stepsTransitoryNext:Int, res:DynamicalCurrentStateTransitory):DynamicalCurrentStateTransitory = {
 
     if (iter == Nmax) res
-    else slaveSimu(fixedParametersModel)(parametersTransitoire)(iter + 1, Nmax, deltaT, stepsTransitoryNext, nextStepDynamic(fixedParametersModel)(parametersTransitoire)(res,deltaT,stepsTransitoryNext))
+    else slaveSimuTransitoire(fixedParametersModel)(parametersTransitoire)(iter + 1, Nmax, deltaT, stepsTransitoryNext, nextStepDynamic(fixedParametersModel)(parametersTransitoire)(res,deltaT,stepsTransitoryNext))
   }
 
 
-  def createInitialState(fixedParametersModel: FixedParametersModel)(initialConditions: InitialConditions):DynmicalCurrentStateTransitory={
+  def slaveSimuTrajectoireTransitoire(fixedParametersModel: FixedParametersModel)(parametersTransitoire: ParametersTransitoire)
+                          (iter:Int,Nmax:Int,deltaT:Double,stepsTransitoryNext:Int, res:Vector[DynamicalCurrentStateTransitory]):Vector[DynamicalCurrentStateTransitory] = {
+
+    if (iter == Nmax) res
+    else slaveSimuTrajectoireTransitoire(fixedParametersModel)(parametersTransitoire)(iter + 1, Nmax, deltaT, stepsTransitoryNext, res :+ nextStepDynamic(fixedParametersModel)(parametersTransitoire)(res.last,deltaT,stepsTransitoryNext))
+  }
+
+
+  def createInitialState(fixedParametersModel: FixedParametersModel)(initialConditions: InitialConditions):DynamicalCurrentStateTransitory={
     // Position
     // B,C
     val Bx = fixedParametersModel.rB * cos(initialConditions.angleIni_B)
@@ -502,7 +693,7 @@ object Model {
     val Gx = Ix + IGx
     val Gy = Iy + IGy
 
-    new DynmicalCurrentStateTransitory(time =0, Bx=Bx, By=By, Cx=Cx, Cy=Cy, Dx=Dx, Dy=Dy,
+    new DynamicalCurrentStateTransitory(time =0, Bx=Bx, By=By, Cx=Cx, Cy=Cy, Dx=Dx, Dy=Dy,
                                     Ex=Ex, Ey=Ey, Fx=Fx, Fy=Fy, Gx=Gx, Gy=Gy, Hx=Hx,Hy=Hy,
                                     Ix=Ix, Iy=Iy,
                                     HDx=HDx, HDy=HDy, HEx=HEx, HEy=HEy,
@@ -514,13 +705,25 @@ object Model {
 
 
 
-  def simu(fixedParametersModel: FixedParametersModel)(parametersTransitoire: ParametersTransitoire)
-          (Nmax:Int,deltaT:Double, initialConditions:InitialConditions,stepsTransitoryNext:Int):DynmicalCurrentStateTransitory = {
+  // just the result at time t
+  def simuTransitoire(fixedParametersModel: FixedParametersModel)(parametersTransitoire: ParametersTransitoire)
+                     (Nmax:Int,deltaT:Double, initialConditions:InitialConditions,stepsTransitoryNext:Int):DynamicalCurrentStateTransitory = {
 
     val initialState = createInitialState(fixedParametersModel)(initialConditions)
-    slaveSimu(fixedParametersModel)(parametersTransitoire)(0, Nmax, deltaT, stepsTransitoryNext, initialState)
+    slaveSimuTransitoire(fixedParametersModel)(parametersTransitoire)(0, Nmax, deltaT, stepsTransitoryNext, initialState)
 
   }
+
+
+  // all the trajectory: from 0 sec  to Nmax*deltaT sec  by deltaT
+  def simuTrajectoireTransitoire(fixedParametersModel: FixedParametersModel)(parametersTransitoire: ParametersTransitoire)
+                     (Nmax:Int,deltaT:Double, initialConditions:InitialConditions,stepsTransitoryNext:Int):Vector[DynamicalCurrentStateTransitory] = {
+
+    val initialState = createInitialState(fixedParametersModel)(initialConditions)
+    slaveSimuTrajectoireTransitoire(fixedParametersModel)(parametersTransitoire)(0, Nmax, deltaT, stepsTransitoryNext, Vector(initialState))
+
+  }
+
 
 
 
@@ -700,10 +903,283 @@ object FixedParameterModel {
 }
 
 
+
+
+
   object Mesure{
     // ctrl b pour avoir le code
 
-    //GridMorphology.moranDirect()
+
+    ////////////////////////////////
+    //    POINT SINGULIER
+    ////////////////////////////////
+
+
+    def distance(a: Double, b: Double)=  {sqrt( a*a + b*b)}
+
+    def slaveFindSingularPoints(vec1:Vector[Double],vec2:Vector[Double], seuil:Double)={
+      vec1.zip(vec2).zipWithIndex.collect{ case((a,b),c) if distance(a,b)<seuil => (a,b,c)}
+      // le resultat c'est un vecteur de triplets (Doulble,Double,Int)
+    }
+
+
+    def countSingularPoints(vec1:Vector[Double],vec2:Vector[Double], seuil:Double) = {
+      // return an integer
+      val temp = slaveFindSingularPoints(vec1,vec2,seuil)
+      val count = temp.length
+      count
+    }
+
+
+    def timesOfSingularPoints(vec1:Vector[Double],vec2:Vector[Double], seuil:Double) = {
+      // return a vector of integer (indices)
+      val tempB = slaveFindSingularPoints(vec1,vec2,seuil).map(_._3)
+      tempB
+
+    }
+
+
+
+
+    ////////////////////////////////
+    //   BOUCLE ou presque (TEMPS DE PREMIER RETOUR)
+    ////////////////////////////////
+
+
+
+    def distanceLoopPoint( x: (Double,Double), y: (Double,Double) )=  {sqrt( (x._1 - y._1)*(x._1 - y._1) + (x._2 - y._2)*(x._2 - y._2)  )}
+
+    // on garde l'indice du point de référence
+    def distanceLoopPoint2( x: (Double,Double,Int), y: (Double,Double,Int) )=  {(sqrt( (x._1 - y._1)*(x._1 - y._1) + (x._2 - y._2)*(x._2 - y._2) ) , x._3, y._3-x._3)}
+
+    def comparePointsToAllElemnts(point:(Double,Double), vect: Vector[(Double,Double)])={
+      vect.map(x => distanceLoopPoint(x,point))
+    }
+
+    def comparePointsToAllElemnts2(point:(Double,Double,Int), vect: Vector[(Double,Double,Int)])={
+      vect.map(x => distanceLoopPoint2(x,point))
+    }
+
+
+    /*
+    def slaveFindLoopPoints(vec1:Vector[Double],vec2:Vector[Double], seuil:Double)={
+
+      val temp = vec1.zip(vec2)
+
+      // vector de vector avec toutes les distances
+      val res = temp.map(y => comparePointsToAllElemnts(y,temp))
+
+      // on ne garde que les distances < seuil
+      //val res2 = res.map(_.filter( _< seuil))
+      val res2 = res.map(_.zipWithIndex.collect{ case((a,b)) if a<seuil => (a,b)})
+
+      res2
+      // pour chaque vecteur, au moins une distance nulle (avec sois même), on la retire (ou condition sur la différence entre les temps?)
+
+      //  temp.collect{ case((a,b),c) if distance(a,b)<seuil => (a,b,c)}
+      // le resultat c'est un vecteur de triplets (Doulble,Double,Int)
+
+      // pour voir ce que ca donne
+      //val res3 = res2(0)
+      //res3
+    }
+    */
+
+
+  /*
+    def timeLoopPoints(res:Vector[DynamicalCurrentStateStationary], seuil:Double) = {
+
+      val res2 = convertResultStationnary(res)
+      // Loop for B
+
+      val res3 = slaveFindLoopPoints(res2.Bx,res2.By, 1.0) //(0)  // first point of B
+      //val indices = res3.map(_._2)
+
+
+
+
+      // Loop for F
+      //val res3 = slaveFindLoopPoints(res2.Fx,res2.Fy, seuil) //(0)  // 0: first point (is a loop?)
+      // res3  //  de type Vector[(Doublle,Doublle)]
+
+      val indices = res3.map(_._2)
+
+
+      val a = indices.tail
+      // tous sauf le dernier
+      val b = indices.dropRight(1)
+      //println(b)
+      val res4 = a.zip(b).collect{ case(x,y) if (x-y)>1  => x }
+      //res4
+
+      // pour chaque positions de la trajctoire d'un point, on compte le nombre de loop qu'il y a
+      // si la figure est périodique, il y en a au moins 1
+
+
+
+
+
+      def trieLoopPoint(res:Vector[(Double,Int)])={
+        val indices = res.map(_._2)
+        val a = indices.tail
+        // tous sauf le dernier
+        val b = indices.dropRight(1)
+        Vector(a(0)) ++ a.zip(b).collect{ case(x,y) if (x-y)>1  => x }
+        // on ne garde que les indices qui ne sont pas voisins (continuité) ie 1 indice par classe d'indice voisins (le premier)
+        // au moins un élément car on est à distance 0 de nous même
+      }
+
+      //trieLoopPoint(res3(0))
+      res3.map(x => trieLoopPoint(x))
+*/
+
+
+
+
+
+
+      /*
+      val indices = res3.map(_._2)
+      print(indices)
+
+      // tous sauf le premier
+      val a = indices.tail
+      //println(a)
+      // tous sauf le dernier
+      val b = indices.dropRight(1)
+      //println(b)
+      val seuiTimeLoop : Int = 5
+      //val res4 = a.zip(b).map( x => x._1 -x._2).filter(_ > 1 )
+      val res4 = a.zip(b).collect{ case(x,y) if (x-y)>1  => x } // .filter(_ > seuiTimeLoop )
+      // collect{ case((a,b),c) if distance(a,b)<seuil => (a,b,c)}
+      println(res4)
+
+    }
+*/
+
+
+
+
+
+    def slaveTempsPremierRetour(point:(Double,Double,Int),vect:Vector[(Double,Double,Int)], seuil:Double) = {
+      val temp = vect.filter(_._3 >= point._3)  // on ne gare que les éléments du vecteur dont le point a un
+      //  indice supérieur qu le point de référence (qui sera aussi dans le vecteur)
+      val res2 = comparePointsToAllElemnts2(point,temp) // calcule les distances, on a toujours l'indice  vector[(Double,Int)] et le temps de retour
+
+      val res3 = res2.filter(_._1 < seuil)
+
+
+      val indices = res3.map(_._2)
+      val a = indices.tail
+      val b = indices.dropRight(1)   // tous sauf le dernier
+      val res4 = a.zip(b).collect{ case(x,y) if (x-y)>1  => x }
+      //res4
+
+      if (res4.length >=1 )( (point,res4(0)-point._3) )
+
+      /*
+      val a = res3.tail
+      val b = res3.dropRight(1)
+      val res4 = a.zip(b).collect{ case(x,y) if (x._2-y._2)>1  => (x._2,x._3) }
+    */
+    }
+
+
+    def tempsPremierRetour(res:Vector[DynamicalCurrentStateStationary], seuil:Double) = {
+    // l'indice du point qui est concerné par le retour, et le nombre de pas de temps pour y revenir
+    val res2 = convertResultStationnary(res)
+    val temp = res2.Bx.zip(res2.By)
+    val res3 = temp.zipWithIndex.map( x => (x._1._1, x._1._2, x._2) ) // pour avoir le format (x:Double,y:Double,indice:Int)
+    val res4 = res3.map(x => slaveTempsPremierRetour(x,res3, seuil))
+    res4
+    // le format du retour: un vecteur (nombre de composante = nb de pas de temps = nb de positions du point): pour chaque position
+      // renvoit  ((x,y,i),t)  x,y position du point pour lequel il t a un retour, i l'indice auquel il est parcouru, et t le nombre de pas de temps pour le retour
+    }
+
+
+
+    ////////////////////////////////
+    //    DENSITE
+    ////////////////////////////////
+
+
+    def maxSquareForDensity(rB: Double = FixedParameterModel.rB, rC: Double = FixedParameterModel.rC, rD:Double = FixedParameterModel.rD ,
+                            rE:Double = FixedParameterModel.rE, rF:Double = FixedParameterModel.rF, rG:Double = FixedParameterModel.rG,
+                            rH:Double = FixedParameterModel.rH, rI:Double = FixedParameterModel.rI)= {
+      max(max(rB, max(rH+rD, rH+rE)) , max(rC, max(rI+rF, rI+rG)) )
+    }
+
+
+    // trouver les indices du point dans la grille
+    // subdivsion des axes en N segments, donc grille de N^2 rectangles: indices entre 0 et N-1
+    def findCaseForPoint(point:(Double,Double), xmin:Double,xmax:Double,ymin:Double,ymax:Double, N:Int) = {
+      val deltaX = (xmax-xmin)/N
+      val indiceX = if(point._1 == xmax){N-1} else {floor( (point._1 - xmin)/deltaX ).toInt }
+
+      val deltaY = (ymax-ymin)/N
+      val indiceY = if(point._2 == ymax){N -1} else {floor( (point._2 - ymin)/deltaY ).toInt }
+
+      (indiceX,indiceY)
+
+    }
+
+    def pointsDensitySquare(res:Vector[DynamicalCurrentStateStationary],xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int) = {
+
+      val res2 = convertResultStationnary(res)
+      // B
+      val tempB = res2.Bx.zip(res2.By)
+
+      var array = Array.ofDim[Int](N,N)  // initialisé à 0
+
+      for (point <- tempB) {
+
+        val (i, j) = findCaseForPoint((point._1, point._2), xmin, xmax, ymin, ymax, N)
+        array(i)(j) += 1
+      }
+      //array
+
+      //println( array.map(x => x.sum).sum ) // on retrouve le nombre de points, ouf!
+      //println(convertResultStationnary(res).time.length)
+
+      // nombre de cases non vides dans l'array
+      val nbCasesNonEmpty = array.map( x => x.filter(_ != 0).length).sum
+
+      // la ratio d'occupation:
+      (nbCasesNonEmpty.toFloat / (N*N) )
+
+    }
+
+
+
+    ////////////////////////////////
+    //    COURBURE de la l'arc paramétré
+    ////////////////////////////////
+
+    // formule: x' y'' - y' x'' / ( x'^2 + y' ^2 )^(3/2)
+    def slaveCourbure(sx:Double, sy:Double, acx:Double, acy:Double)={
+      ((sx*acy) - (sy*acx)) / pow( (sx*sx + sy*sy) , 3/2)
+    }
+
+    def courbure(speedX:Vector[Double], speedY:Vector[Double], accX:Vector[Double], accY:Vector[Double])={
+
+      val temp = speedX.zip(speedY).zip(accX).zip(accY).map( x  => (x._1._1._1,x._1._1._2,x._1._2,x._2))  // pour avoir autre format
+
+
+      temp.map(x=>  slaveCourbure(x._1,x._2,x._3,x._4))
+    }
+
+
+    ////////////////////////////////
+    //    MORAN
+    ////////////////////////////////
+
+    // pour avoir un array de array, pour un point
+
+    def convertFromMoran(v1:Vector[Double], v2:Vector[Double])={
+      v1.zip(v2).map(x => Array(x._1,x._2) ).toArray
+    }
+
+    //GridMorphology.moranDirect()  // grid
     //Spatstat.moran()
 
 
