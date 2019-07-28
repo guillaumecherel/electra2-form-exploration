@@ -238,28 +238,147 @@ Caractériser les sorties du modèle: trouver des mesures (pertinentes) qui diff
 Piste: utilisation du logiciel OpenMole (algorithme PSE) pour trouver les sorties atteignables: trouver le plus de configurations possibles qui donnent des résultats différents dans l'espace des mesures trouvées précédemment.
 
 
+
 \section{Modèle}
+
+\subsection{Stationnaire (v1)}
 
 \begin{figure}[H] 
 \center{\includegraphics[width=0.75\linewidth]{schema2}}
 \caption{Schéma du modèle, réalisé avec le logiciel GeoGebra}
 \end{figure}
 
+Cas particulier du modèle v2
 
-\subsection{Non transitoire}
+%Paramètres fixes: 
+%rayons: $r_B$, $r_C$, $r_D$, $r_E$, $r_F$, $r_G$
+% 
+%"rayons" de points intermédiaires : $\alpha_H$, $\alpha_I$. 
+%
+%Si $\alpha_H=1$, $H=B$, $\alpha_H=2$, $H$ est le milieu du segment $[BC]$, si $\alpha_H \rightarrow \infty$, $B=A$.
+%
+%
+%paramètres input: 
+%position initiale: angle: $\phi_B$, $\phi_D$, $\phi_F$
+%($+ \pi$ pour les points symétriques).
+%
+%vitesse des moteurs: $v_1$, $v_2$, $v_3$ (nombre de tours par seconde) + sens de rotation
+%
+%intensité lumineuse
+%
+%
+%On prend le point $A$ comme origine du repère.
+%
+%Position des points en fonction du temps (et des positions initiales):
+%
+%$A(x_A,y_A) = (0,0)$
+%
+%$B(x_B,y_B) = (r_B \cos(2 \pi v_1 t + \phi_B),r_B \sin(2 \pi v_1 t + \phi_B))$
+%
+%à $t=0$, $B = (r_B \cos(\phi_B), r_B \sin(\phi_B))$
+%
+%$C(x_C,y_C) = (r_C \cos(2 \pi v_1 t + \phi_B + \pi),r_B \sin(2 \pi v_1 t + \phi_B + \pi))$
+%
+%$H(x_H,y_H) = ( \frac{r_B}{\alpha_H} \cos(2 \pi v_1 t + \phi_B),\frac{r_B}{\alpha_H} \sin(2 \pi v_1 t + \phi_B))$
+%
+%De même,
+%$I(x_I,y_I) = ( \frac{r_C}{\alpha_I} \cos(2 \pi v_1 t + \phi_B + \pi), \frac{r_C}{\alpha_I} \sin(2 \pi v_1 t + \phi_B + \pi))$
+%
+%Pour déterminer la position des points $D,E,F,G$, on utilise les points intermédiaires ($H$ et $I$), (utilise le changement de repère  orthonormale centrée en H et de vecteurs directeurs un  de même direction que $\overrightarrow{AH}$, l'autre orthogonal, dans lequel $\overrightarrow{HD} =  rD( \cos(2 \pi v_2 t + \phi_D), \sin(2 \pi v_2 t + \phi_D))$)
+%
+%%$ D(t) = (x_D(t),y_D(t)) = (\frac{r_B}{\alpha_H} \cos(2 \pi v_1 t + \phi_B) + r_D \cos(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)), \frac{r_B}{\alpha_H} \sin(2 \pi v_1 t + \phi_B ) + r_D \sin(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  )$
+%
+%$
+%D(t)=
+%\begin{pmatrix}
+%x_D(t) \\ 
+%y_D(t)
+%\end{pmatrix}
+%=
+%\begin{pmatrix}
+%\frac{r_B}{\alpha_H} \cos(2 \pi v_1 t + \phi_B) + r_D \cos(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B) \\ 
+%\frac{r_B}{\alpha_H} \sin(2 \pi v_1 t + \phi_B ) + r_D \sin(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  
+%\end{pmatrix}
+%$
+%
+%%$ \overrightarrow{HD} = (r_D \cos(2 \pi v_2 t + \phi_D),r_D \sin(2 \pi v_2 t + \phi_D))$
+%%
+%%
+%%Donc  $ \overrightarrow{AD} = \overrightarrow{AH} + \overrightarrow{HD} = (\frac{r_B}{\alpha_H} \cos(2 \pi v_1 t + \phi_B) + r_D \cos(2 \pi v_2 t + \phi_D), \frac{r_B}{\alpha_H} \sin(2 \pi v_1 t + \phi_B)) + r_D \sin(2 \pi v_2 t + \phi_D)  )$
+%%
+%%Donc $ D = (x_D,y_D) = (\frac{r_B}{\alpha_H} \cos(2 \pi v_1 t + \phi_B) + r_D \cos(2 \pi v_2 t + \phi_D), \frac{r_B}{\alpha_H} \sin(2 \pi v_1 t + \phi_B)) + r_D \sin(2 \pi v_2 t + \phi_D)  )$
+%
+%
+%Vitesse de $D$ au temps $t$:
+%
+%%$ D'(t) = (x'_D(t),y'_D(t)) = (-\frac{r_B}{\alpha_H} 2 \pi v_1 \sin(2 \pi v_1 t + \phi_B) - r_D 2 \pi (v_2 + v _1) \sin(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)), \frac{r_B}{\alpha_H} 2 \pi  v_1 \cos(2 \pi v_1 t + \phi_B ) + r_D  2 \pi (v_2 + v _1) \cos(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  )$
+%
+%
+%$
+%D'(t)=
+%\begin{pmatrix}
+%x'_D(t) \\ 
+%y'_D(t)
+%\end{pmatrix}
+%=
+%\begin{pmatrix}
+%-\frac{r_B}{\alpha_H} 2 \pi v_1 \sin(2 \pi v_1 t + \phi_B) - r_D 2 \pi (v_2 + v _1) \sin(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)) \\ 
+%\frac{r_B}{\alpha_H} 2 \pi  v_1 \cos(2 \pi v_1 t + \phi_B ) + r_D  2 \pi (v_2 + v _1) \cos(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  
+%\end{pmatrix}
+%$
+%
+%
+%Accélération de $D$ au temps $t$:
+%
+%$ D''(t) = (x''_D(t),y''_D(t)) = (-\frac{r_B}{\alpha_H} (2 \pi v_1)^2 \cos(2 \pi v_1 t + \phi_B) - r_D  (2 \pi (v_2 + v _1))^2 \cos(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)), - \frac{r_B}{\alpha_H} (2 \pi  v_1)^2 \sin(2 \pi v_1 t + \phi_B ) - r_D  (2 \pi (v_2 + v _1))^2 \sin(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  )$
+%
+%
+%$
+%D''(t)=
+%\begin{pmatrix}
+%x''_D(t) \\ 
+%y''_D(t)
+%\end{pmatrix}
+%=
+%\begin{pmatrix}
+%-\frac{r_B}{\alpha_H} (2 \pi v_1)^2 \cos(2 \pi v_1 t + \phi_B) - r_D  (2 \pi (v_2 + v _1))^2 \cos(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)) \\ 
+%- \frac{r_B}{\alpha_H} (2 \pi  v_1)^2 \sin(2 \pi v_1 t + \phi_B ) - r_D  (2 \pi (v_2 + v _1))^2 \sin(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  )  
+%\end{pmatrix}
+%$
+%
+%
+%
+%Remarque: soit $\alpha \in \R$, (pour tout $v_1,v_2,t$)
+%
+%$B(\alpha v_1,t) = B(v_1,\alpha t)$,
+%
+%$D(\alpha v_1,\alpha v_2,t) = D(v_1,v_2,\alpha t)$
+%
+%Donc multiplier les 3 vitesses par un facteur identique ne changera pas la figure totale obtenue (l'image de tout les temps): il existe un temps (et on sait lequel), auquel le point sera au même endroit que pour l'autre vitesse. Une différence peut intervenir si l'on considère la persistance rétinienne.
 
-\FL{Mettre un schéma, + une image de l'instrument?}
+
+
+
+
+
+\subsection{Stationnaire (v2)}
+
+Nouveau modèle, nouveau schéma, nouvelles équations.
+
+\begin{figure}[H] 
+\center{\includegraphics[width=0.75\linewidth]{schema3}}
+\caption{Schéma du modèle v2, réalisé avec le logiciel GeoGebra}
+\end{figure}
+
 
 Paramètres fixes: 
-rayons: $r_B$, $r_C$, $r_D$, $r_E$, $r_F$, $r_G$
+rayons: $r_B$, $r_C$, $r_D$, $r_E$, $r_F$, $r_G$, $r_H$, $r_I$,
  
-"rayons" de points intermédiaires : $\alpha_H$, $\alpha_I$. 
-
-Si $\alpha_H=1$, $H=B$, $\alpha_H=2$, $H$ est le milieu du segment $[BC]$, si $\alpha_H \rightarrow \infty$, $B=A$.
+angle: $\alpha_H$,  $\alpha_I$ (supposés positifs)
 
 
 paramètres input: 
-position initiale: angle: $\phi_B$, $\phi_D$, $\phi_F$
+position initiale (angle): $\phi_B$, $\phi_D$, $\phi_F$
 ($+ \pi$ pour les points symétriques).
 
 vitesse des moteurs: $v_1$, $v_2$, $v_3$ (nombre de tours par seconde) + sens de rotation
@@ -279,12 +398,16 @@ $B(x_B,y_B) = (r_B \cos(2 \pi v_1 t + \phi_B),r_B \sin(2 \pi v_1 t + \phi_B))$
 
 $C(x_C,y_C) = (r_C \cos(2 \pi v_1 t + \phi_B + \pi),r_B \sin(2 \pi v_1 t + \phi_B + \pi))$
 
-$H(x_H,y_H) = ( \frac{r_B}{\alpha_H} \cos(2 \pi v_1 t + \phi_B),\frac{r_B}{\alpha_H} \sin(2 \pi v_1 t + \phi_B))$
+$H(x_H,y_H) = ( r_H \cos(2 \pi v_1 t + \phi_B - \alpha_H), r_H \sin(2 \pi v_1 t + \phi_B - \alpha_H))$
 
 De même,
-$I(x_I,y_I) = ( \frac{r_C}{\alpha_I} \cos(2 \pi v_1 t + \phi_B + \pi), \frac{r_C}{\alpha_I} \sin(2 \pi v_1 t + \phi_B + \pi))$
+$I(x_I,y_I) = ( r_I \cos(2 \pi v_1 t + \phi_B + \pi + \alpha_I),  r_I \sin(2 \pi v_1 t + \phi_B + \pi + \alpha_I))$
 
-Pour déterminer la position des points $D,E,F,G$, on utilise les points intermédiaires ($H$ et $I$), (utilise le changement de repère  orthonormale centrée en H et de vecteurs directeurs un  de même direction que $\overrightarrow{AH}$, l'autre orthogonal, dans lequel $\overrightarrow{HD} =  rD( \cos(2 \pi v_2 t + \phi_D), \sin(2 \pi v_2 t + \phi_D))$)
+Noter la différence de signe entre $\alpha_H$ et $\alpha_I$.
+
+Pour déterminer la position des points $D,E,F,G$, on utilise les points intermédiaires $H$ et $I$, et une formule de changement de base, ou de la trigo.
+
+%(utilise le changement de repère  orthonormale centrée en H et de vecteurs directeurs un  de même direction que $\overrightarrow{AH}$, l'autre orthogonal, dans lequel $\overrightarrow{HD} =  rD( \cos(2 \pi v_2 t + \phi_D), \sin(2 \pi v_2 t + \phi_D))$)
 
 %$ D(t) = (x_D(t),y_D(t)) = (\frac{r_B}{\alpha_H} \cos(2 \pi v_1 t + \phi_B) + r_D \cos(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)), \frac{r_B}{\alpha_H} \sin(2 \pi v_1 t + \phi_B ) + r_D \sin(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  )$
 
@@ -296,23 +419,13 @@ y_D(t)
 \end{pmatrix}
 =
 \begin{pmatrix}
-\frac{r_B}{\alpha_H} \cos(2 \pi v_1 t + \phi_B) + r_D \cos(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B) \\ 
-\frac{r_B}{\alpha_H} \sin(2 \pi v_1 t + \phi_B ) + r_D \sin(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  
+r_H \cos(2 \pi v_1 t + \phi_B- \alpha_H )  + r_D \cos(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B - \alpha_H) \\ 
+r_H \sin(2 \pi v_1 t + \phi_B - \alpha_H) + r_D \sin(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B - \alpha_H))  
 \end{pmatrix}
 $
 
-%$ \overrightarrow{HD} = (r_D \cos(2 \pi v_2 t + \phi_D),r_D \sin(2 \pi v_2 t + \phi_D))$
-%
-%
-%Donc  $ \overrightarrow{AD} = \overrightarrow{AH} + \overrightarrow{HD} = (\frac{r_B}{\alpha_H} \cos(2 \pi v_1 t + \phi_B) + r_D \cos(2 \pi v_2 t + \phi_D), \frac{r_B}{\alpha_H} \sin(2 \pi v_1 t + \phi_B)) + r_D \sin(2 \pi v_2 t + \phi_D)  )$
-%
-%Donc $ D = (x_D,y_D) = (\frac{r_B}{\alpha_H} \cos(2 \pi v_1 t + \phi_B) + r_D \cos(2 \pi v_2 t + \phi_D), \frac{r_B}{\alpha_H} \sin(2 \pi v_1 t + \phi_B)) + r_D \sin(2 \pi v_2 t + \phi_D)  )$
-
 
 Vitesse de $D$ au temps $t$:
-
-%$ D'(t) = (x'_D(t),y'_D(t)) = (-\frac{r_B}{\alpha_H} 2 \pi v_1 \sin(2 \pi v_1 t + \phi_B) - r_D 2 \pi (v_2 + v _1) \sin(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)), \frac{r_B}{\alpha_H} 2 \pi  v_1 \cos(2 \pi v_1 t + \phi_B ) + r_D  2 \pi (v_2 + v _1) \cos(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  )$
-
 
 $
 D'(t)=
@@ -322,16 +435,13 @@ y'_D(t)
 \end{pmatrix}
 =
 \begin{pmatrix}
--\frac{r_B}{\alpha_H} 2 \pi v_1 \sin(2 \pi v_1 t + \phi_B) - r_D 2 \pi (v_2 + v _1) \sin(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)) \\ 
-\frac{r_B}{\alpha_H} 2 \pi  v_1 \cos(2 \pi v_1 t + \phi_B ) + r_D  2 \pi (v_2 + v _1) \cos(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  
+- r_H  2 \pi v_1 \sin(2 \pi v_1 t + \phi_B - \alpha_H) - r_D 2 \pi (v_2 + v _1) \sin(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B - \alpha_H)) \\ 
+  r_H  2 \pi  v_1 \cos(2 \pi v_1 t + \phi_B - \alpha_H) + r_D  2 \pi (v_2 + v _1) \cos(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B - \alpha_H))  
 \end{pmatrix}
 $
 
 
 Accélération de $D$ au temps $t$:
-
-$ D''(t) = (x''_D(t),y''_D(t)) = (-\frac{r_B}{\alpha_H} (2 \pi v_1)^2 \cos(2 \pi v_1 t + \phi_B) - r_D  (2 \pi (v_2 + v _1))^2 \cos(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)), - \frac{r_B}{\alpha_H} (2 \pi  v_1)^2 \sin(2 \pi v_1 t + \phi_B ) - r_D  (2 \pi (v_2 + v _1))^2 \sin(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  )$
-
 
 $
 D''(t)=
@@ -341,8 +451,8 @@ y''_D(t)
 \end{pmatrix}
 =
 \begin{pmatrix}
--\frac{r_B}{\alpha_H} (2 \pi v_1)^2 \cos(2 \pi v_1 t + \phi_B) - r_D  (2 \pi (v_2 + v _1))^2 \cos(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B)) \\ 
-- \frac{r_B}{\alpha_H} (2 \pi  v_1)^2 \sin(2 \pi v_1 t + \phi_B ) - r_D  (2 \pi (v_2 + v _1))^2 \sin(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B))  )  
+-r_H (2 \pi v_1)^2 \cos(2 \pi v_1 t + \phi_B - \alpha_H) - r_D  (2 \pi (v_2 + v _1))^2 \cos(2 \pi (v_2 + v _1)t + (\phi_D + \phi_B- \alpha_H)) \\ 
+- r_H (2 \pi  v_1)^2 \sin(2 \pi v_1 t + \phi_B - \alpha_H) - r_D  (2 \pi (v_2 + v _1))^2 \sin(2 \pi (v_2 +v_1)t +  (\phi_D + \phi_B - \alpha_H))  )  
 \end{pmatrix}
 $
 

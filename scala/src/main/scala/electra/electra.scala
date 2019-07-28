@@ -7,6 +7,8 @@ import java.awt.geom.Point2D
 import electra.NumericalIntegration._
 import electra.Model._
 import electra.Mesure._
+import org.apache.commons.math3._
+import org.apache.commons.math3.stat.StatUtils
 
 import scala.math._
 import org.openmole.spatialdata._
@@ -27,6 +29,13 @@ object Electra extends App {
   println(res)
 */
 
+
+  // 1 position: NEW Stationnary
+/*
+    val t = 1.0
+    val res = dynamicStationnary_v2()(DefaultValuesParameterModel.v1, DefaultValuesParameterModel.v2, DefaultValuesParameterModel.v3)(t)
+    println(res)
+*/
 
 
 
@@ -63,7 +72,21 @@ object Electra extends App {
   //    TRAJECTOIRE
   ////////////////////////////////
 
-  // Trajectoire stationnaire
+
+  // Trajectoire stationnaire v2
+
+/*
+    val T = 0.02
+    val deltaT = 0.01
+    val res = dynamicTrajectoryStationnary_v2()()(T,deltaT)
+    //println(res)
+    val res2 = convertResultStationnary(res)
+    println(res2)
+    //println(res2.Bx)
+*/
+
+
+  // Trajectoire stationnaire (old)
 
 /*
   val T = 0.02
@@ -74,6 +97,8 @@ object Electra extends App {
   println(res2)
   //println(res2.Bx)
 */
+
+
 
 
   // Trajectoire transitoire (next)
@@ -103,7 +128,8 @@ object Electra extends App {
 
   val T = 2.0
   val deltaT = 0.0005
-  val res = dynamicTrajectoryStationnary()(v1=2.0,v2=(-6.0))(T,deltaT)
+  val res = dynamicTrajectoryStationnary_v2()(v1=2.0,v2=(-6.0))(T,deltaT)
+  //val res = dynamicTrajectoryStationnary_v2()(v1=5.0,v2=4.0,v3=5.0)(T,deltaT)
   val res2 = convertResultStationnary(res)
 
 
@@ -112,14 +138,17 @@ object Electra extends App {
   //    MESURES. points singuliers
   ////////////////////////////////
 
- /*
+
   val seuilPointSingulier = 4
   val numberPointSinguliersD = countSingularPoints(res2.speedDx,res2.speedDy,seuilPointSingulier)
   println(numberPointSinguliersD)
 
   val timesPointSinguliersD = timesOfSingularPoints(res2.speedDx,res2.speedDy,seuilPointSingulier)
-  println(timesPointSinguliersD)
-*/
+  println(timesPointSinguliersD.mkString(" "))
+
+
+
+
 
 
   ////////////////////////////////
@@ -152,7 +181,7 @@ object Electra extends App {
   // point B
   val courburesB = courbure(res2.speedBx,res2.speedBy,res2.accBx,res2.accBy)
   //println(courburesB)
-  //println(mean(courburesB))
+  //println(StatUtils.mean(courburesB.toArray))
 
   // point D
   val courburesD = courbure(res2.speedDx,res2.speedDy,res2.accDx,res2.accDy)
@@ -178,9 +207,9 @@ object Electra extends App {
     // ici on ne garde que les temps de premier retour (et pas les points qui y sont associés)
     // voir la fonction premierRetour pour avoir toutes ces infos
     val seuilLoop = 0.01
-    val tempsRetourB = tempsPremierRetour(res2.Bx,res2.By,seuilLoop)
+    val (indicesRetourB,tempsRetourB) = indiceEtTempsPremierRetour(res2.Bx,res2.By,seuilLoop)
     //println(tempsRetourB)
-    val tempsRetourD = tempsPremierRetour(res2.Dx,res2.Dy,seuilLoop)
+    val (indicesRetourD,tempsRetourD) = indiceEtTempsPremierRetour(res2.Dx,res2.Dy,seuilLoop)
     println(tempsRetourD)
 */
 
@@ -278,6 +307,132 @@ object Model {
   ////////////////////////////////
   //    STATIONNAIRE
   ////////////////////////////////
+
+
+  def dynamicStationnary_v2(rB: Double = FixedParameterModel.rB, rC: Double = FixedParameterModel.rC, rD:Double = FixedParameterModel.rD ,
+                         rE:Double = FixedParameterModel.rE, rF:Double = FixedParameterModel.rF, rG:Double = FixedParameterModel.rG,
+                         rH:Double = FixedParameterModel.rH, rI:Double = FixedParameterModel.rI,
+                         angleH:Double = FixedParameterModel.angleH, angleI:Double = FixedParameterModel.angleI,
+                         angleIni_B:Double = DefaultValuesParameterModel.angleIni_B, angleIni_D:Double = DefaultValuesParameterModel.angleIni_D,
+                         angleIni_F:Double = DefaultValuesParameterModel.angleIni_F)(v1:Double=DefaultValuesParameterModel.v1, v2:Double=DefaultValuesParameterModel.v2, v3:Double=DefaultValuesParameterModel.v3)(t:Double) = {
+
+    // Position
+    // B,C
+    val Bx = rB * cos(2*Pi*v1*t + angleIni_B)
+    val By = rB * sin(2*Pi*v1*t + angleIni_B)
+    val Cx = rC * cos(2*Pi*v1*t + angleIni_B+Pi)
+    val Cy = rC * sin(2*Pi*v1*t + angleIni_B+Pi)
+
+    // H,I
+    val Hx = rH * cos(2*Pi*v1*t + angleIni_B - angleH)
+    val Hy = rH * sin(2*Pi*v1*t + angleIni_B - angleH)
+    val Ix = rI * cos(2*Pi*v1*t + angleIni_B + angleI +Pi)
+    val Iy = rI * sin(2*Pi*v1*t + angleIni_B + angleI +Pi)
+
+    // D,E
+    val HDx = rD  * cos(2*Pi*(v2+v1)*t + (angleIni_D+ angleIni_B -angleH))
+    val HDy = rD  * sin(2*Pi*(v2+v1)*t + (angleIni_D+ angleIni_B -angleH))
+    val HEx = rE  * cos(2*Pi*(v2+v1)*t + (angleIni_D+ angleIni_B -angleH) +Pi)
+    val HEy = rE  * sin(2*Pi*(v2+v1)*t + (angleIni_D+ angleIni_B -angleH) +Pi)
+
+    val Dx = Hx + HDx
+    val Dy = Hy + HDy
+    val Ex = Hx + HEx
+    val Ey = Hy + HEy
+
+    // F,G
+    val IFx = rF  * cos(2*Pi*(v3+v1)*t + (angleIni_F+ (angleIni_B +angleI +Pi)) )
+    val IFy = rF  * sin(2*Pi*(v3+v1)*t + (angleIni_F+ (angleIni_B +angleI +Pi)))
+    val IGx = rG  * cos(2*Pi*(v3+v1)*t + (angleIni_F+ (angleIni_B +angleI +Pi)) +Pi)
+    val IGy = rG  * sin(2*Pi*(v3+v1)*t + (angleIni_F+ (angleIni_B +angleI +Pi)) +Pi)
+
+    val Fx = Ix + IFx
+    val Fy = Iy + IFy
+    val Gx = Ix + IGx
+    val Gy = Iy + IGy
+
+    // speed
+    // B,C
+    val speedBx = -rB * 2*Pi*v1* sin(2*Pi*v1*t + angleIni_B)
+    val speedBy = rB * 2*Pi*v1* cos(2*Pi*v1*t + angleIni_B)
+    val speedCx = -rC * 2*Pi*v1* sin(2*Pi*v1*t + angleIni_B+Pi)
+    val speedCy = rC * 2*Pi*v1* cos(2*Pi*v1*t + angleIni_B+Pi)
+
+    // D,E
+    val speedDx = -rH * 2*Pi*v1* sin(2*Pi*v1*t + angleIni_B -angleH)  - rD *2*Pi*(v2+v1)* sin(2*Pi*(v2+v1)*t + (angleIni_D+ angleIni_B -angleH))
+    val speedDy = rH * 2*Pi*v1*  cos(2*Pi*v1*t + angleIni_B -angleH)  + rD *2*Pi*(v2+v1)* cos(2*Pi*(v2+v1)*t + (angleIni_D+ angleIni_B -angleH))
+    val speedEx = -rH * 2*Pi*v1* sin(2*Pi*v1*t + angleIni_B -angleH)  - rE *2*Pi*(v2+v1)* sin(2*Pi*(v2+v1)*t + (angleIni_D+ angleIni_B -angleH) +Pi)
+    val speedEy = rH * 2*Pi*v1*  cos(2*Pi*v1*t + angleIni_B -angleH)  + rE *2*Pi*(v2+v1)* cos(2*Pi*(v2+v1)*t + (angleIni_D+ angleIni_B -angleH) +Pi)
+
+    // F,G
+    val speedFx = -rI * (2*Pi*v1)* sin(2*Pi*v1*t + angleIni_B+Pi +angleI)   - rF* (2*Pi*(v3+v1))* sin(2*Pi*(v3+v1)*t + (angleIni_F+ angleIni_B+Pi +angleI))
+    val speedFy = rI * (2*Pi*v1)* cos(2*Pi*v1*t + angleIni_B+Pi +angleI)    + rF* (2*Pi*(v3+v1))* cos(2*Pi*(v3+v1)*t + (angleIni_F+ angleIni_B+Pi +angleI))
+    val speedGx = -rI * (2*Pi*v1)* sin(2*Pi*v1*t + angleIni_B+Pi +angleI)   - rG* (2*Pi*(v3+v1))* sin(2*Pi*(v3+v1)*t + (angleIni_F+ angleIni_B+Pi +angleI) +Pi)
+    val speedGy = rI * (2*Pi*v1)* cos(2*Pi*v1*t + angleIni_B+Pi +angleI)    + rG* (2*Pi*(v3+v1))* cos(2*Pi*(v3+v1)*t + (angleIni_F+ angleIni_B+Pi +angleI) +Pi)
+
+
+    ////////////////////////////////
+    // acceleration
+    // B,C
+    val accBx = -rB * (2*Pi*v1)*(2*Pi*v1) * cos(2*Pi*v1*t + angleIni_B)
+    val accBy = -rB * (2*Pi*v1)*(2*Pi*v1) * sin(2*Pi*v1*t + angleIni_B)
+    val accCx = -rC * (2*Pi*v1)*(2*Pi*v1) * cos(2*Pi*v1*t + angleIni_B+Pi)
+    val accCy = -rC * (2*Pi*v1)*(2*Pi*v1) * sin(2*Pi*v1*t + angleIni_B+Pi)
+
+    // D,E
+    val accDx = -rH * (2*Pi*v1)*(2*Pi*v1)* cos(2*Pi*v1*t + angleIni_B -angleH)  - rD* (2*Pi*(v2+v1))*(2*Pi*(v2+v1))* cos(2*Pi*(v2+v1)*t + (angleIni_D+ angleIni_B -angleH))
+    val accDy = -rH * (2*Pi*v1)*(2*Pi*v1)* sin(2*Pi*v1*t + angleIni_B -angleH)  - rD* (2*Pi*(v2+v1))*(2*Pi*(v2+v1))* sin(2*Pi*(v2+v1)*t + (angleIni_D+ angleIni_B -angleH))
+    val accEx = -rH * (2*Pi*v1)*(2*Pi*v1)* cos(2*Pi*v1*t + angleIni_B -angleH)  - rE* (2*Pi*(v2+v1))*(2*Pi*(v2+v1))* cos(2*Pi*(v2+v1)*t + (angleIni_D+ angleIni_B -angleH) +Pi)
+    val accEy = -rH * (2*Pi*v1)*(2*Pi*v1)* sin(2*Pi*v1*t + angleIni_B -angleH)  - rE* (2*Pi*(v2+v1))*(2*Pi*(v2+v1))* sin(2*Pi*(v2+v1)*t + (angleIni_D+ angleIni_B -angleH) +Pi)
+
+    // F,G
+    val accFx = -rI * (2*Pi*v1)*(2*Pi*v1)* cos(2*Pi*v1*t + angleIni_B+Pi +angleI)  - rF* (2*Pi*(v3+v1))*(2*Pi*(v3+v1))* cos(2*Pi*(v3+v1)*t + (angleIni_F+ angleIni_B+Pi +angleI))
+    val accFy = -rI * (2*Pi*v1)*(2*Pi*v1)* sin(2*Pi*v1*t + angleIni_B+Pi +angleI)  - rF* (2*Pi*(v3+v1))*(2*Pi*(v3+v1))* sin(2*Pi*(v3+v1)*t + (angleIni_F+ angleIni_B+Pi +angleI))
+    val accGx = -rI * (2*Pi*v1)*(2*Pi*v1)* cos(2*Pi*v1*t + angleIni_B+Pi +angleI)  - rG* (2*Pi*(v3+v1))*(2*Pi*(v3+v1))* cos(2*Pi*(v3+v1)*t + (angleIni_F+ angleIni_B+Pi +angleI) +Pi)
+    val accGy = -rI * (2*Pi*v1)*(2*Pi*v1)* sin(2*Pi*v1*t + angleIni_B+Pi +angleI)  - rG* (2*Pi*(v3+v1))*(2*Pi*(v3+v1))* sin(2*Pi*(v3+v1)*t + (angleIni_F+ angleIni_B+Pi +angleI) +Pi)
+
+    //(Bx,By,Cx,Cy,Dx,Dy,Ex,Ey,Fx,Fy,Gx,Gy,Hx,Hy,Ix,Iy)
+
+    new DynamicalCurrentStateStationary(time = t, Bx=Bx, By=By, Cx=Cx, Cy=Cy, Dx=Dx, Dy=Dy,
+      Ex=Ex, Ey=Ey, Fx=Fx, Fy=Fy, Gx=Gx, Gy=Gy, Hx=Hx, Hy=Hy,
+      Ix=Ix, Iy=Iy,
+      HDx=HDx, HDy=HDy, HEx=HEx, HEy=HEy,
+      IFx=IFx, IFy=IFy, IGx=IGx, IGy=IGy,
+      speedBx=speedBx, speedBy=speedBy, speedCx=speedCx, speedCy=speedCy, speedDx=speedDx, speedDy=speedDy,
+      speedEx=speedEx, speedEy=speedEy, speedFx=speedFx, speedFy=speedFy, speedGx=speedGx, speedGy=speedGy,
+      accBx=accBx, accBy=accBy, accCx=accCx, accCy=accCy, accDx=accDx, accDy=accDy,
+      accEx=accEx, accEy=accEy, accFx=accFx, accFy=accFy, accGx=accGx, accGy=accGy
+    )
+  }
+
+
+  def dynamicTrajectoryStationnary_v2(rB: Double = FixedParameterModel.rB, rC: Double = FixedParameterModel.rC, rD:Double = FixedParameterModel.rD ,
+                                   rE:Double = FixedParameterModel.rE, rF:Double = FixedParameterModel.rF, rG:Double = FixedParameterModel.rG,
+                                   rH:Double = FixedParameterModel.rH, rI:Double = FixedParameterModel.rI,
+                                   angleH:Double = FixedParameterModel.angleH, angleI:Double = FixedParameterModel.angleI,
+                                   angleIni_B:Double = DefaultValuesParameterModel.angleIni_B, angleIni_D:Double = DefaultValuesParameterModel.angleIni_D,
+                                   angleIni_F:Double = DefaultValuesParameterModel.angleIni_F)(v1:Double=DefaultValuesParameterModel.v1, v2:Double=DefaultValuesParameterModel.v2, v3:Double=DefaultValuesParameterModel.v3)(T:Double, deltaT:Double):Vector[DynamicalCurrentStateStationary] = {
+    val N = floor(T / deltaT).toInt
+    val vecTimes = (0 until N).map(x => x * deltaT) :+ T
+    val res = vecTimes.map(x => dynamicStationnary_v2(rB,rC,rD,rE,rF,rG,rH,rI,angleIni_B,angleIni_D,angleIni_F)(v1,v2,v3)(x)).toVector
+    // type de res: Vector[DynamicalCurrentStateStationary]
+    res
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   def dynamicStationnary(rB: Double = FixedParameterModel.rB, rC: Double = FixedParameterModel.rC, rD:Double = FixedParameterModel.rD ,
                          rE:Double = FixedParameterModel.rE, rF:Double = FixedParameterModel.rF, rG:Double = FixedParameterModel.rG,
@@ -874,6 +1029,8 @@ object FixedParameterModel {
   val rG = 1.0
   val rH = 2
   val rI = 2
+  val angleH = 0.25
+  val angleI = 0.25
 
   // moteur 1
   // partie électrique
@@ -942,15 +1099,18 @@ object FixedParameterModel {
     def countSingularPoints(vec1:Vector[Double],vec2:Vector[Double], seuil:Double) = {
       // return an integer
       val temp = slaveFindSingularPoints(vec1,vec2,seuil)
-      SelectSingularPoints(temp).length
-
+      if (temp.isEmpty){0} else {
+        SelectSingularPoints(temp).length
+      }
     }
 
 
-    def timesOfSingularPoints(vec1:Vector[Double],vec2:Vector[Double], seuil:Double) = {
+    def timesOfSingularPoints(vec1:Vector[Double],vec2:Vector[Double], seuil:Double): Array[Int] = {
       // return a vector of integer (indices)
       val temp = slaveFindSingularPoints(vec1,vec2,seuil)
-      SelectSingularPoints(temp).map(_._4)
+      if (temp.isEmpty){ Array[Int]()} else {
+        SelectSingularPoints(temp).map(_._4).toArray
+      }
     }
 
 
@@ -1176,13 +1336,14 @@ object FixedParameterModel {
     }
 
 
-    def tempsPremierRetour(v1:Vector[Double], v2:Vector[Double], seuil:Double) : Vector[Int] = {
+    def indiceEtTempsPremierRetour(v1:Vector[Double], v2:Vector[Double], seuil:Double) : (Vector[Int],Vector[Int]) = {
       val resPremierRetour = premierRetour(v1,v2,seuil)
       //val res4 = resPremierRetour .filter(_ != () )  // retire les vecteur vide
       //val res4 = resPremierRetour.filterNot(_ == ())
       val res4 = resPremierRetour.filterNot(_._2 ==0 )
-      res4.map{ case( ((a,b,c),d) )  => d}
-
+      val tempsRetour = res4.map{ case( ((a,b,c),d) )  => d}  //  le temps qu'on met pour revenir au point concerné
+      val indicesRetour = res4.map{ case( ((a,b,c),d) )  => c}   // l'indice du point concerné
+      (indicesRetour,tempsRetour)
     }
 
 

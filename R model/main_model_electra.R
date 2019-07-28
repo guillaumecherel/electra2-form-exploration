@@ -33,6 +33,86 @@ source("utils_model_electra.R")
 # savePlot_index_and_paramsInFile_TRANSITOIRE
 
 
+#########################  Nouveau Stationnaire v2
+## Paramètres
+# vitesse moteur (tour/ seconde)
+v1 = 0.5
+v2 = -0.25
+v3 = 3
+
+# longueur tiges (rayon)
+rB = 4; rC = 4
+rH = 2; rI = 2
+rD = 1; rE = 1
+rF = 1; rG = 1
+
+# position initiale (from angle)
+# A,B,C
+Ax = 0
+Ay = 0
+angleIni_B = 0
+
+# H,I
+angleH = 0.25 
+angleI = 0.25 
+
+# D,E
+angleIni_D = 0
+# F,G 
+angleIni_F = 0
+
+
+# time
+timeStep = 0.005 # sec
+timeStep = 0.02 # sec
+Tfinal = 5
+times = seq(0,Tfinal, by = timeStep)
+t=0.1
+t=0
+
+
+positions_t_Stationnaire_v2(t, v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F)
+
+plot_oneTime_v2(t, v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F)
+
+
+
+##########################################
+###   Dépendance condition initiales ? ###
+##########################################
+# angles par défaut nuls
+angleIni_F= 0
+#plot_oneTime_v2(t, v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F)
+plotTrajectory_v2(times, v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F)
+
+# angles par défaut nuls
+angleIni_F= 1
+plotTrajectory_v2(times, v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F)
+
+
+
+
+# remplir l'espace (densité) ?
+timeStep = 0.005 # sec
+Tfinal = 25
+times = seq(0,Tfinal, by = timeStep)
+plotTrajectory_v2(times, v1,v2,v3=pi, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# old modèle
+
 ## Paramètres
 # vitesse moteur (tour/ seconde)
 v1 = 0.5
