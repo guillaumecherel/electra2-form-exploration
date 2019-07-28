@@ -127,9 +127,9 @@ object Electra extends App {
 
 
   val T = 2.0
-  val deltaT = 0.0005
-  val res = dynamicTrajectoryStationnary_v2()(v1=2.0,v2=(-6.0))(T,deltaT)
-  //val res = dynamicTrajectoryStationnary_v2()(v1=5.0,v2=4.0,v3=5.0)(T,deltaT)
+  val deltaT = 0.05
+  //val res = dynamicTrajectoryStationnary_v2()(v1=2.0,v2=(-6.0))(T,deltaT)
+  val res = dynamicTrajectoryStationnary_v2()(v1=5.0,v2=4.0,v3=5.0)(T,deltaT)
   val res2 = convertResultStationnary(res)
 
 
@@ -138,14 +138,14 @@ object Electra extends App {
   //    MESURES. points singuliers
   ////////////////////////////////
 
-
+/*
   val seuilPointSingulier = 4
   val numberPointSinguliersD = countSingularPoints(res2.speedDx,res2.speedDy,seuilPointSingulier)
   println(numberPointSinguliersD)
 
   val timesPointSinguliersD = timesOfSingularPoints(res2.speedDx,res2.speedDy,seuilPointSingulier)
   println(timesPointSinguliersD.mkString(" "))
-
+*/
 
 
 
@@ -221,23 +221,28 @@ object Electra extends App {
   //    MESURES. Moran
   ////////////////////////////////
 
-/*
+
     val piMoranB = convertFromMoran(res2.Bx,res2.Bx)
     //println(piMoranB .map(_.mkString(" ")).mkString("\n"))
 
+
     val xForMoran = List.fill(piMoranB.length)(1.0).toArray
     //println(xForMoran.mkString(""))
+
 
     val resMoranB = Spatstat.moran(piMoranB,xForMoran)
     println(resMoranB)
     // NaN ?
 
+
+/*
     // test avec des autres valeurs
     val piTestMoran = Array( Array(1.0,2.0),Array(3.0,4.0))
     val xMoran = List.fill(2)(1.0).toArray
     val resMoran = Spatstat.moran(piTestMoran,xMoran)
-    //println(resMoran)
+    println(resMoran)
 */
+
 
 }
 
