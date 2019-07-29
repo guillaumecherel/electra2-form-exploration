@@ -23,7 +23,7 @@ object Electra extends App {
   ////////////////////////////////
 
   // 1 position: Stationnary
-/*
+  /*
   val t = 1.0
   val res = dynamicStationnary()(DefaultValuesParameterModel.v1, DefaultValuesParameterModel.v2, DefaultValuesParameterModel.v3)(t)
   println(res)
@@ -31,16 +31,15 @@ object Electra extends App {
 
 
   // 1 position: NEW Stationnary
-/*
+  /*
     val t = 1.0
     val res = dynamicStationnary_v2()(DefaultValuesParameterModel.v1, DefaultValuesParameterModel.v2, DefaultValuesParameterModel.v3)(t)
     println(res)
 */
 
 
-
   // 1 position: Transitoire, avec next
-/*
+  /*
   val fixedParametersModel = new FixedParametersModel()
   //val parametersTransitoire = new ParametersTransitoire()
   val parametersTransitoire = new ParametersTransitoire(DefaultValuesParameterModel.u1_sin,
@@ -55,9 +54,8 @@ object Electra extends App {
 */
 
 
-
   // 1 position: Transitoire, sans next
-/*
+  /*
   val Nmax = 100
   val deltaT = 0.01
   val stepsTransitory = HiddenParameters.stepsTransitory
@@ -75,7 +73,7 @@ object Electra extends App {
 
   // Trajectoire stationnaire v2
 
-/*
+  /*
     val T = 0.02
     val deltaT = 0.01
     val res = dynamicTrajectoryStationnary_v2()()(T,deltaT)
@@ -88,7 +86,7 @@ object Electra extends App {
 
   // Trajectoire stationnaire (old)
 
-/*
+  /*
   val T = 0.02
   val deltaT = 0.01
   val res = dynamicTrajectoryStationnary()()(T,deltaT)
@@ -99,10 +97,8 @@ object Electra extends App {
 */
 
 
-
-
   // Trajectoire transitoire (next)
-/*
+  /*
   val fixedParametersModel = new FixedParametersModel()
   val parametersTransitoire = new ParametersTransitoire()
   val Nmax = 2
@@ -115,10 +111,6 @@ object Electra extends App {
 */
 
 
-
-
-
-
   ////////////////////////////////
   //    MESURES
   ////////////////////////////////
@@ -129,16 +121,15 @@ object Electra extends App {
   val T = 2.0
   val deltaT = 0.05
   //val res = dynamicTrajectoryStationnary_v2()(v1=2.0,v2=(-6.0))(T,deltaT)
-  val res = dynamicTrajectoryStationnary_v2()(v1=5.0,v2=4.0,v3=5.0)(T,deltaT)
+  val res = dynamicTrajectoryStationnary_v2()(v1 = 5.0, v2 = 4.0, v3 = 5.0)(T, deltaT)
   val res2 = convertResultStationnary(res)
-
 
 
   ////////////////////////////////
   //    MESURES. points singuliers
   ////////////////////////////////
 
-/*
+  /*
   val seuilPointSingulier = 4
   val numberPointSinguliersD = countSingularPoints(res2.speedDx,res2.speedDy,seuilPointSingulier)
   println(numberPointSinguliersD)
@@ -148,14 +139,11 @@ object Electra extends App {
 */
 
 
-
-
-
   ////////////////////////////////
   //    MESURES. densité
   ////////////////////////////////
 
-/*
+  /*
     val N = 30  // pas de la subdiviion du carré
     val xmax = maxSquareForDensity()
     val xmin = -xmax
@@ -171,13 +159,11 @@ object Electra extends App {
 */
 
 
-
-
   ////////////////////////////////
   //    MESURES. Courbure
   ////////////////////////////////
 
-/*
+  /*
   // point B
   val courburesB = courbure(res2.speedBx,res2.speedBy,res2.accBx,res2.accBy)
   //println(courburesB)
@@ -197,13 +183,11 @@ object Electra extends App {
 */
 
 
-
-
   ////////////////////////////////
   //    MESURES. loop points: temps de premier retour
   ////////////////////////////////
 
-/*
+  /*
     // ici on ne garde que les temps de premier retour (et pas les points qui y sont associés)
     // voir la fonction premierRetour pour avoir toutes ces infos
     val seuilLoop = 0.01
@@ -214,14 +198,11 @@ object Electra extends App {
 */
 
 
-
-
-
   ////////////////////////////////
   //    MESURES. Moran
   ////////////////////////////////
 
-
+  /*
     val piMoranB = convertFromMoran(res2.Bx,res2.Bx)
     //println(piMoranB .map(_.mkString(" ")).mkString("\n"))
 
@@ -233,9 +214,10 @@ object Electra extends App {
     val resMoranB = Spatstat.moran(piMoranB,xForMoran)
     println(resMoranB)
     // NaN ?
+*/
 
 
-/*
+  /*
     // test avec des autres valeurs
     val piTestMoran = Array( Array(1.0,2.0),Array(3.0,4.0))
     val xMoran = List.fill(2)(1.0).toArray
@@ -244,7 +226,43 @@ object Electra extends App {
 */
 
 
+
+
+  ////////////////////////////////
+  //   Comparaison trajectoires sans aspect temporel (trace)
+  ////////////////////////////////
+
+/*
+  val rayon = 2.3
+  val nbPointsCircle = 100
+  val (x_circle,y_circle) = createCircle(rayon,nbPointsCircle)
+  //println(x_circle)
+  //println(y_circle)
+
+  val distance = 1.0
+  val res3 = simplifiedTrajectory(x_circle.toVector,y_circle.toVector,distance)
+  //println(res3)
+  //println(res3.map(x=>x._1))
+  //println(res3.map(x=>x._2))
+  //val res4 = distanceTwoTrajectories(x_circle,y_circle,res2.Dx.toArray,res2.Dy.toArray,distance)
+  //println(res4)
+*/
+
+
+  ////////////////////////////////
+  //    Persistence stationnaire
+  ////////////////////////////////
+
+/*
+  val t = 1.0
+  val resPrsistenceStationnaire = figurePersistenceStationnaireAtTimeT(time=t)()()
+  println(resPrsistenceStationnaire)
+*/
+
+
 }
+
+
 
 
 
@@ -903,6 +921,27 @@ object Model {
 
 
 
+  ////////////////////////////////
+  //    Persistance rétinienne at time t
+  ////////////////////////////////
+
+  def figurePersistenceStationnaireAtTimeT(time:Double,dureePersistence:Double=DefaultValuesParameterModel.dureePersistence,nbPoints:Int=DefaultValuesParameterModel.nbPointsPersistence)(
+    rB: Double = FixedParameterModel.rB, rC: Double = FixedParameterModel.rC, rD:Double = FixedParameterModel.rD ,
+    rE:Double = FixedParameterModel.rE, rF:Double = FixedParameterModel.rF, rG:Double = FixedParameterModel.rG,
+    rH:Double = FixedParameterModel.rH, rI:Double = FixedParameterModel.rI,
+    angleH:Double = FixedParameterModel.angleH, angleI:Double = FixedParameterModel.angleI,
+    angleIni_B:Double = DefaultValuesParameterModel.angleIni_B, angleIni_D:Double = DefaultValuesParameterModel.angleIni_D,
+    angleIni_F:Double = DefaultValuesParameterModel.angleIni_F)(v1:Double=DefaultValuesParameterModel.v1, v2:Double=DefaultValuesParameterModel.v2, v3:Double=DefaultValuesParameterModel.v3)={
+
+    val vecTimes = (0 until nbPoints).map(x => time + x * dureePersistence / nbPoints )  :+ (time+dureePersistence)
+    val res = vecTimes.map(x => dynamicStationnary_v2(rB,rC,rD,rE,rF,rG,rH,rI,angleIni_B,angleIni_D,angleIni_F)(v1,v2,v3)(x)).toVector
+    res
+    // type de res: Vector[DynamicalCurrentStateStationary]
+
+  }
+
+
+
 
 
 
@@ -1002,9 +1041,9 @@ object DefaultValuesParameterModel {
   val  angleIni_F = 2.0
 
 
-  // Persistence rétinienne
-  val persistenceTime = 0.05
-  val nb_point_persistence = 50
+  // Persistence rétinienne stationnaire
+  val dureePersistence = 1/25.toDouble
+  val nbPointsPersistence = 50
 
   // vitesse (stationnaire)
   val v1 = 2
@@ -1020,6 +1059,9 @@ object DefaultValuesParameterModel {
   def u1_sin(x: Double)={2.0*cos(x)}
   def u2_sin(x: Double)={1.0*cos(x)}
   def u3_sin(x: Double)={3.0*sin(x)}
+
+
+
 
 }
 
@@ -1433,7 +1475,79 @@ object FixedParameterModel {
 
 
 
+
+    ////////////////////////////////
+    //    utils pour comparer une trajectoire simuée et une désirée
+    ////////////////////////////////
+
+    // on souhaite s'affranchir du temps, on s'intéresse seulement à la trace, l'image à la fin de la simu
+    // on de garde sur un trajectoire que des points distant d'un distance fixée
+
+    def cumSum[A](xs: Seq[A])(implicit num: Numeric[A]): Seq[A] = {
+      xs.tail.scanLeft(xs.head)(num.plus)
+    }
+
+
+
+    def nextSimplifiedTrajectory (current:Vector[(Double,Double)],res:Vector[(Double,Double)], distance:Double):Vector[(Double,Double)] = {
+      if (current.isEmpty) {
+        res
+      } else {
+        val temp = current(0)
+        val temp2 = comparePointsToAllElemnts(temp, current)
+        val temp3 = current.zip(cumSum(temp2))
+        val temp4 = temp3.filter(_._2 > distance)
+        if (temp4.isEmpty){
+          val newCurrent = Vector[(Double,Double)]()
+          val newRes = res :+ temp3.last._1
+          nextSimplifiedTrajectory(newCurrent, newRes, distance)
+        } else {
+          val newCurrent = temp4.map(x=>x._1)
+          val newRes = res :+ temp4(0)._1
+          nextSimplifiedTrajectory(newCurrent, newRes, distance)
+        }
+      }
+    }
+
+
+    def simplifiedTrajectory(v1:Vector[Double], v2:Vector[Double], distance:Double)={
+      val current = v1.zip(v2)
+      val res = Vector(current(0))
+      nextSimplifiedTrajectory(current,res,distance)
+    }
+
+    def createCircle(rayon:Double, nbPoints:Int)={
+      val temp = (0 to nbPoints).map(x=> (x*2*Pi/nbPoints)).toArray
+      (temp.map(x=> rayon*cos(x)), temp.map(x=> rayon*sin(x)) )
+    }
+
+
+    // une distance simulée, l'autre construite, pas nécessairement de la même longueur
+    def slaveDistanceTwoTrajectories(v1:Vector[(Double,Double)],v2:Vector[(Double,Double)])={
+      //val v1 = u_x.zip(u_y)
+      //val v2 = v_x.zip(v_y)
+      val minSize = min(v1.length,v2.length)
+
+      val v1Bis = v1.take(minSize)
+      val v2Bis = v2.take(minSize)
+      v1Bis.zip(v2Bis).map(x=>distanceLoopPoint(x._1,x._2)).sum
+
+    }
+
+
+
+    def distanceTwoTrajectories(u_x:Array[Double],u_y:Array[Double],v_x:Array[Double],v_y:Array[Double],distance:Double)= {
+      val u =simplifiedTrajectory(u_x.toVector,u_y.toVector,distance)
+      val v =simplifiedTrajectory(v_x.toVector,v_y.toVector,distance)
+      slaveDistanceTwoTrajectories(u,v)
+      }
+
+
+
   }
+
+
+
 
 
 
