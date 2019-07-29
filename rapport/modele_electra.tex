@@ -548,25 +548,27 @@ Points doubles: $t_1$ et $t_2$ tels que: $x(t_1)=x(t_2)$ et $y(t_1) = y(t_2)$.
 Stationnaire:
 
 La trajectoire remplit l'espace ?
+Densité d'occupation des points de la trajectoire sur une grille: densité pour la trajectoire d'un point et pour les différents points. Paramètre: la pas de la subdivision de la grille
 
-Nombre de point singulier: seuil sur la dérivée
 
-nombre de boucle: c'est quoi une boucle ?
+Point singulier: leur nombre et les indices auxquels ils apparaissent. Paramètre: seuil sur la dérivée
 
-concavité/ convexité locale?: rayon de courbure: les distribution des rayons de courbure sur la trajectoire: diversité ou uniforme ?
+
+Nombre de boucle: c'est quoi une boucle ? Plutôt sur les temps de retour. Paramètre: seuil sur la distance pour considérer un retour.
+
+Courbure de la trajectoire: en chaque point la courbure. Regarder la moyenne ou d'autres information statistique sur la distribution des rayons de courbure. Pas de paramètre. On peut aussi repérer des morceaux de trajectoires qui ressemblent à une droite (courbure nulle: seuil) ou à un cercle (courbure constante).
+%concavité/ convexité locale?: rayon de courbure: les distribution des rayons de courbure sur la trajectoire: diversité ou uniforme ?
 
 Nombre de composantes connexes dans l'espace (Julien ?, JTS lib scala pour les trucs de géométrie)
 %https://locationtech.github.io/jts/javadoc/org/locationtech/jts/geom/Geometry.html
 
 La courbe est elle fermée (périodicité)
 
-boucles
 
-point de rebroussement
+%point de rebroussement
+%ligne droite
 
-ligne droite
-
-Indice de Moran (agrégation spatiale? voir avec Juste pour la lib à importer en scala)
+Indice de Moran, sur l'agrégation spatiale.
 
 Sur les vitesses, accélération ?
 
