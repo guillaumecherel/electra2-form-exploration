@@ -1,8 +1,13 @@
+// TODO
+// (pas urgent) faire une fonction transitoire pour le nouveau model (adaptation)
+
+
 package electra
 
 
 //import electra.Model.integrate
 import java.awt.geom.Point2D
+
 
 import electra.NumericalIntegration._
 import electra.Model._
@@ -119,9 +124,9 @@ object Electra extends App {
 
 
   val T = 2.0
-  val deltaT = 0.05
-  //val res = dynamicTrajectoryStationnary_v2()(v1=2.0,v2=(-6.0))(T,deltaT)
-  val res = dynamicTrajectoryStationnary_v2()(v1 = 5.0, v2 = 4.0, v3 = 5.0)(T, deltaT)
+  val deltaT = 0.005
+  val res = dynamicTrajectoryStationnary_v2()(v1=2.0,v2=(-6.0))(T,deltaT)
+  //val res = dynamicTrajectoryStationnary_v2()(v1 = 5.0, v2 = 4.0, v3 = Pi)(T, deltaT)
   val res2 = convertResultStationnary(res)
 
 
@@ -143,19 +148,23 @@ object Electra extends App {
   //    MESURES. densité
   ////////////////////////////////
 
-  /*
-    val N = 30  // pas de la subdiviion du carré
+/*
+    val N = 50  // pas de la subdiviion du carré
     val xmax = maxSquareForDensity()
     val xmin = -xmax
     val ymax = xmax
     val ymin = xmin
+    val rMax = xmax
+    val rMin = minSquareForDensity()
 
 
-    val densiteB =  pointsDensitySquare(res2.Bx,res2.By,xmin,xmax,ymin,ymax,N)
-    //println(densiteB)
+    //println(nbPointGrilleDansZoneAtteignable(xmin,xmax,ymin,ymax,N,rMin,rMax))
+    //println(N*N)
+    val densiteB =  pointsDensitySquare(res2.Bx,res2.By,xmin,xmax,ymin,ymax,N,rMin,rMax)
+    println(densiteB)
 
-    val totalDensity = allTrajectoriesDensitySquare(res2,xmin,xmax,ymin,ymax,N)
-    //println(totalDensity)
+    val totalDensity = allTrajectoriesDensitySquare(res2,xmin,xmax,ymin,ymax,N,rMin,rMax)
+    println(totalDensity)
 */
 
 
@@ -197,6 +206,16 @@ object Electra extends App {
     println(tempsRetourD)
 */
 
+  // version segments
+
+
+  val resRetourSegmentsB = retour( res2.Bx.zip(res2.By))
+  val resRetourSegmentsD = retour( res2.Dx.zip(res2.Dy))
+  val resRetourSegmentsF = retour( res2.Fx.zip(res2.Fy) )
+  //println(resRetourSegmentsB)
+  //println(resRetourSegmentsD)
+  println(resRetourSegmentsF)
+
 
   ////////////////////////////////
   //    MESURES. Moran
@@ -226,6 +245,33 @@ object Electra extends App {
 */
 
 
+/*
+  val N = 50  // pas de la subdiviion du carré
+  val xmax = maxSquareForDensity()
+  val xmin = -xmax
+  val ymax = xmax
+  val ymin = xmin
+
+
+  // D
+  val moran_directD = moranDirectTraj(res2.Dx,res2.Dy,xmin,xmax,ymin,ymax,N)
+  val moranD = moranTraj(res2.Dx,res2.Dy,xmin,xmax,ymin,ymax,N)
+  println(moran_directD)
+  println(moranD)
+
+  // B
+  val moran_directB = moranDirectTraj(res2.Bx,res2.By,xmin,xmax,ymin,ymax,N)
+  val moranB = moranTraj(res2.Bx,res2.By,xmin,xmax,ymin,ymax,N)
+  println(moran_directB)
+  println(moranB)
+
+  // F
+  val moran_directF = moranDirectTraj(res2.Fx,res2.Fy,xmin,xmax,ymin,ymax,N)
+  val moranF = moranTraj(res2.Fx,res2.Fy,xmin,xmax,ymin,ymax,N)
+  println(moran_directF)
+  println(moranF)
+
+*/
 
 
   ////////////////////////////////
@@ -241,13 +287,13 @@ object Electra extends App {
 
   val distance = 1.0
   val res3 = simplifiedTrajectory(x_circle.toVector,y_circle.toVector,distance)
-  //println(res3)
+  println(res3.length)
   //println(res3.map(x=>x._1))
   //println(res3.map(x=>x._2))
   //val res4 = distanceTwoTrajectories(x_circle,y_circle,res2.Dx.toArray,res2.Dy.toArray,distance)
   //println(res4)
-*/
 
+*/
 
   ////////////////////////////////
   //    Persistence stationnaire
@@ -1219,6 +1265,14 @@ object FixedParameterModel {
     }
 
 
+    def minSquareForDensity(rB: Double = FixedParameterModel.rB, rC: Double = FixedParameterModel.rC, rD:Double = FixedParameterModel.rD ,
+                            rE:Double = FixedParameterModel.rE, rF:Double = FixedParameterModel.rF, rG:Double = FixedParameterModel.rG,
+                            rH:Double = FixedParameterModel.rH, rI:Double = FixedParameterModel.rI)= {
+      min(min(rH-rD, rH-rE) , min(rI-rF, rI-rG) )
+    }
+
+
+
     // trouver les indices (i,j) du point dans la grille
     // subdivsion des axes en N segments, donc grille de N^2 rectangles: indices entre 0 et N-1
     def findCaseForPoint(point:(Double,Double), xmin:Double,xmax:Double,ymin:Double,ymax:Double, N:Int) = {
@@ -1237,12 +1291,12 @@ object FixedParameterModel {
 
       val temp = vec1.zip(vec2)
 
-      var array = Array.ofDim[Int](N,N)  // initialisé à 0
+      var array = Array.ofDim[Double](N,N)  // initialisé à 0
 
       for (point <- temp) {
 
         val (i, j) = findCaseForPoint((point._1, point._2), xmin, xmax, ymin, ymax, N)
-        array(i)(j) += 1
+        array(i)(j) += 1.0
       }
 
       //println( array.map(x => x.sum).sum ) // on retrouve le nombre de points, ouf!
@@ -1252,26 +1306,27 @@ object FixedParameterModel {
     }
 
 
-    def pointsDensitySquare(vec1:Vector[Double],vec2:Vector[Double],xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int) = {
+    def pointsDensitySquare(vec1:Vector[Double],vec2:Vector[Double],xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int,rMin:Double,rMax:Double) = {
 
       // nombre de cases non vides dans l'array
       val array = arrayDensitySquare(vec1,vec2,xmin,xmax,ymin,ymax,N)
       val nbCasesNonEmpty = array.map(x => x.filter(_ != 0).length).sum
 
       // la ratio d'occupation:
-      (nbCasesNonEmpty.toFloat / (N * N)).toDouble
+      //(nbCasesNonEmpty.toFloat / (N * N)).toDouble
+      (nbCasesNonEmpty.toFloat / nbPointGrilleDansZoneAtteignable(xmin,xmax,ymin,ymax,N,rMin,rMax) ).toDouble
     }
 
 
-    def sum2Arrays(a:Array[Int],b:Array[Int])={
+    def sum2Arrays(a:Array[Double],b:Array[Double])={
       a.zip(b).map(x=>x._1+x._2)
     }
 
-    def sum2ArraysOfArrays(a:Array[Array[Int]],b:Array[Array[Int]])={
+    def sum2ArraysOfArrays(a:Array[Array[Double]],b:Array[Array[Double]])={
       a.zip(b).map(x => sum2Arrays(x._1,x._2))
     }
 
-    def nextSumVectorOfArraysOfArrays(v:Vector[Array[Array[Int]]],acc:Array[Array[Int]]): Array[Array[Int]]= {
+    def nextSumVectorOfArraysOfArrays(v:Vector[Array[Array[Double]]],acc:Array[Array[Double]]): Array[Array[Double]]= {
       if (v.isEmpty){acc} else{
         val temp = v(0)
         val newV = v.tail
@@ -1281,7 +1336,7 @@ object FixedParameterModel {
 
     }
 
-    def sumVectorOfArraysOfArrays(v:Vector[Array[Array[Int]]]) = {
+    def sumVectorOfArraysOfArrays(v:Vector[Array[Array[Double]]]) = {
       val acc = v(0)
       nextSumVectorOfArraysOfArrays(v.tail,acc)
     }
@@ -1299,7 +1354,7 @@ object FixedParameterModel {
     //println(sumVectorOfArraysOfArrays(Vector(c,d)).map(_.mkString(" ")).mkString("\n"))
 */
 
-    def allTrajectoriesDensitySquare(res:TrajectoryStationnary,xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int) = {
+    def allTrajectoriesDensitySquare(res:TrajectoryStationnary,xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int,rMin:Double,rMax:Double) = {
 
       val arrayB = arrayDensitySquare(res.Bx,res.By,xmin,xmax,ymin,ymax,N)
       val arrayC = arrayDensitySquare(res.Cx,res.Cy,xmin,xmax,ymin,ymax,N)
@@ -1317,10 +1372,27 @@ object FixedParameterModel {
 
 
       // la ratio d'occupation:
-      (nbCasesNonEmpty.toFloat / (N * N)).toDouble
+      //(nbCasesNonEmpty.toFloat / (N * N)).toDouble
+      ( nbCasesNonEmpty.toFloat  / nbPointGrilleDansZoneAtteignable(xmin,xmax,ymin,ymax,N,rMin,rMax) ).toDouble
+
     }
 
 
+
+    def nbPointGrilleDansZoneAtteignable(xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int,rMin:Double,rMax:Double)={
+      val deltaX = (xmax-xmin)/N
+      val deltaY = (ymax-ymin)/N
+      val posX = (0 to N).map(x=> xmin + x*deltaX)
+      val posY = (0 to N).map(x=> ymin + x*deltaY)
+
+      var count = 0
+      for ( x <-  posX){
+        for ( y <- posY){
+          if  ( distance(x,y) >= rMin  &  distance(x,y) <= rMax ) { count += 1}
+        }
+      }
+      count
+    }
 
 
 
@@ -1392,6 +1464,61 @@ object FixedParameterModel {
       val indicesRetour = res4.map{ case( ((a,b,c),d) )  => c}   // l'indice du point concerné
       (indicesRetour,tempsRetour)
     }
+
+
+    // version segments Guillaume
+
+    def intersection(A:(Double,Double),B:(Double,Double),C:(Double,Double),D:(Double,Double)) : Boolean = {
+      val ABx = B._1 - A._1
+      val ABy = B._2 - A._2
+      val CDx = D._1 - C._1
+      val CDy = D._2 - C._2
+      val det = -ABx * CDy + ABy * CDx
+
+      if (det == 0) {
+        false
+      } else {
+        val k = (-CDy * (C._1 - A._1) + CDx * (C._2 - A._2)) / det
+        val t = (-ABy * (C._1 - A._1) + ABx * (C._2 - A._2)) / det
+        if ((0 <= k) & (k <= 1) & (0 <= t) & (t <= 1)  ) {
+          true
+        } else {
+          false
+        }
+      }
+
+    }
+
+
+    def nextRetour(trajCurrent : Vector[((Double,Double),Int)], res:Vector[(Int,Int)]) : Vector[(Int,Int)] = {
+      if (trajCurrent.isEmpty || trajCurrent.tail.isEmpty || trajCurrent.tail.tail.isEmpty) {
+        res
+      } else {
+        val segments = trajCurrent.dropRight(1).zip(trajCurrent.tail) // le deuxieme vecteur a forcément une intersection avec le premier
+        val temp = segments(0)
+        val segments2 = segments.tail.tail
+        val resIntersect = segments2.map { x => (intersection(temp._1._1, temp._2._1, x._1._1, x._2._1), x._1._2 )}.filter(_._1 == true)
+        if (resIntersect.isEmpty) {
+          val newTrajCurrent = trajCurrent.tail
+          val newRes = res
+          nextRetour(newTrajCurrent, newRes)
+        } else {
+          val newTrajCurrent = trajCurrent.tail
+          val newRes = res :+ (trajCurrent(0)._2, resIntersect(0)._2 - trajCurrent(0)._2)
+          nextRetour(newTrajCurrent, newRes)
+        }
+      }
+    }
+
+
+
+     def retour(traj: Vector[(Double,Double)]) = {
+       val trajCurrent = traj.zipWithIndex
+       val res = Vector[(Int,Int)]()
+       nextRetour(trajCurrent,res)
+     }
+
+
 
 
 
@@ -1474,6 +1601,21 @@ object FixedParameterModel {
     //Spatstat.moran()
 
 
+    def moranDirectTraj(vec1:Vector[Double],vec2:Vector[Double],xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int)={
+      val temp = arrayDensitySquare(vec1,vec2,xmin,xmax,ymin,ymax,N) //: Array[Array[Double]]
+      GridMorphology.moranDirect(temp)
+    }
+
+
+    def moranTraj(vec1:Vector[Double],vec2:Vector[Double],xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int)={
+      val temp = arrayDensitySquare(vec1,vec2,xmin,xmax,ymin,ymax,N)
+      GridMorphology.moran(temp)
+    }
+
+
+
+
+    //println(res3.map(_.mkString(" ")).mkString("\n"))
 
 
     ////////////////////////////////
