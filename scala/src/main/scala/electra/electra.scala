@@ -8,10 +8,10 @@ package electra
 //import electra.Model.integrate
 import java.awt.geom.Point2D
 
-
+import electra.Electra.res2
 import electra.NumericalIntegration._
 import electra.Model._
-import electra.Mesure._
+import electra.Mesure.{arrayDensitySquare, sumVectorOfArraysOfArrays, _}
 import org.apache.commons.math3._
 import org.apache.commons.math3.stat.StatUtils
 
@@ -123,25 +123,28 @@ object Electra extends App {
   // trajectoire stationnaire
 
 
-  val T = 2.0
-  val deltaT = 0.005
-  val res = dynamicTrajectoryStationnary_v2()(v1=2.0,v2=(-6.0))(T,deltaT)
+  val T = 10.0
+  val deltaT = 0.001
+  //val res = dynamicTrajectoryStationnary_v2()(v1=2.0,v2=(-6.0))(T,deltaT)
   //val res = dynamicTrajectoryStationnary_v2()(v1 = 5.0, v2 = 4.0, v3 = Pi)(T, deltaT)
+  val res = dynamicTrajectoryStationnary_v2(angleIni_B = 0.0,angleIni_D = 0.0,angleIni_F = 0.0)(v1 = -5.0, v2 = -5.0, v3 = -5.0)(T, deltaT)
   val res2 = convertResultStationnary(res)
+
 
 
   ////////////////////////////////
   //    MESURES. points singuliers
   ////////////////////////////////
 
-  /*
+/*
   val seuilPointSingulier = 4
   val numberPointSinguliersD = countSingularPoints(res2.speedDx,res2.speedDy,seuilPointSingulier)
-  println(numberPointSinguliersD)
+  //println(numberPointSinguliersD)
 
   val timesPointSinguliersD = timesOfSingularPoints(res2.speedDx,res2.speedDy,seuilPointSingulier)
-  println(timesPointSinguliersD.mkString(" "))
+  //println(timesPointSinguliersD.mkString(" "))
 */
+
 
 
   ////////////////////////////////
@@ -207,15 +210,18 @@ object Electra extends App {
 */
 
   // version segments
+/*
+  val (indicesRetourSegmentsB,tempsRetourSegmentsB) = indiceEtTempsPremierRetourSegments(res2.Bx,res2.By)
+  val (indicesRetourSegmentsD,tempsRetourSegmentsD) = indiceEtTempsPremierRetourSegments(res2.Dx,res2.Dy)
+  val (indicesRetourSegmentsF,tempsRetourSegmentsF) = indiceEtTempsPremierRetourSegments(res2.Fx,res2.Fy)
+  //println(indicesRetourSegmentsB)
+  //println(tempsRetourSegmentsB)
+*/
 
 
-  val resRetourSegmentsB = retour( res2.Bx.zip(res2.By))
-  val resRetourSegmentsD = retour( res2.Dx.zip(res2.Dy))
-  val resRetourSegmentsF = retour( res2.Fx.zip(res2.Fy) )
-  //println(resRetourSegmentsB)
-  //println(resRetourSegmentsD)
-  println(resRetourSegmentsF)
 
+  //println(mean(tempsRetourSegmentsAllTrajectories(res2,1000).map(_.toDouble).toArray))
+  //println(mean(Array[Double]()))
 
   ////////////////////////////////
   //    MESURES. Moran
@@ -306,8 +312,14 @@ object Electra extends App {
 */
 
 
-}
+  ////////////////////////////////
+  //    PAS TOUTES LES LUMIRES ALLUMÉES
+  ////////////////////////////////
 
+  val res3 = trajectoryLightChoice(res2)()
+  println(res3.Bx)
+
+}
 
 
 
@@ -483,7 +495,7 @@ object Model {
                                    angleIni_F:Double = DefaultValuesParameterModel.angleIni_F)(v1:Double=DefaultValuesParameterModel.v1, v2:Double=DefaultValuesParameterModel.v2, v3:Double=DefaultValuesParameterModel.v3)(T:Double, deltaT:Double):Vector[DynamicalCurrentStateStationary] = {
     val N = floor(T / deltaT).toInt
     val vecTimes = (0 until N).map(x => x * deltaT) :+ T
-    val res = vecTimes.map(x => dynamicStationnary_v2(rB,rC,rD,rE,rF,rG,rH,rI,angleIni_B,angleIni_D,angleIni_F)(v1,v2,v3)(x)).toVector
+    val res = vecTimes.map(x => dynamicStationnary_v2(rB,rC,rD,rE,rF,rG,rH,rI,angleH,angleI,angleIni_B,angleIni_D,angleIni_F)(v1,v2,v3)(x)).toVector
     // type de res: Vector[DynamicalCurrentStateStationary]
     res
   }
@@ -491,6 +503,51 @@ object Model {
 
 
 
+
+
+  def trajectoryLightChoice(res:TrajectoryStationnary)(lightB :Boolean = DefaultValuesParameterModel.lightB, lightC :Boolean = DefaultValuesParameterModel.lightC,
+                                                       lightD :Boolean = DefaultValuesParameterModel.lightD, lightE :Boolean = DefaultValuesParameterModel.lightE,
+                                                       lightF :Boolean = DefaultValuesParameterModel.lightF, lightG :Boolean = DefaultValuesParameterModel.lightG) = {
+
+    new TrajectoryStationnary(
+      time = res.time,
+      Bx = if (lightB) res.Bx else Vector.empty,
+      By = if (lightB) res.By else Vector.empty,
+      Cx = if (lightC) res.Cx else Vector.empty,
+      Cy = if (lightC) res.Cy else Vector.empty,
+      Dx = if (lightD) res.Dx else Vector.empty,
+      Dy = if (lightD) res.Dy else Vector.empty,
+      Ex = if (lightE) res.Ex else Vector.empty,
+      Ey = if (lightE) res.Ey else Vector.empty,
+      Fx = if (lightF) res.Fx else Vector.empty,
+      Fy = if (lightF) res.Fy else Vector.empty,
+      Gx = if (lightG) res.Gx else Vector.empty,
+      Gy = if (lightG) res.Gy else Vector.empty,
+      speedBx = if (lightB) res.Bx else Vector.empty,
+      speedBy = if (lightB) res.By else Vector.empty,
+      speedCx = if (lightC) res.Cx else Vector.empty,
+      speedCy = if (lightC) res.Cy else Vector.empty,
+      speedDx = if (lightD) res.Dx else Vector.empty,
+      speedDy = if (lightD) res.Dy else Vector.empty,
+      speedEx = if (lightE) res.Ex else Vector.empty,
+      speedEy = if (lightE) res.Ey else Vector.empty,
+      speedFx = if (lightF) res.Fx else Vector.empty,
+      speedFy = if (lightF) res.Fy else Vector.empty,
+      speedGx = if (lightG) res.Gx else Vector.empty,
+      speedGy = if (lightG) res.Gy else Vector.empty,
+      accBx = if (lightB) res.Bx else Vector.empty,
+      accBy = if (lightB) res.By else Vector.empty,
+      accCx = if (lightC) res.Cx else Vector.empty,
+      accCy = if (lightC) res.Cy else Vector.empty,
+      accDx = if (lightD) res.Dx else Vector.empty,
+      accDy = if (lightD) res.Dy else Vector.empty,
+      accEx = if (lightE) res.Ex else Vector.empty,
+      accEy = if (lightE) res.Ey else Vector.empty,
+      accFx = if (lightF) res.Fx else Vector.empty,
+      accFy = if (lightF) res.Fy else Vector.empty,
+      accGx = if (lightG) res.Gx else Vector.empty,
+      accGy = if (lightG) res.Gy else Vector.empty)
+  }
 
 
 
@@ -1106,6 +1163,14 @@ object DefaultValuesParameterModel {
   def u2_sin(x: Double)={1.0*cos(x)}
   def u3_sin(x: Double)={3.0*sin(x)}
 
+  // Pour savoir si la lumière est alumée
+  val lightB = true
+  val lightC = true
+  val lightD = true
+  val lightE = true
+  val lightF = true
+  val lightG = true
+
 
 
 
@@ -1114,16 +1179,16 @@ object DefaultValuesParameterModel {
 object FixedParameterModel {
 
   // rayon
-  val rB = 4.0
-  val rC = 4.0
-  val rD = 1.0
-  val rE = 1.0
-  val rF = 1.0
-  val rG = 1.0
-  val rH = 2
-  val rI = 2
-  val angleH = 0.25
-  val angleI = 0.25
+  val rB = 0.935
+  val rC = 0.935
+  val rD = 0.43
+  val rE = 0.38
+  val rF = 0.417
+  val rG = 0.417
+  val rH = sqrt(pow(0.50,2)+pow(0.05,2))
+  val rI = sqrt(pow(0.50,2)+pow(0.05,2))
+  val angleH = atan(0.05/0.5)
+  val angleI = atan(0.05/0.5)
 
   // moteur 1
   // partie électrique
@@ -1175,518 +1240,684 @@ object FixedParameterModel {
   object Mesure{
     // ctrl b pour avoir le code
 
-
     ////////////////////////////////
-    //    POINT SINGULIER
+    //    STAT
     ////////////////////////////////
 
-
-    def distance(a: Double, b: Double)=  {sqrt( a*a + b*b)}
-
-    def slaveFindSingularPoints(vec1:Vector[Double],vec2:Vector[Double], seuil:Double)={
-      vec1.zip(vec2).zipWithIndex.collect{ case((a,b),c) if distance(a,b)<seuil => (a,b,distance(a,b),c)}
-      // le resultat c'est un vecteur de triplets (Doulble,Double,Double,Int)
-    }
-
-
-    def countSingularPoints(vec1:Vector[Double],vec2:Vector[Double], seuil:Double) = {
-      // return an integer
-      val temp = slaveFindSingularPoints(vec1,vec2,seuil)
-      if (temp.isEmpty){0} else {
-        SelectSingularPoints(temp).length
-      }
-    }
-
-
-    def timesOfSingularPoints(vec1:Vector[Double],vec2:Vector[Double], seuil:Double): Array[Int] = {
-      // return a vector of integer (indices)
-      val temp = slaveFindSingularPoints(vec1,vec2,seuil)
-      if (temp.isEmpty){ Array[Int]()} else {
-        SelectSingularPoints(temp).map(_._4).toArray
-      }
-    }
-
-
-    // selon le seuil choisit sur la vitesse, on peut avoir plusieurs points singulier proche, alors qu'il n'y en a qu'un, on sélectionne celui
-    // qui a la plus petite vitesse
-    def nextSelectSingularPoints(vec:Vector[(Double,Double,Double,Int)],res:Vector[(Double,Double,Double,Int)], temp:(Double,Double,Double,Int)) : Vector[(Double,Double,Double,Int)]= {
-
-      if (vec.isEmpty) { res
+    def diff(v: Array[Int])= {
+      if (v.isEmpty || v.tail.isEmpty) {
+        Array[Int]()
       } else {
+        (v zip v.tail).map { case (a, b) => b - a }
+      }
+    }
 
-        val temp2 = vec(0)
+        def mean(v: Array[Double]): Option[Double]={
+          if (v.isEmpty) None
+          else Some(v.sum / v.length)
+        }
 
-        if (temp2._4 == temp._4 + 1) {
-          if (temp2._3 < res.last._3) {
-            val newRes = res.dropRight(1) :+ temp2 // replace the last element with the one that has lower distance
-            val newTemp = temp2
-            val newVec = vec.tail
-            nextSelectSingularPoints(newVec, newRes, newTemp)
+        def variance(v:Array[Double]): Option[Double]={
+          mean(v).flatMap{
+            m => (mean(v.map{x=> pow(x-m,2)}))
+          }
+        }
+
+        def momentOrdre3(v:Array[Double]): Option[Double] = {
+          mean(v).flatMap{m =>
+            variance(v).map(sqrt).flatMap{sd =>
+              if(sd == 0) Some(0)
+              else mean(v.map{x : Double => pow((x-m)/ sd,3)})
+            }
+          }
+        }
+
+
+
+
+    // general utils
+        def calculAngle(x:Double,y:Double)={
+          val temp = math.atan(y/x)
+          if (x>=0){temp} else {temp + Pi}
+        }
+
+
+
+
+
+        ////////////////////////////////
+        //    POINT SINGULIER
+        ////////////////////////////////
+
+
+        def distance(a: Double, b: Double)=  {sqrt( a*a + b*b)}
+
+        def slaveFindSingularPoints(vec1:Vector[Double],vec2:Vector[Double], seuil:Double) ={
+          vec1.zip(vec2).zipWithIndex.collect{ case((a,b),c) if distance(a,b)<seuil => (a,b,distance(a,b),c)}
+          // le resultat c'est un vecteur de  (Doulble,Double,Double,Int)
+        }
+
+
+        def countSingularPoints(vec1:Vector[Double],vec2:Vector[Double], seuil:Double) = {
+          // return an integer
+          val temp = slaveFindSingularPoints(vec1,vec2,seuil)
+          if (temp.isEmpty){0} else {
+            SelectSingularPoints(temp).length
+          }
+        }
+
+
+        def timesOfSingularPoints(vec1:Vector[Double],vec2:Vector[Double], seuil:Double): Array[Int] = {
+          // return a vector of integer (indices)
+          val temp = slaveFindSingularPoints(vec1,vec2,seuil)
+          if (temp.isEmpty){ Array[Int]()} else {
+            SelectSingularPoints(temp).map(_._4).toArray
+          }
+        }
+
+
+        def angleOfSingularPoints(vec1:Vector[Double],vec2:Vector[Double], seuil:Double): Array[Double] = {
+          // return a vector of integer (indices)
+          val temp = slaveFindSingularPoints(vec1,vec2,seuil)
+          temp.map{ case(a,b,c,d) => calculAngle(a,b)  }.toArray
+        }
+
+
+
+        // selon le seuil choisit sur la vitesse, on peut avoir plusieurs points singulier proche, alors qu'il n'y en a qu'un, on sélectionne celui
+        // qui a la plus petite vitesse
+        def nextSelectSingularPoints(vec:Vector[(Double,Double,Double,Int)],res:Vector[(Double,Double,Double,Int)], temp:(Double,Double,Double,Int)) : Vector[(Double,Double,Double,Int)]= {
+
+          if (vec.isEmpty) { res
           } else {
-            // if temp2._3 >= res.last._3
-            val newRes = res
-            val newTemp = temp2
-            val newVec = vec.tail
-            nextSelectSingularPoints(newVec, newRes, newTemp)
+
+            val temp2 = vec(0)
+
+            if (temp2._4 == temp._4 + 1) {
+              if (temp2._3 < res.last._3) {
+                val newRes = res.dropRight(1) :+ temp2 // replace the last element with the one that has lower distance
+                val newTemp = temp2
+                val newVec = vec.tail
+                nextSelectSingularPoints(newVec, newRes, newTemp)
+              } else {
+                // if temp2._3 >= res.last._3
+                val newRes = res
+                val newTemp = temp2
+                val newVec = vec.tail
+                nextSelectSingularPoints(newVec, newRes, newTemp)
+              }
+
+            } else {
+              // if temp2._4 != temp._4 +1 ie start new consecutive sequence of index
+              val newRes = res :+ temp2
+              val newTemp = temp2
+              val newVec = vec.tail
+              nextSelectSingularPoints(newVec, newRes, newTemp)
+            }
+
+          }
+        }
+
+
+        def SelectSingularPoints(vec:Vector[(Double,Double,Double,Int)])={
+          val res = Vector(vec(0))
+          val temp = vec(0)
+          nextSelectSingularPoints(vec.tail,res,temp)
+        }
+
+
+
+
+
+        // all trajectories
+        def countSingularPointsAllTrajectories(res:TrajectoryStationnary, seuil:Double) = {
+          val nbSingularPointsB = countSingularPoints(res.speedBx, res.speedBy,seuil)
+          val nbSingularPointsC = countSingularPoints(res.speedCx, res.speedCy,seuil)
+          val nbSingularPointsD = countSingularPoints(res.speedDx, res.speedDy,seuil)
+          val nbSingularPointsE = countSingularPoints(res.speedEx, res.speedEy,seuil)
+          val nbSingularPointsF = countSingularPoints(res.speedFx, res.speedFy,seuil)
+          val nbSingularPointsG = countSingularPoints(res.speedGx, res.speedGy,seuil)
+
+          nbSingularPointsB + nbSingularPointsC  + nbSingularPointsD + nbSingularPointsE + nbSingularPointsF + nbSingularPointsG
+        }
+
+
+
+        def angleSingularPointsAllTrajectories(res:TrajectoryStationnary, seuil:Double) = {
+
+          val angleSingularPointsB = angleOfSingularPoints(res.speedBx, res.speedBy,seuil)
+          val angleSingularPointsC = angleOfSingularPoints(res.speedCx, res.speedCy,seuil)
+          val angleSingularPointsD = angleOfSingularPoints(res.speedDx, res.speedDy,seuil)
+          val angleSingularPointsE = angleOfSingularPoints(res.speedEx, res.speedEy,seuil)
+          val angleSingularPointsF = angleOfSingularPoints(res.speedFx, res.speedFy,seuil)
+          val angleSingularPointsG = angleOfSingularPoints(res.speedGx, res.speedGy,seuil)
+
+          angleSingularPointsB ++ angleSingularPointsC ++ angleSingularPointsD ++ angleSingularPointsE ++ angleSingularPointsF ++ angleSingularPointsG
+
+        }
+
+
+        def diffTimesSingularPointsAllTrajectories(res:TrajectoryStationnary, seuil:Double) = {
+          val diffTimesSingularPointsB = diff(timesOfSingularPoints(res.speedBx, res.speedBy,seuil))
+          val diffTimesSingularPointsC = diff(timesOfSingularPoints(res.speedCx, res.speedCy,seuil))
+          val diffTimesSingularPointsD = diff(timesOfSingularPoints(res.speedDx, res.speedDy,seuil))
+          val diffTimesSingularPointsE = diff(timesOfSingularPoints(res.speedEx, res.speedEy,seuil))
+          val diffTimesSingularPointsF = diff(timesOfSingularPoints(res.speedFx, res.speedFy,seuil))
+          val diffTimesSingularPointsG = diff(timesOfSingularPoints(res.speedGx, res.speedGy,seuil))
+
+          diffTimesSingularPointsB ++ diffTimesSingularPointsC ++ diffTimesSingularPointsD ++ diffTimesSingularPointsE ++ diffTimesSingularPointsF ++ diffTimesSingularPointsG
+        }
+
+
+
+
+
+
+
+        ////////////////////////////////
+        //    DENSITE
+        ////////////////////////////////
+
+
+        def maxSquareForDensity(rB: Double = FixedParameterModel.rB, rC: Double = FixedParameterModel.rC, rD:Double = FixedParameterModel.rD ,
+                                rE:Double = FixedParameterModel.rE, rF:Double = FixedParameterModel.rF, rG:Double = FixedParameterModel.rG,
+                                rH:Double = FixedParameterModel.rH, rI:Double = FixedParameterModel.rI)= {
+          max(max(rB, max(rH+rD, rH+rE)) , max(rC, max(rI+rF, rI+rG)) )
+        }
+
+
+        def minSquareForDensity(rB: Double = FixedParameterModel.rB, rC: Double = FixedParameterModel.rC, rD:Double = FixedParameterModel.rD ,
+                                rE:Double = FixedParameterModel.rE, rF:Double = FixedParameterModel.rF, rG:Double = FixedParameterModel.rG,
+                                rH:Double = FixedParameterModel.rH, rI:Double = FixedParameterModel.rI)= {
+          min(min(rH-rD, rH-rE) , min(rI-rF, rI-rG) )
+        }
+
+
+
+        // trouver les indices (i,j) du point dans la grille
+        // subdivsion des axes en N segments, donc grille de N^2 rectangles: indices entre 0 et N-1
+        def findCaseForPoint(point:(Double,Double), xmin:Double,xmax:Double,ymin:Double,ymax:Double, N:Int) = {
+          val deltaX = (xmax-xmin)/N
+          val indiceX = if(point._1 == xmax){N-1} else {floor( (point._1 - xmin)/deltaX ).toInt }
+
+          val deltaY = (ymax-ymin)/N
+          val indiceY = if(point._2 == ymax){N -1} else {floor( (point._2 - ymin)/deltaY ).toInt }
+
+          (indiceX,indiceY)
+
+        }
+
+
+        def arrayDensitySquare(vec1:Vector[Double],vec2:Vector[Double],xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int) = {
+
+          val temp = vec1.zip(vec2)
+
+          var array = Array.ofDim[Double](N,N)  // initialisé à 0
+
+          for (point <- temp) {
+
+            val (i, j) = findCaseForPoint((point._1, point._2), xmin, xmax, ymin, ymax, N)
+            array(i)(j) += 1.0
           }
 
-        } else {
-          // if temp2._4 != temp._4 +1 ie start new consecutive sequence of index
-          val newRes = res :+ temp2
-          val newTemp = temp2
-          val newVec = vec.tail
-          nextSelectSingularPoints(newVec, newRes, newTemp)
+          //println( array.map(x => x.sum).sum ) // on retrouve le nombre de points, ouf!
+          //println(convertResultStationnary(res).time.length)
+          array
+          // to print the array array.map(_.mkString(" ")).mkString("\n")
         }
 
-      }
-    }
 
+        def pointsDensitySquare(vec1:Vector[Double],vec2:Vector[Double],xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int,rMin:Double,rMax:Double) = {
 
-    def SelectSingularPoints(vec:Vector[(Double,Double,Double,Int)])={
-      val res = Vector(vec(0))
-      val temp = vec(0)
-      nextSelectSingularPoints(vec.tail,res,temp)
-    }
+          // nombre de cases non vides dans l'array
+          val array = arrayDensitySquare(vec1,vec2,xmin,xmax,ymin,ymax,N)
+          val nbCasesNonEmpty = array.map(x => x.filter(_ != 0).length).sum
 
-
-
-
-
-
-    ////////////////////////////////
-    //    DENSITE
-    ////////////////////////////////
-
-
-    def maxSquareForDensity(rB: Double = FixedParameterModel.rB, rC: Double = FixedParameterModel.rC, rD:Double = FixedParameterModel.rD ,
-                            rE:Double = FixedParameterModel.rE, rF:Double = FixedParameterModel.rF, rG:Double = FixedParameterModel.rG,
-                            rH:Double = FixedParameterModel.rH, rI:Double = FixedParameterModel.rI)= {
-      max(max(rB, max(rH+rD, rH+rE)) , max(rC, max(rI+rF, rI+rG)) )
-    }
-
-
-    def minSquareForDensity(rB: Double = FixedParameterModel.rB, rC: Double = FixedParameterModel.rC, rD:Double = FixedParameterModel.rD ,
-                            rE:Double = FixedParameterModel.rE, rF:Double = FixedParameterModel.rF, rG:Double = FixedParameterModel.rG,
-                            rH:Double = FixedParameterModel.rH, rI:Double = FixedParameterModel.rI)= {
-      min(min(rH-rD, rH-rE) , min(rI-rF, rI-rG) )
-    }
-
-
-
-    // trouver les indices (i,j) du point dans la grille
-    // subdivsion des axes en N segments, donc grille de N^2 rectangles: indices entre 0 et N-1
-    def findCaseForPoint(point:(Double,Double), xmin:Double,xmax:Double,ymin:Double,ymax:Double, N:Int) = {
-      val deltaX = (xmax-xmin)/N
-      val indiceX = if(point._1 == xmax){N-1} else {floor( (point._1 - xmin)/deltaX ).toInt }
-
-      val deltaY = (ymax-ymin)/N
-      val indiceY = if(point._2 == ymax){N -1} else {floor( (point._2 - ymin)/deltaY ).toInt }
-
-      (indiceX,indiceY)
-
-    }
-
-
-    def arrayDensitySquare(vec1:Vector[Double],vec2:Vector[Double],xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int) = {
-
-      val temp = vec1.zip(vec2)
-
-      var array = Array.ofDim[Double](N,N)  // initialisé à 0
-
-      for (point <- temp) {
-
-        val (i, j) = findCaseForPoint((point._1, point._2), xmin, xmax, ymin, ymax, N)
-        array(i)(j) += 1.0
-      }
-
-      //println( array.map(x => x.sum).sum ) // on retrouve le nombre de points, ouf!
-      //println(convertResultStationnary(res).time.length)
-      array
-      // to print the array array.map(_.mkString(" ")).mkString("\n")
-    }
-
-
-    def pointsDensitySquare(vec1:Vector[Double],vec2:Vector[Double],xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int,rMin:Double,rMax:Double) = {
-
-      // nombre de cases non vides dans l'array
-      val array = arrayDensitySquare(vec1,vec2,xmin,xmax,ymin,ymax,N)
-      val nbCasesNonEmpty = array.map(x => x.filter(_ != 0).length).sum
-
-      // la ratio d'occupation:
-      //(nbCasesNonEmpty.toFloat / (N * N)).toDouble
-      (nbCasesNonEmpty.toFloat / nbPointGrilleDansZoneAtteignable(xmin,xmax,ymin,ymax,N,rMin,rMax) ).toDouble
-    }
-
-
-    def sum2Arrays(a:Array[Double],b:Array[Double])={
-      a.zip(b).map(x=>x._1+x._2)
-    }
-
-    def sum2ArraysOfArrays(a:Array[Array[Double]],b:Array[Array[Double]])={
-      a.zip(b).map(x => sum2Arrays(x._1,x._2))
-    }
-
-    def nextSumVectorOfArraysOfArrays(v:Vector[Array[Array[Double]]],acc:Array[Array[Double]]): Array[Array[Double]]= {
-      if (v.isEmpty){acc} else{
-        val temp = v(0)
-        val newV = v.tail
-        val newAcc = sum2ArraysOfArrays(acc,temp)
-        nextSumVectorOfArraysOfArrays(newV,newAcc)
-      }
-
-    }
-
-    def sumVectorOfArraysOfArrays(v:Vector[Array[Array[Double]]]) = {
-      val acc = v(0)
-      nextSumVectorOfArraysOfArrays(v.tail,acc)
-    }
-
-/*
-    // to test the sums
-    val a = Array(1.0,2.0)
-    val b = Array(3.0,4.0)
-    //println(sum2Arrays(a,b).mkString(""))
-
-    val c = Array(a,a)
-    val d = Array(b,a)
-    //println(sum2ArraysOfArrays(c,d).map(_.mkString(" ")).mkString("\n") )
-
-    //println(sumVectorOfArraysOfArrays(Vector(c,d)).map(_.mkString(" ")).mkString("\n"))
-*/
-
-    def allTrajectoriesDensitySquare(res:TrajectoryStationnary,xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int,rMin:Double,rMax:Double) = {
-
-      val arrayB = arrayDensitySquare(res.Bx,res.By,xmin,xmax,ymin,ymax,N)
-      val arrayC = arrayDensitySquare(res.Cx,res.Cy,xmin,xmax,ymin,ymax,N)
-      val arrayD = arrayDensitySquare(res.Dx,res.Dy,xmin,xmax,ymin,ymax,N)
-      val arrayE = arrayDensitySquare(res.Ex,res.Ey,xmin,xmax,ymin,ymax,N)
-      val arrayF = arrayDensitySquare(res.Fx,res.Fy,xmin,xmax,ymin,ymax,N)
-      val arrayG = arrayDensitySquare(res.Gx,res.Gy,xmin,xmax,ymin,ymax,N)
-
-      val temp = Vector(arrayB,arrayC,arrayD,arrayE,arrayF,arrayG)
-      val array = sumVectorOfArraysOfArrays(temp)
-
-
-      // nombre de cases non vides dans l'array (sommes des array)
-      val nbCasesNonEmpty = array.map(x => x.filter(_ != 0).length).sum
-
-
-      // la ratio d'occupation:
-      //(nbCasesNonEmpty.toFloat / (N * N)).toDouble
-      ( nbCasesNonEmpty.toFloat  / nbPointGrilleDansZoneAtteignable(xmin,xmax,ymin,ymax,N,rMin,rMax) ).toDouble
-
-    }
-
-
-
-    def nbPointGrilleDansZoneAtteignable(xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int,rMin:Double,rMax:Double)={
-      val deltaX = (xmax-xmin)/N
-      val deltaY = (ymax-ymin)/N
-      val posX = (0 to N).map(x=> xmin + x*deltaX)
-      val posY = (0 to N).map(x=> ymin + x*deltaY)
-
-      var count = 0
-      for ( x <-  posX){
-        for ( y <- posY){
-          if  ( distance(x,y) >= rMin  &  distance(x,y) <= rMax ) { count += 1}
+          // la ratio d'occupation:
+          //(nbCasesNonEmpty.toFloat / (N * N)).toDouble
+          (nbCasesNonEmpty.toFloat / nbPointGrilleDansZoneAtteignable(xmin,xmax,ymin,ymax,N,rMin,rMax) ).toDouble
         }
-      }
-      count
-    }
 
 
-
-
-
-
-
-
-    ////////////////////////////////
-    //   BOUCLE ou presque (TEMPS DE PREMIER RETOUR)
-    ////////////////////////////////
-
-
-
-    def distanceLoopPoint( x: (Double,Double), y: (Double,Double) )=  {sqrt( (x._1 - y._1)*(x._1 - y._1) + (x._2 - y._2)*(x._2 - y._2)  )}
-
-    // on garde l'indice du point de référence
-    def distanceLoopPoint2( x: (Double,Double,Int), y: (Double,Double,Int) )=  {(sqrt( (x._1 - y._1)*(x._1 - y._1) + (x._2 - y._2)*(x._2 - y._2) ) , x._3, y._3-x._3)}
-
-    def comparePointsToAllElemnts(point:(Double,Double), vect: Vector[(Double,Double)])={
-      vect.map(x => distanceLoopPoint(x,point))
-    }
-
-    def comparePointsToAllElemnts2(point:(Double,Double,Int), vect: Vector[(Double,Double,Int)])={
-      vect.map(x => distanceLoopPoint2(x,point))
-    }
-
-
-
-
-    def slavePremierRetour(point:(Double,Double,Int), vect:Vector[(Double,Double,Int)], seuil:Double) = {
-      val temp = vect.filter(_._3 >= point._3)
-      // on ne garde que les éléments du vecteur dont le point a un
-      //  indice supérieur qu le point de référence (qui sera aussi dans le vecteur)
-      val res2 = comparePointsToAllElemnts2(point,temp) // calcule les distances, on a toujours l'indice  vector[(Double,Int)] et le temps de retour
-
-      val res3 = res2.filter(_._1 < seuil)
-
-
-      val indices = res3.map(_._2)
-      val a = indices.tail
-      val b = indices.dropRight(1)   // tous sauf le dernier
-      val res4 = a.zip(b).collect{ case(x,y) if (x-y)>1  => x } // permet de ne pas avoir les points qui collent notre point de référence
-      //res4
-
-      if (res4.length >=1 ){ (point,res4(0)-point._3) } else { (point,0)}
-      // on retourne le point et le temps de retour associé (s'il y en a un , sinon le point et 0)
-
-    }
-
-
-    def premierRetour(v1:Vector[Double], v2:Vector[Double], seuil:Double) = {
-    // l'indice du point qui est concerné par le retour, et le nombre de pas de temps pour y revenir
-    val temp = v1.zip(v2)
-    val res3 = temp.zipWithIndex.map( x =>  (x._1._1, x._1._2, x._2) ) // pour avoir le format (x:Double,y:Double,indice:Int)
-    val res4 = res3.map(x => slavePremierRetour(x,res3, seuil))
-    res4
-    // le format du retour: un vecteur (nombre de composante = nb de pas de temps = nb de positions du point): pour chaque position
-      // renvoit  ((x,y,i),t)  x,y position du point pour lequel il y a un retour, i l'indice auquel il est parcouru, et t le nombre de pas de temps pour le retour
-    }
-
-
-    def indiceEtTempsPremierRetour(v1:Vector[Double], v2:Vector[Double], seuil:Double) : (Vector[Int],Vector[Int]) = {
-      val resPremierRetour = premierRetour(v1,v2,seuil)
-      //val res4 = resPremierRetour .filter(_ != () )  // retire les vecteur vide
-      //val res4 = resPremierRetour.filterNot(_ == ())
-      val res4 = resPremierRetour.filterNot(_._2 ==0 )
-      val tempsRetour = res4.map{ case( ((a,b,c),d) )  => d}  //  le temps qu'on met pour revenir au point concerné
-      val indicesRetour = res4.map{ case( ((a,b,c),d) )  => c}   // l'indice du point concerné
-      (indicesRetour,tempsRetour)
-    }
-
-
-    // version segments Guillaume
-
-    def intersection(A:(Double,Double),B:(Double,Double),C:(Double,Double),D:(Double,Double)) : Boolean = {
-      val ABx = B._1 - A._1
-      val ABy = B._2 - A._2
-      val CDx = D._1 - C._1
-      val CDy = D._2 - C._2
-      val det = -ABx * CDy + ABy * CDx
-
-      if (det == 0) {
-        false
-      } else {
-        val k = (-CDy * (C._1 - A._1) + CDx * (C._2 - A._2)) / det
-        val t = (-ABy * (C._1 - A._1) + ABx * (C._2 - A._2)) / det
-        if ((0 <= k) & (k <= 1) & (0 <= t) & (t <= 1)  ) {
-          true
-        } else {
-          false
+        def sum2Arrays(a:Array[Double],b:Array[Double])={
+          a.zip(b).map(x=>x._1+x._2)
         }
-      }
 
-    }
-
-
-    def nextRetour(trajCurrent : Vector[((Double,Double),Int)], res:Vector[(Int,Int)]) : Vector[(Int,Int)] = {
-      if (trajCurrent.isEmpty || trajCurrent.tail.isEmpty || trajCurrent.tail.tail.isEmpty) {
-        res
-      } else {
-        val segments = trajCurrent.dropRight(1).zip(trajCurrent.tail) // le deuxieme vecteur a forcément une intersection avec le premier
-        val temp = segments(0)
-        val segments2 = segments.tail.tail
-        val resIntersect = segments2.map { x => (intersection(temp._1._1, temp._2._1, x._1._1, x._2._1), x._1._2 )}.filter(_._1 == true)
-        if (resIntersect.isEmpty) {
-          val newTrajCurrent = trajCurrent.tail
-          val newRes = res
-          nextRetour(newTrajCurrent, newRes)
-        } else {
-          val newTrajCurrent = trajCurrent.tail
-          val newRes = res :+ (trajCurrent(0)._2, resIntersect(0)._2 - trajCurrent(0)._2)
-          nextRetour(newTrajCurrent, newRes)
+        def sum2ArraysOfArrays(a:Array[Array[Double]],b:Array[Array[Double]])={
+          a.zip(b).map(x => sum2Arrays(x._1,x._2))
         }
-      }
+
+        def nextSumVectorOfArraysOfArrays(v:Vector[Array[Array[Double]]],acc:Array[Array[Double]]): Array[Array[Double]]= {
+          if (v.isEmpty){acc} else{
+            val temp = v(0)
+            val newV = v.tail
+            val newAcc = sum2ArraysOfArrays(acc,temp)
+            nextSumVectorOfArraysOfArrays(newV,newAcc)
+          }
+
+        }
+
+        def sumVectorOfArraysOfArrays(v:Vector[Array[Array[Double]]]) = {
+          val acc = v(0)
+          nextSumVectorOfArraysOfArrays(v.tail,acc)
+        }
+
+        /*
+            // to test the sums
+            val a = Array(1.0,2.0)
+            val b = Array(3.0,4.0)
+            //println(sum2Arrays(a,b).mkString(""))
+
+            val c = Array(a,a)
+            val d = Array(b,a)
+            //println(sum2ArraysOfArrays(c,d).map(_.mkString(" ")).mkString("\n") )
+
+            //println(sumVectorOfArraysOfArrays(Vector(c,d)).map(_.mkString(" ")).mkString("\n"))
+        */
+
+        def densitySquareAllTrajectories(res:TrajectoryStationnary, xmin:Double, xmax:Double, ymin:Double, ymax:Double, N:Int, rMin:Double, rMax:Double) = {
+
+          val arrayB = arrayDensitySquare(res.Bx,res.By,xmin,xmax,ymin,ymax,N)
+          val arrayC = arrayDensitySquare(res.Cx,res.Cy,xmin,xmax,ymin,ymax,N)
+          val arrayD = arrayDensitySquare(res.Dx,res.Dy,xmin,xmax,ymin,ymax,N)
+          val arrayE = arrayDensitySquare(res.Ex,res.Ey,xmin,xmax,ymin,ymax,N)
+          val arrayF = arrayDensitySquare(res.Fx,res.Fy,xmin,xmax,ymin,ymax,N)
+          val arrayG = arrayDensitySquare(res.Gx,res.Gy,xmin,xmax,ymin,ymax,N)
+
+          val temp = Vector(arrayB,arrayC,arrayD,arrayE,arrayF,arrayG)
+          val array = sumVectorOfArraysOfArrays(temp)
+
+
+          // nombre de cases non vides dans l'array (sommes des array)
+          val nbCasesNonEmpty = array.map(x => x.filter(_ != 0).length).sum
+
+
+          // la ratio d'occupation:
+          //(nbCasesNonEmpty.toFloat / (N * N)).toDouble
+          ( nbCasesNonEmpty.toFloat  / nbPointGrilleDansZoneAtteignable(xmin,xmax,ymin,ymax,N,rMin,rMax) ).toDouble
+
+        }
+
+
+
+        def nbPointGrilleDansZoneAtteignable(xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int,rMin:Double,rMax:Double)={
+          val deltaX = (xmax-xmin)/N
+          val deltaY = (ymax-ymin)/N
+          val posX = (0 to N).map(x=> xmin + x*deltaX)
+          val posY = (0 to N).map(x=> ymin + x*deltaY)
+
+          var count = 0
+          for ( x <-  posX){
+            for ( y <- posY){
+              if  ( distance(x,y) >= rMin  &  distance(x,y) <= rMax ) { count += 1}
+            }
+          }
+          count
+        }
+
+
+
+
+
+
+
+
+        ////////////////////////////////
+        //   BOUCLE ou presque (TEMPS DE PREMIER RETOUR)
+        ////////////////////////////////
+
+
+
+        def distanceLoopPoint( x: (Double,Double), y: (Double,Double) )=  {sqrt( (x._1 - y._1)*(x._1 - y._1) + (x._2 - y._2)*(x._2 - y._2)  )}
+
+        // on garde l'indice du point de référence
+        def distanceLoopPoint2( x: (Double,Double,Int), y: (Double,Double,Int) )=  {(sqrt( (x._1 - y._1)*(x._1 - y._1) + (x._2 - y._2)*(x._2 - y._2) ) , x._3, y._3-x._3)}
+
+        def comparePointsToAllElemnts(point:(Double,Double), vect: Vector[(Double,Double)])={
+          vect.map(x => distanceLoopPoint(x,point))
+        }
+
+        def comparePointsToAllElemnts2(point:(Double,Double,Int), vect: Vector[(Double,Double,Int)])={
+          vect.map(x => distanceLoopPoint2(x,point))
+        }
+
+
+
+
+        def slavePremierRetour(point:(Double,Double,Int), vect:Vector[(Double,Double,Int)], seuil:Double) = {
+          val temp = vect.filter(_._3 >= point._3)
+          // on ne garde que les éléments du vecteur dont le point a un
+          //  indice supérieur qu le point de référence (qui sera aussi dans le vecteur)
+          val res2 = comparePointsToAllElemnts2(point,temp) // calcule les distances, on a toujours l'indice  vector[(Double,Int)] et le temps de retour
+
+          val res3 = res2.filter(_._1 < seuil)
+
+
+          val indices = res3.map(_._2)
+          val a = indices.tail
+          val b = indices.dropRight(1)   // tous sauf le dernier
+          val res4 = a.zip(b).collect{ case(x,y) if (x-y)>1  => x } // permet de ne pas avoir les points qui collent notre point de référence
+          //res4
+
+          if (res4.length >=1 ){ (point,res4(0)-point._3) } else { (point,0)}
+          // on retourne le point et le temps de retour associé (s'il y en a un , sinon le point et 0)
+
+        }
+
+
+        def premierRetour(v1:Vector[Double], v2:Vector[Double], seuil:Double) = {
+          // l'indice du point qui est concerné par le retour, et le nombre de pas de temps pour y revenir
+          val temp = v1.zip(v2)
+          val res3 = temp.zipWithIndex.map( x =>  (x._1._1, x._1._2, x._2) ) // pour avoir le format (x:Double,y:Double,indice:Int)
+          val res4 = res3.map(x => slavePremierRetour(x,res3, seuil))
+          res4
+          // le format du retour: un vecteur (nombre de composante = nb de pas de temps = nb de positions du point): pour chaque position
+          // renvoit  ((x,y,i),t)  x,y position du point pour lequel il y a un retour, i l'indice auquel il est parcouru, et t le nombre de pas de temps pour le retour
+        }
+
+
+        def indiceEtTempsPremierRetour(v1:Vector[Double], v2:Vector[Double], seuil:Double) : (Vector[Int],Vector[Int]) = {
+          val resPremierRetour = premierRetour(v1,v2,seuil)
+          //val res4 = resPremierRetour .filter(_ != () )  // retire les vecteur vide
+          //val res4 = resPremierRetour.filterNot(_ == ())
+          val res4 = resPremierRetour.filterNot(_._2 ==0 )
+          val tempsRetour = res4.map{ case( ((a,b,c),d) )  => d}  //  le temps qu'on met pour revenir au point concerné
+          val indicesRetour = res4.map{ case( ((a,b,c),d) )  => c}   // l'indice du point concerné
+          (indicesRetour,tempsRetour)
+        }
+
+
+        // version segments Guillaume
+
+        def intersection(A:(Double,Double),B:(Double,Double),C:(Double,Double),D:(Double,Double)) : Boolean = {
+          val ABx = B._1 - A._1
+          val ABy = B._2 - A._2
+          val CDx = D._1 - C._1
+          val CDy = D._2 - C._2
+          val det = -ABx * CDy + ABy * CDx
+
+          if (det == 0) {
+            false
+          } else {
+            val k = (-CDy * (C._1 - A._1) + CDx * (C._2 - A._2)) / det
+            val t = (-ABy * (C._1 - A._1) + ABx * (C._2 - A._2)) / det
+            if ((0 <= k) & (k <= 1) & (0 <= t) & (t <= 1)  ) {
+              true
+            } else {
+              false
+            }
+          }
+
+        }
+
+
+        def nextRetour(trajCurrent : Vector[((Double,Double),Int)], res:Vector[(Double,Double,Int,Int)]) : Vector[(Double,Double,Int,Int)] = {
+          if (trajCurrent.isEmpty || trajCurrent.tail.isEmpty || trajCurrent.tail.tail.isEmpty) {
+            res
+          } else {
+            val segments = trajCurrent.dropRight(1).zip(trajCurrent.tail) // le deuxieme vecteur a forcément une intersection avec le premier
+            val temp = segments(0)
+            val segments2 = segments.tail.tail
+            val resIntersect = segments2.map { x => (intersection(temp._1._1, temp._2._1, x._1._1, x._2._1), x._1._1._1,x._1._1._2 , x._1._2 )}.filter(_._1 == true)
+            if (resIntersect.isEmpty) {
+              val newTrajCurrent = trajCurrent.tail
+              val newRes = res
+              nextRetour(newTrajCurrent, newRes)
+            } else {
+              val newTrajCurrent = trajCurrent.tail
+              val newRes = res :+ ( resIntersect(0)._2 , resIntersect(0)._3, trajCurrent(0)._2, resIntersect(0)._4 - trajCurrent(0)._2)
+              nextRetour(newTrajCurrent, newRes)
+            }
+          }
+        }
+
+
+
+        def retour(traj: Vector[(Double,Double)]) = {
+          val trajCurrent = traj.zipWithIndex
+          val res = Vector[(Double,Double,Int,Int)]()
+          nextRetour(trajCurrent,res)
+        }
+
+
+
+        def indiceEtTempsPremierRetourEtAngleSegments(v1:Vector[Double], v2:Vector[Double]) : (Array[Int],Array[Int],Array[Double]) = {
+          val resPremieretourSegments = retour( v1.zip(v2) )
+          val indicesRetour  = resPremieretourSegments.map(x=>x._3) // l'indice du point concerné => sa position
+          val tempsRetour= resPremieretourSegments.map(x=>x._4)   // le temps de retour du point concerné
+          val angleRetour =  resPremieretourSegments.map(x=>x._1). zip(resPremieretourSegments.map(x=>x._2)).map{ x => calculAngle(x._1,x._2)}
+          (indicesRetour.toArray,tempsRetour.toArray,angleRetour.toArray)
+        }
+
+
+
+        // all trajectories
+        def resPremieretourSegments(v1:Vector[Double],v2:Vector[Double]) = {retour( v1.zip(v2) ) }
+
+
+        def tempsRetourSegmentsAllTrajectories(res:TrajectoryStationnary, seuil:Int)={
+
+          val resRetourB = resPremieretourSegments(res.Bx,res.By).filter(_._4 < seuil)
+          val resRetourD = resPremieretourSegments(res.Dx,res.Dy).filter(_._4 < seuil)
+          val resRetourF = resPremieretourSegments(res.Fx,res.Fy).filter(_._4 < seuil)
+
+          val tempsRetourB= resRetourB.map(x=>x._4)
+          val tempsRetourD= resRetourD.map(x=>x._4)
+          val tempsRetourF= resRetourF.map(x=>x._4)
+
+          (tempsRetourB ++ tempsRetourD ++ tempsRetourF)
+        }
+
+
+
+        def angleRetourSegmentsAllTrajectories(res:TrajectoryStationnary, seuil:Int)={
+
+          val resRetourB = resPremieretourSegments(res.Bx,res.By).filter(_._4 < seuil)
+          val resRetourD = resPremieretourSegments(res.Dx,res.Dy).filter(_._4 < seuil)
+          val resRetourF = resPremieretourSegments(res.Fx,res.Fy).filter(_._4 < seuil)
+
+          val angleRetourB= resRetourB.map(x=>x._1). zip(resRetourB.map(x=>x._2)).map{ x => calculAngle(x._1,x._2)}
+          val angleRetourD= resRetourD.map(x=>x._1). zip(resRetourD.map(x=>x._2)).map{ x => calculAngle(x._1,x._2)}
+          val angleRetourF= resRetourF.map(x=>x._1). zip(resRetourF.map(x=>x._2)).map{ x => calculAngle(x._1,x._2)}
+
+          angleRetourB ++ angleRetourD ++ angleRetourF
+        }
+
+
+
+    def numberRetourSegmentsAllTrajectories(res:TrajectoryStationnary, seuil:Int)={
+
+      val resRetourB = resPremieretourSegments(res.Bx,res.By).filter(_._4 < seuil)
+      val resRetourD = resPremieretourSegments(res.Dx,res.Dy).filter(_._4 < seuil)
+      val resRetourF = resPremieretourSegments(res.Fx,res.Fy).filter(_._4 < seuil)
+
+      val nbRetourB= resRetourB.map(x=>x._4).length
+      val nbRetourD= resRetourD.map(x=>x._4).length
+      val nbRetourF= resRetourF.map(x=>x._4).length
+
+      (nbRetourB +  nbRetourD + nbRetourF)
     }
 
+        ////////////////////////////////
+        //    COURBURE de la l'arc paramétré
+        ////////////////////////////////
 
 
-     def retour(traj: Vector[(Double,Double)]) = {
-       val trajCurrent = traj.zipWithIndex
-       val res = Vector[(Int,Int)]()
-       nextRetour(trajCurrent,res)
-     }
+        // formule: x' y'' - y' x'' / ( x'^2 + y' ^2 )^(3/2)
+        def slaveCourbure(sx:Double, sy:Double, acx:Double, acy:Double)={
+          ((sx*acy) - (sy*acx)) / pow( sx*sx + sy*sy , 3/2)
+        }
+
+        def courbure(speedX:Vector[Double], speedY:Vector[Double], accX:Vector[Double], accY:Vector[Double])={
+
+          val temp = speedX.zip(speedY).zip(accX).zip(accY).map( x  => (x._1._1._1,x._1._1._2,x._1._2,x._2))  // pour avoir autre format
+          temp.map(x=>  slaveCourbure(x._1,x._2,x._3,x._4))
+        }
+
+
+        // a partir du zip des courbures et index selectionnés par seuil (ici on n'utilise que les index)
+        // on repère les point consécutifs qui sont dans ce vecteur
+        // on garde un vector de (Int,Int) le premier Int et le premier indice de la suite (valeurs d'indice consécutives)
+        // le second est la longeur de cette suite
+        def nextSlaveDetectStraitLine(v:Vector[(Double,Int)],acc:Vector[(Int,Int)],temp:(Double,Int)):Vector[(Int,Int)]={
+          if (v.isEmpty){ acc
+          } else {
+            val temp2 = v(0)
+            if (temp2._2 == temp._2+1){
+              val newV = v.tail
+              val newTemp = temp2
+              val newAcc = acc.dropRight(1) :+ (acc.last._1,acc.last._2 +1)
+              nextSlaveDetectStraitLine(newV,newAcc,newTemp)
+            } else {
+              val newV = v.tail
+              val newTemp = temp2
+              val newAcc = acc :+ (temp2._2,1)
+              nextSlaveDetectStraitLine(newV,newAcc,newTemp)
+            }
+          }
+        }
 
 
 
 
+        def detectStraitLine(courbures:Vector[Double], seuil:Double)={
+          val temp = courbures.zipWithIndex.filter(_._1 < seuil)
+          // temp
 
-
-
-
-    ////////////////////////////////
-    //    COURBURE de la l'arc paramétré
-    ////////////////////////////////
-
-    def mean(v: Vector[Double])={
-      (v.sum / v.length)
-    }
-
-
-    // formule: x' y'' - y' x'' / ( x'^2 + y' ^2 )^(3/2)
-    def slaveCourbure(sx:Double, sy:Double, acx:Double, acy:Double)={
-      ((sx*acy) - (sy*acx)) / pow( sx*sx + sy*sy , 3/2)
-    }
-
-    def courbure(speedX:Vector[Double], speedY:Vector[Double], accX:Vector[Double], accY:Vector[Double])={
-
-      val temp = speedX.zip(speedY).zip(accX).zip(accY).map( x  => (x._1._1._1,x._1._1._2,x._1._2,x._2))  // pour avoir autre format
-      temp.map(x=>  slaveCourbure(x._1,x._2,x._3,x._4))
-    }
-
-
-
-
-    // a partir du zip des courbures et index selectionnés par seuil (ici on n'utilise que les index)
-    // on repère les point consécutifs qui sont dans ce vecteur
-    // on garde un vector de (Int,Int) le premier Int et le premier indice de la suite (valeurs d'indice consécutives)
-    // le second est la longeur de cette suite
-    def nextSlaveDetectStraitLine(v:Vector[(Double,Int)],acc:Vector[(Int,Int)],temp:(Double,Int)):Vector[(Int,Int)]={
-      if (v.isEmpty){ acc
-      } else {
-        val temp2 = v(0)
-        if (temp2._2 == temp._2+1){
-          val newV = v.tail
-          val newTemp = temp2
-          val newAcc = acc.dropRight(1) :+ (acc.last._1,acc.last._2 +1)
+          val newV = temp.tail
+          val newTemp = temp(0)
+          val newAcc = Vector((temp(0)._2,1))
           nextSlaveDetectStraitLine(newV,newAcc,newTemp)
-        } else {
-          val newV = v.tail
-          val newTemp = temp2
-          val newAcc = acc :+ (temp2._2,1)
-          nextSlaveDetectStraitLine(newV,newAcc,newTemp)
+
         }
-      }
-    }
 
 
+        // all trajectories
+        def courbureAllTrajectories(res:TrajectoryStationnary)={
+          val courburesB = courbure(res.speedBx,res.speedBy,res.accBx,res.accBy)
+          val courburesD = courbure(res.speedDx,res.speedDy,res.accDx,res.accDy)
+          val courburesF = courbure(res.speedFx,res.speedFy,res.accFx,res.accFy)
 
+          courburesB ++ courburesD ++ courburesF
 
-    def detectStraitLine(courbures:Vector[Double], seuil:Double)={
-      val temp = courbures.zipWithIndex.filter(_._1 < seuil)
-      // temp
-
-      val newV = temp.tail
-      val newTemp = temp(0)
-      val newAcc = Vector((temp(0)._2,1))
-      nextSlaveDetectStraitLine(newV,newAcc,newTemp)
-
-    }
-
-
-
-
-    ////////////////////////////////
-    //    MORAN
-    ////////////////////////////////
-
-    // pour avoir un array de array, pour un point
-
-    def convertFromMoran(v1:Vector[Double], v2:Vector[Double])={
-      v1.zip(v2).map(x => Array(x._1,x._2) ).toArray
-    }
-
-    //GridMorphology.moranDirect()  // grid
-    //Spatstat.moran()
-
-
-    def moranDirectTraj(vec1:Vector[Double],vec2:Vector[Double],xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int)={
-      val temp = arrayDensitySquare(vec1,vec2,xmin,xmax,ymin,ymax,N) //: Array[Array[Double]]
-      GridMorphology.moranDirect(temp)
-    }
-
-
-    def moranTraj(vec1:Vector[Double],vec2:Vector[Double],xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int)={
-      val temp = arrayDensitySquare(vec1,vec2,xmin,xmax,ymin,ymax,N)
-      GridMorphology.moran(temp)
-    }
-
-
-
-
-    //println(res3.map(_.mkString(" ")).mkString("\n"))
-
-
-    ////////////////////////////////
-    //    utils pour comparer une trajectoire simuée et une désirée
-    ////////////////////////////////
-
-    // on souhaite s'affranchir du temps, on s'intéresse seulement à la trace, l'image à la fin de la simu
-    // on de garde sur un trajectoire que des points distant d'un distance fixée
-
-    def cumSum[A](xs: Seq[A])(implicit num: Numeric[A]): Seq[A] = {
-      xs.tail.scanLeft(xs.head)(num.plus)
-    }
-
-
-
-    def nextSimplifiedTrajectory (current:Vector[(Double,Double)],res:Vector[(Double,Double)], distance:Double):Vector[(Double,Double)] = {
-      if (current.isEmpty) {
-        res
-      } else {
-        val temp = current(0)
-        val temp2 = comparePointsToAllElemnts(temp, current)
-        val temp3 = current.zip(cumSum(temp2))
-        val temp4 = temp3.filter(_._2 > distance)
-        if (temp4.isEmpty){
-          val newCurrent = Vector[(Double,Double)]()
-          val newRes = res :+ temp3.last._1
-          nextSimplifiedTrajectory(newCurrent, newRes, distance)
-        } else {
-          val newCurrent = temp4.map(x=>x._1)
-          val newRes = res :+ temp4(0)._1
-          nextSimplifiedTrajectory(newCurrent, newRes, distance)
         }
+
+
+
+        ////////////////////////////////
+        //    MORAN
+        ////////////////////////////////
+
+        // pour avoir un array de array, pour un point
+
+        def convertFromMoran(v1:Vector[Double], v2:Vector[Double])={
+          v1.zip(v2).map(x => Array(x._1,x._2) ).toArray
+        }
+
+        //GridMorphology.moranDirect()  // grid
+        //Spatstat.moran()
+
+
+        def moranDirectTraj(vec1:Vector[Double],vec2:Vector[Double],xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int)={
+          val temp = arrayDensitySquare(vec1,vec2,xmin,xmax,ymin,ymax,N) //: Array[Array[Double]]
+          GridMorphology.moranDirect(temp)
+        }
+
+
+        def moranTraj(vec1:Vector[Double],vec2:Vector[Double],xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int)={
+          val temp = arrayDensitySquare(vec1,vec2,xmin,xmax,ymin,ymax,N)
+          GridMorphology.moran(temp)
+        }
+
+
+        def moranAllTrajectories(res:TrajectoryStationnary, xmin:Double, xmax:Double, ymin:Double, ymax:Double, N:Int)={
+
+          val arrayB = arrayDensitySquare(res.Bx,res.By,xmin,xmax,ymin,ymax,N)
+          val arrayC = arrayDensitySquare(res.Cx,res.Cy,xmin,xmax,ymin,ymax,N)
+          val arrayD = arrayDensitySquare(res.Dx,res.Dy,xmin,xmax,ymin,ymax,N)
+          val arrayE = arrayDensitySquare(res.Ex,res.Ey,xmin,xmax,ymin,ymax,N)
+          val arrayF = arrayDensitySquare(res.Fx,res.Fy,xmin,xmax,ymin,ymax,N)
+          val arrayG = arrayDensitySquare(res.Gx,res.Gy,xmin,xmax,ymin,ymax,N)
+
+          val temp = Vector(arrayB,arrayC,arrayD,arrayE,arrayF,arrayG)
+          val array = sumVectorOfArraysOfArrays(temp)
+          GridMorphology.moran(array)
+        }
+
+
+
+        //println(res3.map(_.mkString(" ")).mkString("\n"))
+
+
+        ////////////////////////////////
+        //    utils pour comparer une trajectoire simuée et une désirée
+        ////////////////////////////////
+
+        // on souhaite s'affranchir du temps, on s'intéresse seulement à la trace, l'image à la fin de la simu
+        // on de garde sur un trajectoire que des points distant d'un distance fixée
+
+        def cumSum[A](xs: Seq[A])(implicit num: Numeric[A]): Seq[A] = {
+          xs.tail.scanLeft(xs.head)(num.plus)
+        }
+
+
+
+        def nextSimplifiedTrajectory (current:Vector[(Double,Double)],res:Vector[(Double,Double)], distance:Double):Vector[(Double,Double)] = {
+          if (current.isEmpty) {
+            res
+          } else {
+            val temp = current(0)
+            val temp2 = comparePointsToAllElemnts(temp, current)
+            val temp3 = current.zip(cumSum(temp2))
+            val temp4 = temp3.filter(_._2 > distance)
+            if (temp4.isEmpty){
+              val newCurrent = Vector[(Double,Double)]()
+              val newRes = res :+ temp3.last._1
+              nextSimplifiedTrajectory(newCurrent, newRes, distance)
+            } else {
+              val newCurrent = temp4.map(x=>x._1)
+              val newRes = res :+ temp4(0)._1
+              nextSimplifiedTrajectory(newCurrent, newRes, distance)
+            }
+          }
+        }
+
+
+        def simplifiedTrajectory(v1:Vector[Double], v2:Vector[Double], distance:Double)={
+          val current = v1.zip(v2)
+          val res = Vector(current(0))
+          nextSimplifiedTrajectory(current,res,distance)
+        }
+
+        def createCircle(rayon:Double, nbPoints:Int)={
+          val temp = (0 to nbPoints).map(x=> (x*2*Pi/nbPoints)).toArray
+          (temp.map(x=> rayon*cos(x)), temp.map(x=> rayon*sin(x)) )
+        }
+
+
+        // une distance simulée, l'autre construite, pas nécessairement de la même longueur
+        def slaveDistanceTwoTrajectories(v1:Vector[(Double,Double)],v2:Vector[(Double,Double)])={
+          //val v1 = u_x.zip(u_y)
+          //val v2 = v_x.zip(v_y)
+          val minSize = min(v1.length,v2.length)
+
+          val v1Bis = v1.take(minSize)
+          val v2Bis = v2.take(minSize)
+          v1Bis.zip(v2Bis).map(x=>distanceLoopPoint(x._1,x._2)).sum
+
+        }
+
+
+
+        def distanceTwoTrajectories(u_x:Array[Double],u_y:Array[Double],v_x:Array[Double],v_y:Array[Double],distance:Double)= {
+          val u =simplifiedTrajectory(u_x.toVector,u_y.toVector,distance)
+          val v =simplifiedTrajectory(v_x.toVector,v_y.toVector,distance)
+          slaveDistanceTwoTrajectories(u,v)
+        }
+
+
+
       }
-    }
-
-
-    def simplifiedTrajectory(v1:Vector[Double], v2:Vector[Double], distance:Double)={
-      val current = v1.zip(v2)
-      val res = Vector(current(0))
-      nextSimplifiedTrajectory(current,res,distance)
-    }
-
-    def createCircle(rayon:Double, nbPoints:Int)={
-      val temp = (0 to nbPoints).map(x=> (x*2*Pi/nbPoints)).toArray
-      (temp.map(x=> rayon*cos(x)), temp.map(x=> rayon*sin(x)) )
-    }
-
-
-    // une distance simulée, l'autre construite, pas nécessairement de la même longueur
-    def slaveDistanceTwoTrajectories(v1:Vector[(Double,Double)],v2:Vector[(Double,Double)])={
-      //val v1 = u_x.zip(u_y)
-      //val v2 = v_x.zip(v_y)
-      val minSize = min(v1.length,v2.length)
-
-      val v1Bis = v1.take(minSize)
-      val v2Bis = v2.take(minSize)
-      v1Bis.zip(v2Bis).map(x=>distanceLoopPoint(x._1,x._2)).sum
-
-    }
-
-
-
-    def distanceTwoTrajectories(u_x:Array[Double],u_y:Array[Double],v_x:Array[Double],v_y:Array[Double],distance:Double)= {
-      val u =simplifiedTrajectory(u_x.toVector,u_y.toVector,distance)
-      val v =simplifiedTrajectory(v_x.toVector,v_y.toVector,distance)
-      slaveDistanceTwoTrajectories(u,v)
-      }
-
-
-
-  }
 
 
 
@@ -1696,100 +1927,4 @@ object FixedParameterModel {
 
 
 
-///////////////////  old Loop points
 
-/*
-def slaveFindLoopPoints(vec1:Vector[Double],vec2:Vector[Double], seuil:Double)={
-
-  val temp = vec1.zip(vec2)
-
-  // vector de vector avec toutes les distances
-  val res = temp.map(y => comparePointsToAllElemnts(y,temp))
-
-  // on ne garde que les distances < seuil
-  //val res2 = res.map(_.filter( _< seuil))
-  val res2 = res.map(_.zipWithIndex.collect{ case((a,b)) if a<seuil => (a,b)})
-
-  res2
-  // pour chaque vecteur, au moins une distance nulle (avec sois même), on la retire (ou condition sur la différence entre les temps?)
-
-  //  temp.collect{ case((a,b),c) if distance(a,b)<seuil => (a,b,c)}
-  // le resultat c'est un vecteur de triplets (Doulble,Double,Int)
-
-  // pour voir ce que ca donne
-  //val res3 = res2(0)
-  //res3
-}
-*/
-
-
-/*
-  def timeLoopPoints(res:Vector[DynamicalCurrentStateStationary], seuil:Double) = {
-
-    val res2 = convertResultStationnary(res)
-    // Loop for B
-
-    val res3 = slaveFindLoopPoints(res2.Bx,res2.By, 1.0) //(0)  // first point of B
-    //val indices = res3.map(_._2)
-
-
-
-
-    // Loop for F
-    //val res3 = slaveFindLoopPoints(res2.Fx,res2.Fy, seuil) //(0)  // 0: first point (is a loop?)
-    // res3  //  de type Vector[(Doublle,Doublle)]
-
-    val indices = res3.map(_._2)
-
-
-    val a = indices.tail
-    // tous sauf le dernier
-    val b = indices.dropRight(1)
-    //println(b)
-    val res4 = a.zip(b).collect{ case(x,y) if (x-y)>1  => x }
-    //res4
-
-    // pour chaque positions de la trajctoire d'un point, on compte le nombre de loop qu'il y a
-    // si la figure est périodique, il y en a au moins 1
-
-
-
-
-
-    def trieLoopPoint(res:Vector[(Double,Int)])={
-      val indices = res.map(_._2)
-      val a = indices.tail
-      // tous sauf le dernier
-      val b = indices.dropRight(1)
-      Vector(a(0)) ++ a.zip(b).collect{ case(x,y) if (x-y)>1  => x }
-      // on ne garde que les indices qui ne sont pas voisins (continuité) ie 1 indice par classe d'indice voisins (le premier)
-      // au moins un élément car on est à distance 0 de nous même
-    }
-
-    //trieLoopPoint(res3(0))
-    res3.map(x => trieLoopPoint(x))
-*/
-
-
-
-
-
-
-/*
-val indices = res3.map(_._2)
-print(indices)
-
-// tous sauf le premier
-val a = indices.tail
-//println(a)
-// tous sauf le dernier
-val b = indices.dropRight(1)
-//println(b)
-val seuiTimeLoop : Int = 5
-//val res4 = a.zip(b).map( x => x._1 -x._2).filter(_ > 1 )
-val res4 = a.zip(b).collect{ case(x,y) if (x-y)>1  => x } // .filter(_ > seuiTimeLoop )
-// collect{ case((a,b),c) if distance(a,b)<seuil => (a,b,c)}
-println(res4)
-
-}
-*/
