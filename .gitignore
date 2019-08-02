@@ -3,4 +3,6 @@
 *.class
 scala/target
 scala/project
+*/.idea
 */.kaks
+

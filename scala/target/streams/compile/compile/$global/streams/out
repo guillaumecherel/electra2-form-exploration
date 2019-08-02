@@ -1,4 +1,0 @@
-[0m[[0m[31merror[0m] [0m[0m/home/francois/Bureau/electra/electra2-form-exploration/scala/src/main/scala/electra/electra.scala:191:56: not found: value seuilCourbure[0m
-[0m[[0m[31merror[0m] [0m[0m  val indicesLigneDroite = detectStraitLine(courburesB,seuilCourbure)[0m
-[0m[[0m[31merror[0m] [0m[0m                                                       ^[0m
-[0m[[0m[31merror[0m] [0m[0mone error found[0m
