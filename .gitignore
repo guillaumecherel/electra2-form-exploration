@@ -1,2 +1,6 @@
 */.Rhistory
 */.Rdata
+*.class
+scala/target
+scala/project
+*/.kaks
