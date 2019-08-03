@@ -55,7 +55,7 @@ deltaT = 0.0005
 times = seq(0,Tfinal,by = deltaT )
 v1=1.8 ; v2=(-2.66) ; v3=3.14  # from OM
 plotTrajectory_v2(times, v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F) 
-positions_t_Stationnaire_v2(times, v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F)
+
 
 dir = "One_trajectory_mesures"
 
@@ -133,7 +133,7 @@ nRetourSegmentsF = dim(resTempsRetourSegmentsF)[1];nRetourSegmentsF
 resTempsRetourSegmentsB %>% group_by(tempsRetourB) %>% summarise(count = n()) 
 #resTempsRetourSegmentsB %>% summary()
 # summary D
-resTempsRetourSegmentsD %>% group_by(tempsRetourD) %>% summarise(count = n()) 
+countRetourD = resTempsRetourSegmentsD %>% group_by(tempsRetourD) %>% summarise(count = n()) 
 #resTempsRetourSegmentsD %>% summary()
 # summary F
 resTempsRetourSegmentsF %>% group_by(tempsRetourF) %>% summarise(count = n()) 
@@ -142,9 +142,62 @@ resTempsRetourSegmentsF %>% group_by(tempsRetourF) %>% summarise(count = n())
 
 # pas la bone notion l'histplot ? ils sont assez regroupés: une valeur par classe
 hist(resTempsRetourSegmentsD$tempsRetourD)
+hist(diff(resTempsRetourSegmentsD$indiceRetourD))
+plot(countRetourD$tempsRetourD,countRetourD$count)
+
+indiceRetourD = resTempsRetourSegmentsD$indiceRetourD
 
 # plot
 plot(df$Dx,df$Dy, type = "l", xlim = c(-rayonMax,rayonMax), ylim = c(-rayonMax,rayonMax))
+
+
+
+nextSimplifyRetour = function(current,res,temp){
+  if(isempty(current)){res} else{
+    if(size(current)[1] > 1){temp2 = current[1,]} else{temp2 = current[1] }
+    l = (size(res)[1])
+    if (temp2[1] == temp[1]+1){
+      newTemp = temp2
+    if(size(current)[1] > 1){newCurrent = current[-1,]} else{newCurrent = c() }       
+      if (l>1){
+      newRes = rbind( res[1: (l-1), ] , c( res[l,1] , res[l,2] + temp2[2]) )} else{
+        newRes = c( res[1] , res[2] + temp2[2]) 
+      }
+      nextSimplifyRetour(newCurrent,newRes,newTemp)
+        }else{
+        newTemp = temp2
+        if(size(current)[1] > 1){newCurrent = current[-1,]} else{newCurrent = c() }       
+        newRes = rbind( res ,  temp2 )
+        nextSimplifyRetour(newCurrent,newRes,newTemp)
+
+    }
+  }
+}
+
+
+resRetourCount = as.matrix(countRetourD)
+current = resRetourCount[2:(dim(resRetourCount)[1]),]
+
+selectRetour = function(resRetourCount){
+  res = resRetourCount[1,]
+  temp = resRetourCount[1,]
+  nextSimplifyRetour(resRetourCount[2:(dim(resRetourCount)[1]),],res,temp)
+}
+
+resRetourCount = as.matrix(countRetourD)
+resRestourSimpli = selectRetour(resRetourCount)
+ll = size(resRestourSimpli)[1] -1
+plot(resRestourSimpli[1:ll,1],resRestourSimpli[1:ll,2])
+
+sum(resRestourSimpli[1:ll,2])
+sum(countRetourD$count)
+
+
+
+
+
+
+# 
 
 # D
 plot(res$Dx,res$Dy, type = "l")
