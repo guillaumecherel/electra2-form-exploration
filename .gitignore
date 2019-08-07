@@ -2,7 +2,7 @@
 */.Rdata
 *.class
 scala/target
-scala/project
+scala/project/*/target
 */.idea
 */.kaks
 
