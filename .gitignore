@@ -4,6 +4,9 @@
 scala/target
 scala/project/target
 scala/project/*/target
+*.aux
+*.log
+*.pdf
 */.idea
 */.kaks
 
