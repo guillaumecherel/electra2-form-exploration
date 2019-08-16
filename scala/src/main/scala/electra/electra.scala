@@ -7,6 +7,7 @@ package electra
 
 import electra.NumericalIntegration._
 import electra.Model._
+import electra.MesurePSE._
 import electra.Mesure.{arrayDensitySquare, sumVectorOfArraysOfArrays, _}
 import org.apache.commons.math3._
 import org.apache.commons.math3.stat.StatUtils
@@ -91,6 +92,9 @@ object Electra extends App {
   val res = simuTrajectoireTransitoire(fixedParametersModel)(parametersTransitoire)(Nmax,deltaT,initialConditions,stepsTransitoryNext)
   print(res)
 */
+
+
+
 
 
   ////////////////////////////////
@@ -289,10 +293,16 @@ object Electra extends App {
   //    Persistence stationnaire
   ////////////////////////////////
 
-
+/*
   val t = 1.0
   val resPrsistenceStationnaire = figurePersistenceStationnaireAtTimeT(time=t)()()
   println(resPrsistenceStationnaire)
+*/
+
+
+
+
+
 
 
 
@@ -300,13 +310,87 @@ object Electra extends App {
   //    PAS TOUTES LES LUMIRES ALLUMÉES
   ////////////////////////////////
 
-  /*
+
+  val T = 10.0
+  val deltaT = 0.001
+  val res = dynamicTrajectoryStationnary(rB=1.0,rH=0.5,rD=0.25)(v1=2.0,v2=(-6.0))(T,deltaT)
+  val res2 = convertResultStationnary(res)
   val res3 = trajectoryLightChoice(res2)(lightB = false)
-  println(res3.Bx)
+  //val res3 = trajectoryLightChoice(res2)()
+  //val res3 = trajectoryLightChoice(res2)(lightB = false,lightC = false,lightD = false,lightE = false,lightF = false,lightG = false)
+  //println(res3.Cx)
+
+
+  // Mesures PSE (pas toutes les lumières)
+
+
+  // points singuliers
+/*
+  val seuilPointSingulier = 4
+  val numberPointSinguliersB = countSingularPoints(res2.speedBx,res2.speedBy,seuilPointSingulier)
+  println(numberPointSinguliersB)
+
+  println(countSingularPointsAllTrajectories(res3,seuilPointSingulier))
 */
 
 
+
+
+  // point retour (boucle) [le seuil est mis pour éviter de compter les points des trajectoires périodiques]
+/*
+  val seuilRetour = max(math.floor(1/ (deltaT * DefaultValuesParameterModel.v1)).toInt - 10 ,0)
+  //println(numberRetour(res3.Bx,res3.By,seuilRetour))
+  println(numberRetourAllTrajectories(res3,seuilRetour))
+*/
+
+
+
+
+  // densite (dans carre)
+/*
+  val N = 50  // Nombre de points pour la subdiviion du segment pour le carré
+  val xmax = maxSquareForDensity(rB=1.0,rH=0.5,rD=0.25)  // être raccord avec la dynamique de la trajectoire
+  val xmin = -xmax
+  val ymax = xmax
+  val ymin = xmin
+
+  val densiteB =  pointsDensitySquare(res3.Bx,res3.By,xmin,xmax,ymin,ymax,N)
+  println(densiteB)
+
+  println(densityAllTrajectoriesSquare(res3,xmin,xmax,ymin,ymax,N))
+*/
+
+
+
+
+  // Moran
+/*
+  val N = 50  // Nombre de points pour la subdiviion du segment pour le carré
+  val xmax = maxSquareForDensity(rB=1.0,rH=0.5,rD=0.25)  // être raccord avec la dynamique de la trajectoire
+  val xmin = -xmax
+  val ymax = xmax
+  val ymin = xmin
+
+  val moranD = moranTraj(res3.Dx,res3.Dy,xmin,xmax,ymin,ymax,N)
+  println(moranD)
+
+  println( moranAllTrajectories(res3,xmin,xmax,ymin,ymax,N) )
+*/
+
+
+
+  // courbure moyenne
+
+  println(meanCourbure(res3.speedBx,res3.speedBy,res3.accBx,res2.accBy))
+  println(meanCourbureAllTrajectories(res3))
+
+
 }
+
+
+
+
+
 
 
 
@@ -510,30 +594,30 @@ object Model {
       Fy = if (lightF) res.Fy else Vector.empty,
       Gx = if (lightG) res.Gx else Vector.empty,
       Gy = if (lightG) res.Gy else Vector.empty,
-      speedBx = if (lightB) res.Bx else Vector.empty,
-      speedBy = if (lightB) res.By else Vector.empty,
-      speedCx = if (lightC) res.Cx else Vector.empty,
-      speedCy = if (lightC) res.Cy else Vector.empty,
-      speedDx = if (lightD) res.Dx else Vector.empty,
-      speedDy = if (lightD) res.Dy else Vector.empty,
-      speedEx = if (lightE) res.Ex else Vector.empty,
-      speedEy = if (lightE) res.Ey else Vector.empty,
-      speedFx = if (lightF) res.Fx else Vector.empty,
-      speedFy = if (lightF) res.Fy else Vector.empty,
-      speedGx = if (lightG) res.Gx else Vector.empty,
-      speedGy = if (lightG) res.Gy else Vector.empty,
-      accBx = if (lightB) res.Bx else Vector.empty,
-      accBy = if (lightB) res.By else Vector.empty,
-      accCx = if (lightC) res.Cx else Vector.empty,
-      accCy = if (lightC) res.Cy else Vector.empty,
-      accDx = if (lightD) res.Dx else Vector.empty,
-      accDy = if (lightD) res.Dy else Vector.empty,
-      accEx = if (lightE) res.Ex else Vector.empty,
-      accEy = if (lightE) res.Ey else Vector.empty,
-      accFx = if (lightF) res.Fx else Vector.empty,
-      accFy = if (lightF) res.Fy else Vector.empty,
-      accGx = if (lightG) res.Gx else Vector.empty,
-      accGy = if (lightG) res.Gy else Vector.empty)
+      speedBx = if (lightB) res.speedBx else Vector.empty,
+      speedBy = if (lightB) res.speedBy else Vector.empty,
+      speedCx = if (lightC) res.speedCx else Vector.empty,
+      speedCy = if (lightC) res.speedCy else Vector.empty,
+      speedDx = if (lightD) res.speedDx else Vector.empty,
+      speedDy = if (lightD) res.speedDy else Vector.empty,
+      speedEx = if (lightE) res.speedEx else Vector.empty,
+      speedEy = if (lightE) res.speedEy else Vector.empty,
+      speedFx = if (lightF) res.speedFx else Vector.empty,
+      speedFy = if (lightF) res.speedFy else Vector.empty,
+      speedGx = if (lightG) res.speedGx else Vector.empty,
+      speedGy = if (lightG) res.speedGy else Vector.empty,
+      accBx = if (lightB) res.accBx else Vector.empty,
+      accBy = if (lightB) res.accBy else Vector.empty,
+      accCx = if (lightC) res.accCx else Vector.empty,
+      accCy = if (lightC) res.accCy else Vector.empty,
+      accDx = if (lightD) res.accDx else Vector.empty,
+      accDy = if (lightD) res.accDy else Vector.empty,
+      accEx = if (lightE) res.accEx else Vector.empty,
+      accEy = if (lightE) res.accEy else Vector.empty,
+      accFx = if (lightF) res.accFx else Vector.empty,
+      accFy = if (lightF) res.accFy else Vector.empty,
+      accGx = if (lightG) res.accGx else Vector.empty,
+      accGy = if (lightG) res.accGy else Vector.empty)
   }
 
 
@@ -1124,9 +1208,12 @@ object FixedParameterModel {
 
 
     // general utils
-        def calculAngle(x:Double,y:Double)={
-          val temp = math.atan(y/x)
-          if (x>=0){temp} else {temp + Pi}
+        def calculAngle(x:Double,y:Double)= {
+          val temp = math.atan(y / x)
+          if (x >= 0 && y >= 0) temp
+          else if (x < 0 && y >= 0) temp + Pi
+          else if (x >= 0 && y < 0) 2 * Pi + temp
+          else temp + Pi
         }
 
 
@@ -1372,6 +1459,17 @@ object FixedParameterModel {
         }
 
 
+        def pointsDensitySquare(vec1:Vector[Double], vec2:Vector[Double], xmin:Double, xmax:Double, ymin:Double, ymax:Double, N:Int) = {
+
+          // nombre de cases non vides dans l'array
+          val array = arrayDensitySquare(vec1,vec2,xmin,xmax,ymin,ymax,N)
+          val nbCasesNonEmpty = array.map(x => x.filter(_ != 0).length).sum
+
+          // la ratio d'occupation:
+          (nbCasesNonEmpty.toFloat / (N * N)).toDouble   // dans un carre
+
+        }
+
 
 
 
@@ -1396,6 +1494,29 @@ object FixedParameterModel {
           // la ratio d'occupation:
           //(nbCasesNonEmpty.toFloat / (N * N)).toDouble
           ( nbCasesNonEmpty.toFloat  / nbPointGrilleDansZoneAtteignable(xmin,xmax,ymin,ymax,N,rMin,rMax) ).toDouble
+
+        }
+
+
+        def densityAllTrajectoriesSquare(res:TrajectoryStationnary, xmin:Double, xmax:Double, ymin:Double, ymax:Double, N:Int) = {
+
+          val arrayB = arrayDensitySquare(res.Bx,res.By,xmin,xmax,ymin,ymax,N)
+          val arrayC = arrayDensitySquare(res.Cx,res.Cy,xmin,xmax,ymin,ymax,N)
+          val arrayD = arrayDensitySquare(res.Dx,res.Dy,xmin,xmax,ymin,ymax,N)
+          val arrayE = arrayDensitySquare(res.Ex,res.Ey,xmin,xmax,ymin,ymax,N)
+          val arrayF = arrayDensitySquare(res.Fx,res.Fy,xmin,xmax,ymin,ymax,N)
+          val arrayG = arrayDensitySquare(res.Gx,res.Gy,xmin,xmax,ymin,ymax,N)
+
+          val temp = Vector(arrayB,arrayC,arrayD,arrayE,arrayF,arrayG)
+          val array = sumVectorOfArraysOfArrays(temp)
+
+
+          // nombre de cases non vides dans l'array (sommes des array)
+          val nbCasesNonEmpty = array.map(x => x.filter(_ != 0).length).sum
+
+
+          // la ratio d'occupation:
+          (nbCasesNonEmpty.toFloat / (N * N)).toDouble
 
         }
 
@@ -1530,7 +1651,7 @@ object FixedParameterModel {
         def numberRetour(v1:Vector[Double], v2:Vector[Double], seuil:Int)={
           val resPremierRetour = retour( v1.zip(v2) )
           val nbRetour= resPremierRetour.map(x=>x._4).length
-          resPremierRetour
+          nbRetour
         }
 
 
@@ -1577,14 +1698,20 @@ object FixedParameterModel {
         def numberRetourAllTrajectories(res:TrajectoryStationnary, seuil:Int)={
 
           val resRetourB = resPremieretour(res.Bx,res.By).filter(_._4 < seuil)
+          val resRetourC = resPremieretour(res.Cx,res.Cy).filter(_._4 < seuil)
           val resRetourD = resPremieretour(res.Dx,res.Dy).filter(_._4 < seuil)
+          val resRetourE = resPremieretour(res.Ex,res.Ey).filter(_._4 < seuil)
           val resRetourF = resPremieretour(res.Fx,res.Fy).filter(_._4 < seuil)
+          val resRetourG = resPremieretour(res.Gx,res.Gy).filter(_._4 < seuil)
 
           val nbRetourB= resRetourB.map(x=>x._4).length
+          val nbRetourC= resRetourC.map(x=>x._4).length
           val nbRetourD= resRetourD.map(x=>x._4).length
+          val nbRetourE= resRetourE.map(x=>x._4).length
           val nbRetourF= resRetourF.map(x=>x._4).length
+          val nbRetourG= resRetourG.map(x=>x._4).length
 
-          (nbRetourB +  nbRetourD + nbRetourF)
+          (nbRetourB + nbRetourC + nbRetourD + nbRetourE + nbRetourF + nbRetourG )
         }
 
 
@@ -1646,10 +1773,13 @@ object FixedParameterModel {
         // all trajectories
         def courbureAllTrajectories(res:TrajectoryStationnary)={
           val courburesB = courbure(res.speedBx,res.speedBy,res.accBx,res.accBy)
+          val courburesC = courbure(res.speedCx,res.speedCy,res.accCx,res.accCy)
           val courburesD = courbure(res.speedDx,res.speedDy,res.accDx,res.accDy)
+          val courburesE = courbure(res.speedEx,res.speedEy,res.accEx,res.accEy)
           val courburesF = courbure(res.speedFx,res.speedFy,res.accFx,res.accFy)
+          val courburesG = courbure(res.speedGx,res.speedGy,res.accGx,res.accGy)
 
-          courburesB ++ courburesD ++ courburesF
+          courburesB ++ courburesC ++ courburesD ++ courburesE ++ courburesF ++ courburesG
 
         }
 
@@ -1698,6 +1828,10 @@ object FixedParameterModel {
 
 
 
+
+
+
+
     ////////////////////////////////
         //    MORAN
         ////////////////////////////////
@@ -1719,23 +1853,29 @@ object FixedParameterModel {
 
 
         def moranTraj(vec1:Vector[Double],vec2:Vector[Double],xmin:Double,xmax:Double,ymin:Double,ymax:Double,N:Int)={
-          val temp = arrayDensitySquare(vec1,vec2,xmin,xmax,ymin,ymax,N)
-          GridMorphology.moran(temp)
+          if (vec1.isEmpty){1.0} else {
+            val temp = arrayDensitySquare(vec1, vec2, xmin, xmax, ymin, ymax, N)
+            GridMorphology.moran(temp)
+          }
         }
 
 
-        def moranAllTrajectories(res:TrajectoryStationnary, xmin:Double, xmax:Double, ymin:Double, ymax:Double, N:Int)={
+        def moranAllTrajectories(res:TrajectoryStationnary, xmin:Double, xmax:Double, ymin:Double, ymax:Double, N:Int)= {
 
-          val arrayB = arrayDensitySquare(res.Bx,res.By,xmin,xmax,ymin,ymax,N)
-          val arrayC = arrayDensitySquare(res.Cx,res.Cy,xmin,xmax,ymin,ymax,N)
-          val arrayD = arrayDensitySquare(res.Dx,res.Dy,xmin,xmax,ymin,ymax,N)
-          val arrayE = arrayDensitySquare(res.Ex,res.Ey,xmin,xmax,ymin,ymax,N)
-          val arrayF = arrayDensitySquare(res.Fx,res.Fy,xmin,xmax,ymin,ymax,N)
-          val arrayG = arrayDensitySquare(res.Gx,res.Gy,xmin,xmax,ymin,ymax,N)
+          if (res.Bx.isEmpty && res.Cx.isEmpty && res.Dx.isEmpty && res.Ex.isEmpty && res.Fx.isEmpty && res.Gx.isEmpty) {
+            1.0
+          } else {
+            val arrayB = arrayDensitySquare(res.Bx, res.By, xmin, xmax, ymin, ymax, N)
+            val arrayC = arrayDensitySquare(res.Cx, res.Cy, xmin, xmax, ymin, ymax, N)
+            val arrayD = arrayDensitySquare(res.Dx, res.Dy, xmin, xmax, ymin, ymax, N)
+            val arrayE = arrayDensitySquare(res.Ex, res.Ey, xmin, xmax, ymin, ymax, N)
+            val arrayF = arrayDensitySquare(res.Fx, res.Fy, xmin, xmax, ymin, ymax, N)
+            val arrayG = arrayDensitySquare(res.Gx, res.Gy, xmin, xmax, ymin, ymax, N)
 
-          val temp = Vector(arrayB,arrayC,arrayD,arrayE,arrayF,arrayG)
-          val array = sumVectorOfArraysOfArrays(temp)
-          GridMorphology.moran(array)
+            val temp = Vector(arrayB, arrayC, arrayD, arrayE, arrayF, arrayG)
+            val array = sumVectorOfArraysOfArrays(temp)
+            GridMorphology.moran(array)
+          }
         }
 
 
@@ -1812,6 +1952,27 @@ object FixedParameterModel {
 
 
       }
+
+
+
+
+// on ne garde que les mesures nécessaires pour PSE
+object MesurePSE{
+
+
+  def meanCourbure(speedX:Vector[Double],speedY:Vector[Double],accX:Vector[Double],accY:Vector[Double]): Double ={
+    mean(courbure(speedX,speedY,accX,accY).toArray).getOrElse(0.0)
+  }
+
+  def meanCourbureAllTrajectories(res:TrajectoryStationnary): Double ={
+    mean(courbureAllTrajectories(res).toArray).getOrElse(0.0)
+  }
+
+
+}
+
+
+
 
 
 
