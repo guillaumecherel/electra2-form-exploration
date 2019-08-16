@@ -120,37 +120,6 @@ plot_oneTime_v2 = function(t, v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, 
 
 
 
-# create_df_v2 = function(times, v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F){
-#   df = data.frame(Bx = double(), By = double(), Cx = double(), Cy = double(),
-#                   Hx = double(), Hy = double(),
-#                   Dx = double(), Dy = double(), Ex = double(), Ey = double(),
-#                   Ix = double(),
-#                   Iy = double(),
-#                   Fx = double(), Fy = double(), Gx = double(), Gy = double(),
-#                   time = double(),
-#                   speedBx = double(), speedBy = double(),
-#                   speedCx = double(), speedCy = double(),
-#                   speedDx = double(), speedDy = double(),
-#                   speedEx = double(), speedEy = double(),
-#                   speedFx = double(), speedFy = double(),
-#                   speedGx = double(), speedGy = double(),
-#                   accBx = double(), accBy = double(),
-#                   accCx = double(), accCy = double(),
-#                   accDx = double(), accDy = double(),
-#                   accEx = double(), accEy = double(),
-#                   accFx = double(), accFy = double(),
-#                   accGx = double(), accGy = double())
-#   
-#   for (i in 1:length(times)){
-#     t = times[i]
-#     res = positions_t_Stationnaire_v2(t, v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F)
-#     df = rbind(df,res)
-#   }
-#   return(df)
-# }
-
-
-
 plotTrajectory_v2 <- function(times, v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F) {
   theme_set(theme_bw())
   df = positions_t_Stationnaire_v2(times, v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F)

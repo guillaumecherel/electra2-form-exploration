@@ -65,6 +65,8 @@
 
 \usepackage{hyperref}
 
+\usepackage{cleveref}
+
  
 % fourier soit stmaryrd 
 %\usepackage{fourier}
@@ -546,6 +548,25 @@ Points doubles: $t_1$ et $t_2$ tels que: $x(t_1)=x(t_2)$ et $y(t_1) = y(t_2)$.
 
 \section{Mesures}
 
+On illustre les mesures sur une trajectoire obtenue avec les paramètres suivants:
+
+angles initiaux: $angleIniB = 0$ , $angleIniD = 1$ , $angleIniF = 2$
+
+et les vitesses:
+$v_1 = 1.8$ , $v_2= -2.66$ , $v_3 = 3.14$  
+
+Tfinal = 10, deltaT = 0.0005.
+
+Les trajectoires des points sont tracées sur la figure \ref{trajectoire_exemple_mesure} .
+
+\begin{figure}[H] 
+\center{\includegraphics[width=0.75\linewidth]{figure_trajectoires_exemple_mesures}}
+\caption{Trajectoires pour illustrer les mesures}
+\label{trajectoire_exemple_mesure}
+\end{figure}
+
+\bigbreak
+
 \textbf{Densité}
 
 La trajectoire remplit l'espace ?
@@ -554,24 +575,100 @@ Densité d'occupation des points de la trajectoire sur une grille: densité pour
 
 \textbf{Points singuliers:} leur nombre et les indices (temps) auxquels ils apparaissent. Paramètre: seuil sur la dérivée
 
+Dans l'exemple, seules les trajectoires des points D et E présentent des points singuliers (figure \ref{mesure_singulierD})
+
+\begin{figure}[H] 
+\center{\includegraphics[width=0.55\linewidth]{singulierD}}
+\caption{Les 27 points singuliers de la trajectoire du point D}
+\label{mesure_singulierD}
+\end{figure}
+
+
+
 
 \textbf{Boucle / temps de retour:} nombre, indice (temps) du point concerné, et la durée (nombre de pas te temps) de la boucle, aussi la distribution des angle des points boucles.
 
+Dans l'exemple, les trajectoires des points D et E ainsi que celles de F et G présentent des points de retour (figures \cref{mesure_retourD,mesure_retourF})
+
+\begin{figure}[H] 
+\center{\includegraphics[width=0.55\linewidth]{retourD}}
+\caption{Points de retour pour la trajectoire D}
+\label{mesure_retourD}
+\end{figure}
+
+\begin{figure}[H] 
+\center{\includegraphics[width=0.55\linewidth]{retourF}}
+\caption{Points de retour pour la trajectoire F}
+\label{mesure_retourF}
+\end{figure}
 
 
-\textbf{Courbure de la trajectoire:} en chaque point la courbure. Regarder la moyenne ou d'autres information statistique sur la distribution des rayons de courbure. Pas de paramètre. On peut aussi repérer des morceaux de trajectoires qui ressemblent à une droite (courbure nulle: seuil) ou à un cercle (courbure constante).
+Sur la figure \ref{mesure_retourD_color}, les couleurs correspondent à des points ayant des temps de retour identiques.
+
+\begin{figure}[H] 
+\center{\includegraphics[width=0.55\linewidth]{retourD_ordered_color}}
+\caption{Temps de retour pour la trajectoire D}
+\label{mesure_retourD_color}
+\end{figure}
+
+
+
+
+\textbf{Courbure de la trajectoire:} en chaque point la courbure. Regarder la moyenne ou d'autres information statistique sur la distribution des rayons de courbure. %Pas de paramètre. On peut aussi repérer des morceaux de trajectoires qui ressemblent à une droite (courbure nulle: seuil) ou à un cercle (courbure constante).
 %concavité/ convexité locale?: rayon de courbure: les distribution des rayons de courbure sur la trajectoire: diversité ou uniforme ?
+
+
+Les figures \cref{mesure_ourbureB,mesure_ourbureD,mesure_ourbureF} représentent respectivement les courbures pour les points des trajectoire des points B, D et F. La trajectoire de B est un cercle, le rayon de courbure est donc constant.
+
+
+\begin{figure}[H] 
+\center{\includegraphics[width=0.55\linewidth]{courbureB}}
+\caption{Rayon de courbure pour la trajectoire B}
+\label{mesure_ourbureB}
+\end{figure}
+
+
+\begin{figure}[H] 
+\center{\includegraphics[width=0.55\linewidth]{courbureD}}
+\caption{Rayon de courbure pour la trajectoire D}
+\label{mesure_ourbureD}
+\end{figure}
+
+
+\begin{figure}[H] 
+\center{\includegraphics[width=0.55\linewidth]{courbureF}}
+\caption{Rayon de courbure pour la trajectoire F}
+\label{mesure_ourbureF}
+\end{figure}
+
+
 
 
 
 \textbf{Indice de Moran:} sur l'agrégation spatiale.
 
 
+\textbf{Autres idées:} (pas implémentées)
 
 Nombre de composantes connexes dans l'espace (Julien ?, JTS lib scala pour les trucs de géométrie)
 %https://locationtech.github.io/jts/javadoc/org/locationtech/jts/geom/Geometry.html
 
-La courbe est elle fermée (périodicité)
+La courbe est elle fermée (périodicité)?
+
+
+
+\subsection{Les mesures retenues}
+Pour une trajectoire avec des lumières allumées/ éteintes:
+
+\begin{itemize}
+\item nombre de points singuliers
+\item nombre de point de retour
+\item densité totale (+ celle de D/F)
+\item indice Moran total (+ D/F)
+\item courbure moyenne: toutes les trajectoires
+\end{itemize}
+
+
 
 
 

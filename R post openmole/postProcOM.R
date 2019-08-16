@@ -7,6 +7,7 @@ library(tidyverse)
 library(dplyr)
 library(ggplot2)
 library(gganimate)
+library(RColorBrewer)
 #library(gifski)
 #library(pracma)
 theme_set(theme_bw())
@@ -151,22 +152,23 @@ indiceRetourD = resTempsRetourSegmentsD$indiceRetourD
 plot(df$Dx,df$Dy, type = "l", xlim = c(-rayonMax,rayonMax), ylim = c(-rayonMax,rayonMax))
 
 
-
+# a faire sur countRetourD = resTempsRetourSegmentsD %>% group_by(tempsRetourD) %>% summarise(count = n()) 
+# car les temps de retour (pas les indices) sont décalés de 1 parfois => les regrouper
 nextSimplifyRetour = function(current,res,temp){
   if(isempty(current)){res} else{
     if(size(current)[1] > 1){temp2 = current[1,]} else{temp2 = current[1] }
     l = (size(res)[1])
     if (temp2[1] == temp[1]+1){
       newTemp = temp2
-    if(size(current)[1] > 1){newCurrent = current[-1,]} else{newCurrent = c() }       
+    if(size(current)[1] > 1){newCurrent = current[-1,]} else{newCurrent = c() }
       if (l>1){
       newRes = rbind( res[1: (l-1), ] , c( res[l,1] , res[l,2] + temp2[2]) )} else{
-        newRes = c( res[1] , res[2] + temp2[2]) 
+        newRes = c( res[1] , res[2] + temp2[2])
       }
       nextSimplifyRetour(newCurrent,newRes,newTemp)
         }else{
         newTemp = temp2
-        if(size(current)[1] > 1){newCurrent = current[-1,]} else{newCurrent = c() }       
+        if(size(current)[1] > 1){newCurrent = current[-1,]} else{newCurrent = c() }
         newRes = rbind( res ,  temp2 )
         nextSimplifyRetour(newCurrent,newRes,newTemp)
 
@@ -187,17 +189,109 @@ selectRetour = function(resRetourCount){
 resRetourCount = as.matrix(countRetourD)
 resRestourSimpli = selectRetour(resRetourCount)
 ll = size(resRestourSimpli)[1] -1
+# avant
+plot(countRetourD$tempsRetourD,countRetourD$count)
+# maintenant
+points(resRestourSimpli[1:ll,1],resRestourSimpli[1:ll,2], col="red")
 plot(resRestourSimpli[1:ll,1],resRestourSimpli[1:ll,2])
+
+length(resRestourSimpli[1:ll,1])
+diff(resRestourSimpli[1:ll,1])
+
+
+# retrouver les points associés au temps de retour
+# i=1
+# tt = resRetourCount[i,1]
+# selInd_tt = which(resTempsRetourSegmentsD$tempsRetourD == tt)
+# # plot
+# plot(df$Dx,df$Dy, type = "l", xlim = c(-rayonMax,rayonMax), ylim = c(-rayonMax,rayonMax))
+# selIndicesRetour_D = resTempsRetourSegmentsD$indiceRetourD[selInd_tt]
+# points(df$Dx[selIndicesRetour_D],df$Dy[selIndicesRetour_D], col="red")
+
+
+# retrouver les points associés au temps de retour dans la version simplifiée (rassemblée)
+temp =  resRetourCount  # as.list(countRetourD) # resRetourCount # countRetourD
+#temp$resInd = rep(0,dim(temp)[1])
+
+ll = list()
+lg = dim(resRetourCount)[1]
+for (i in 1:lg){
+  temp2 = list()
+  temp2[[1]] = temp[i,1]
+  temp2[[2]] = temp[i,2]
+  tt = resRetourCount[i,1]
+  selInd_tt = which(resTempsRetourSegmentsD$tempsRetourD == tt)
+  selIndicesRetour_D = resTempsRetourSegmentsD$indiceRetourD[selInd_tt]
+  temp2[[3]] = selIndicesRetour_D
+  ll[[i]] = temp2
+}
+
+length(ll)
+#ll
+
+
+# current et res : list, temp: int (le temps de retour en cours)
+nextSimplifyRetourList = function(current,res,temp){
+  if(isempty(current)){res} else{
+    temp2 = current[[1]] # liste
+    l = length(res)
+    if (temp2[[1]] == temp[[1]][[1]] + 1){
+      newTempRetour = temp2[[1]]
+      if(length(current) > 1){newCurrent = current[-1]} else{newCurrent = list() }       
+      if (l>1){
+        newRes = c( res[1: (l-1)] , list( list( res[[l]][[1]], res[[l]][[2]] + temp2[[2]], c(res[[l]][[3]],  temp2[[3]]) ))) 
+        } else{
+          newRes = list( list(res[[1]][[1]], res[[1]][[2]] + temp2[[2]],  c(res[[1]][[3]], temp2[[3]]) ) )    #c( res[[1]][1] , res[[1]][2] + newTemp) 
+        }
+      nextSimplifyRetourList(newCurrent,newRes,newTempRetour)
+    }else{
+      newTempRetour = temp2[[1]]
+      if(length(current) > 1){newCurrent = current[-1]} else{newCurrent = list() }       
+      newRes = c( res ,  list(temp2) )
+      nextSimplifyRetourList(newCurrent,newRes,newTempRetour)
+    }
+  }
+}
+
+# pour tester
+# current = newCurrent
+# res = newRes
+# temp = newTempRetour
+
+
+
+# ll = ll[1:5]
+selectRetour_List = function(ll){
+  res = ll[1]
+  temp = ll[1]
+  current = ll[2:length(ll)]
+  nextSimplifyRetourList(current,res,temp)
+}
+
+resList = resRestourSimpli_List = selectRetour_List(ll)
+
+
+
+
+# plot
+plot(df$Dx,df$Dy, type = "l", xlim = c(-rayonMax,rayonMax), ylim = c(-rayonMax,rayonMax))
+colorsPalette = colorRampPalette(brewer.pal(9,"YlOrRd")[4:9])(length(resList)) 
+colorsPalette = topo.colors(length(resList))
+#plot(1:length(resList),1:length(resList), col = colorsPalette)
+for (i in 1:length(resList)){
+  selIndicesRetour_D = resList[[i]][[3]]
+  points(df$Dx[selIndicesRetour_D],df$Dy[selIndicesRetour_D], col=colorsPalette[i])
+}
+
 
 sum(resRestourSimpli[1:ll,2])
 sum(countRetourD$count)
 
 
+lg = dim(resRestourSimpli)[1]
+plot(resRestourSimpli[1:(lg-1),1],resRestourSimpli[1:(lg-1),2], xlab = "temps de retour", ylab = "nombre de points")
 
-
-
-
-# 
+length(res$Dx)
 
 # D
 plot(res$Dx,res$Dy, type = "l")
@@ -237,7 +331,7 @@ resTimesPointSinguliers = as_tibble(resTimesPointSinguliers)
 
 # B
 resTimesPointSinguliersB = resTimesPointSinguliers %>% select(timesPointSinguliersB) %>% drop_na()  
-nSingulierB = dim(resTimesPointSinguliersD)[1];nSingulierB
+nSingulierB = dim(resTimesPointSinguliersB)[1];nSingulierB
 
 plot(df$Bx,df$By, type = "l", xlim = c(-rayonMax,rayonMax), ylim = c(-rayonMax,rayonMax))
 points(df$Bx[resTimesPointSinguliersB$timesPointSinguliersB],df$By[resTimesPointSinguliersB$timesPointSinguliersB], col="red", cex = 0.5)
@@ -286,7 +380,7 @@ plot(times,courburesF, type = "l")
 # D
 seuilCourbureD = min(courburesD)+(max(courburesD)-min(courburesD))/2
 selIndBigCourbureD = which(courburesD > seuilCourbureD)
-plot(res$Dx,res$Dy, type = "l")
+plot(res$Dx,res$Dy, type = "l", asp=1)
 points(res$Dx[selIndBigCourbureD],res$Dy[selIndBigCourbureD], col="red")
 
 plot(times,courburesD, type = "l")

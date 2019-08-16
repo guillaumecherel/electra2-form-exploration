@@ -64,7 +64,7 @@ angleIni_F = 0
 
 # time
 timeStep = 0.005 # sec
-timeStep = 0.02 # sec
+#timeStep = 0.02 # sec
 Tfinal = 5
 times = seq(0,Tfinal, by = timeStep)
 t=0.1
@@ -91,6 +91,12 @@ plotTrajectory_v2(times, v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angle
 
 
 
+timeStep = 0.0005 # sec
+Tfinal = 4
+times = seq(0,Tfinal, by = timeStep)
+plotTrajectory_v2(times, v1=5,v2=4,v3=5, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F)
+
+
 
 # remplir l'espace (densité) ?
 timeStep = 0.005 # sec
@@ -102,7 +108,44 @@ plotTrajectory_v2(times, v1,v2,v3=pi, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, an
 
 
 
+# nsga2 result
+v1=5.0
+v2=3.0537391026395397
+v3=-2.496259000231632
+angleIni_B = 0.0
+angleIni_D = 0.473719893001516
+angleIni_F = 1.0229217740760777
 
+
+timeStep = 0.005 # sec
+Tfinal = 4
+times = seq(0,Tfinal, by = timeStep)
+df = create_df_v2(times, v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F)
+rayonMax = sqrt(df$Bx^2+df$By^2)[1]
+
+distance = 1
+resSimpliTraj = simplifiedTrajectory(cbind(df$Dx,df$Dy), distance)
+dim(resSimpliTraj)
+
+n=27
+plot(resSimpliTraj[1:n,1],resSimpliTraj[1:n,2], xlim = c(-rayonMax,rayonMax), ylim = c(-rayonMax, rayonMax))
+points(resSimpliTraj[1,1],resSimpliTraj[1,2], xlim = c(-rayonMax,rayonMax), ylim = c(-rayonMax, rayonMax), col="red")
+
+plot(resSimpliTraj[,1],resSimpliTraj[,2], xlim = c(-rayonMax,rayonMax), ylim = c(-rayonMax, rayonMax), type = "l")
+
+
+
+#p <- ggplot(df %>% filter(time <0.7)) +  
+p <- ggplot(df ) +  
+    expand_limits(x=c(-rayonMax,rayonMax), y=c(-rayonMax, rayonMax)) +
+  coord_fixed(ratio=1) + 
+  theme(axis.title.x=element_blank(), axis.title.y=element_blank() ) + 
+  geom_point(aes(x=Dx, y=Dy), size=1, col= "red", shape = 3) +
+  labs(title = "Trajectoire Stationnaire",
+       subtitle = paste0("v1=",v1,", v2=",v2,", v3=",v3,", \n",
+                         "angleIni_B=",angleIni_B,", angleIni_D=",angleIni_D,", angleIni_F=",angleIni_F))
+
+p
 
 
 

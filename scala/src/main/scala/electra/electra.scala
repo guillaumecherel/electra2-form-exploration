@@ -339,7 +339,7 @@ object Electra extends App {
   // point retour (boucle) [le seuil est mis pour éviter de compter les points des trajectoires périodiques]
 /*
   val seuilRetour = max(math.floor(1/ (deltaT * DefaultValuesParameterModel.v1)).toInt - 10 ,0)
-  //println(numberRetour(res3.Bx,res3.By,seuilRetour))
+  println(numberRetour(res3.Bx,res3.By,seuilRetour))
   println(numberRetourAllTrajectories(res3,seuilRetour))
 */
 
@@ -380,10 +380,10 @@ object Electra extends App {
 
 
   // courbure moyenne
-
+/*
   println(meanCourbure(res3.speedBx,res3.speedBy,res3.accBx,res2.accBy))
   println(meanCourbureAllTrajectories(res3))
-
+*/
 
 }
 
