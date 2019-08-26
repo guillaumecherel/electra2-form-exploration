@@ -14,6 +14,8 @@ module Electra2Shadow
 
 import Protolude
 
+import qualified Data.Set as Set
+import           Data.Set (Set)
 import qualified Data.Vector as Vector
 import           Data.Vector (Vector)
 import           GHC.Float (double2Float, float2Double)
@@ -48,6 +50,9 @@ data World = World
   , worldTime :: Double
   , worldTrajectories :: [[(Double, Double)]]
   , worldLayout :: GUI.Layout
+  , worldMouseGrabControl :: Maybe Int
+  , worldKeyboardGrabControl :: Set Int
+  , worldMousePos :: (Float, Float)
   } deriving (Eq, Show)
 
 initialWorld :: World
@@ -70,6 +75,9 @@ initialWorld =
       window
       (fmap controlSpecs $ Vector.toList controls)
       []
+  , worldMouseGrabControl = Nothing
+  , worldKeyboardGrabControl = mempty
+  , worldMousePos = (0, 0)
   }
 
 view :: World -> Gloss.Picture
@@ -89,14 +97,41 @@ updateInputs event world =
   case event of
     Gloss.EventResize (width, height) ->
       world{ worldWindow = (width, height) }
+    Gloss.EventKey (Gloss.MouseButton Gloss.LeftButton) Gloss.Up _ (x, y) ->
+      world { worldMouseGrabControl = Nothing }
     Gloss.EventKey (Gloss.MouseButton Gloss.LeftButton) Gloss.Down _ (x, y) ->
       case GUI.layoutQuery (worldLayout world) (x, y) of
         GUI.SliderAnswer i v ->
+          trace ("SliderAnswer: " <> show (i, v) :: Text) $
           let (Control name lower upper _) = worldControls world Vector.! i
               v' = v * (upper - lower) + lower
               newCtrl = Control name lower upper v'
-          in world{worldControls =
-               worldControls world Vector.// [(i, newCtrl)]}
+          in world
+              { worldControls =
+                worldControls world Vector.// [(i, newCtrl)]
+              , worldMouseGrabControl = Just i
+              }
+        _ -> world
+    Gloss.EventMotion (x, y) ->
+      let dx = x - fst (worldMousePos world)
+          dy :: Float
+          dy = traceShowId $ y - snd (worldMousePos world)
+          sh = fmap float2Double $ Vector.fromList $ GUI.slidersHeight (worldLayout world)
+          newControl h (Control n l u v) = Control n l u
+            (max l $ min u $ (v + (u - l) * float2Double dy / h))
+          selection :: Set Int
+          selection = worldKeyboardGrabControl world
+            & case worldMouseGrabControl world of
+                Nothing -> identity
+                Just i -> Set.insert i
+          newControls :: [(Int, Control)]
+          newControls = second (uncurry newControl)
+            <$> ((Vector.zip (Vector.fromList [0..length (worldControls world) - 1])
+                 $ Vector.zip sh (worldControls world)) Vector.!)
+            <$> Set.toList selection
+      in world
+         { worldControls = worldControls world Vector.// newControls
+         , worldMousePos = (x, y) }
     _ -> world
 
 updateTime :: Float -> World -> World
@@ -116,5 +151,5 @@ updateTime dt world =
         scale x = x / (2 * Model.span input)
         input = toInput ctrl
         ctrl = worldControls world
-        tStart = t - 1/4
-        tResolution = 0.01
+        tStart = t - 1/25
+        tResolution = 0.001
