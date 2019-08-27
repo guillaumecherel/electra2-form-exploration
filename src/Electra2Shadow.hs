@@ -14,6 +14,7 @@ module Electra2Shadow
 
 import Protolude
 
+import qualified Data.List as List
 import qualified Data.Set as Set
 import           Data.Set (Set)
 import qualified Data.Vector as Vector
@@ -43,6 +44,11 @@ toInput :: Vector Control -> Model.Input
 toInput controls = Model.inputDefault v1 v2 v3 phi1 phi2 phi3
   where [v1, v2, v3, phi1, phi2, phi3] =
           fmap (\(Control _ _ _ v) -> v)$ Vector.toList controls
+
+keyControl :: Char -> Maybe Int
+keyControl k = List.elemIndex k
+  ['u', 'i', 'e'
+  ,'y', 'x', '.']
 
 data World = World
   { worldWindow :: (Int, Int)
@@ -90,49 +96,86 @@ view world =
           (fromIntegral $ snd (worldWindow world) - 1)
     ]
 
+data Event =
+  ResizeWindow (Int, Int)
+  | DragControl Int Double
+  | MouseGrabControl Int
+  | KeyboardGrabControl Int
+  | MouseReleaseControl Int
+  | KeyboardReleaseControl Int
+  | SetMousePos (Float, Float)
+  deriving (Show, Eq)
+
+events :: Gloss.Event -> World -> [Event]
+events event world =
+  trace (show event :: Text) $
+  case event of
+    Gloss.EventResize (width, height) -> [ResizeWindow (width, height)]
+    Gloss.EventKey (Gloss.MouseButton Gloss.LeftButton) Gloss.Up _ (x, y) ->
+      case worldMouseGrabControl world of
+        Nothing -> []
+        Just i -> [MouseReleaseControl i]
+    Gloss.EventKey (Gloss.MouseButton Gloss.LeftButton) Gloss.Down _ (x, y) ->
+      case GUI.layoutQuery (worldLayout world) (x, y) of
+        GUI.SliderAnswer i v -> [MouseGrabControl i]
+        GUI.NoAnswer -> []
+    Gloss.EventKey (Gloss.Char k) Gloss.Down _ _ ->
+      toList $ KeyboardGrabControl <$> keyControl k
+    Gloss.EventKey (Gloss.Char k) Gloss.Up _ _ ->
+      toList $ KeyboardReleaseControl <$> keyControl k
+    Gloss.EventMotion (x, y) ->
+      let grabbedControls =
+            worldKeyboardGrabControl world
+            <> Set.fromList (toList $ worldMouseGrabControl world)
+          slidersHeight = fmap float2Double $ Vector.fromList
+            $ GUI.slidersHeight (worldLayout world)
+          dragControls = flip fmap
+            (Set.toList grabbedControls)
+            (\i ->
+              let dx = x - fst (worldMousePos world)
+                  dy = y - snd (worldMousePos world)
+                  (Control _ l u v) = worldControls world Vector.! i
+                  h = slidersHeight Vector.! i
+                  dragAmount = float2Double dy / h
+              in DragControl i dragAmount)
+          setMousePos = SetMousePos (x, y)
+      in setMousePos : dragControls
+    _ -> []
+
+updateEvent :: Event -> World -> World
+updateEvent event world =
+  trace (show $ event :: Text) $
+  case event of
+    ResizeWindow (width, height) ->
+      world{ worldWindow = (width, height) }
+    MouseGrabControl i -> world
+      {worldMouseGrabControl = Just i}
+    MouseReleaseControl i -> world
+      { worldMouseGrabControl = Nothing }
+    KeyboardGrabControl i -> world
+      { worldKeyboardGrabControl =
+          Set.insert i $ worldKeyboardGrabControl world
+      }
+    KeyboardReleaseControl i -> world
+      { worldKeyboardGrabControl =
+          Set.delete i $ worldKeyboardGrabControl world
+      }
+    SetMousePos pos -> world { worldMousePos = pos }
+    DragControl i amount ->
+      let (Control n l u v) = worldControls world Vector.! i
+          v' = (max l $ min u $ v + (u - l) * amount)
+      in world
+        { worldControls = worldControls world Vector.//
+           [(i, Control n l u v')]
+        }
 
 updateInputs :: Gloss.Event -> World -> World
 updateInputs event world =
-  trace (show event :: Text) $
-  case event of
-    Gloss.EventResize (width, height) ->
-      world{ worldWindow = (width, height) }
-    Gloss.EventKey (Gloss.MouseButton Gloss.LeftButton) Gloss.Up _ (x, y) ->
-      world { worldMouseGrabControl = Nothing }
-    Gloss.EventKey (Gloss.MouseButton Gloss.LeftButton) Gloss.Down _ (x, y) ->
-      case GUI.layoutQuery (worldLayout world) (x, y) of
-        GUI.SliderAnswer i v ->
-          trace ("SliderAnswer: " <> show (i, v) :: Text) $
-          let (Control name lower upper _) = worldControls world Vector.! i
-              v' = v * (upper - lower) + lower
-              newCtrl = Control name lower upper v'
-          in world
-              { worldControls =
-                worldControls world Vector.// [(i, newCtrl)]
-              , worldMouseGrabControl = Just i
-              }
-        _ -> world
-    Gloss.EventMotion (x, y) ->
-      let dx = x - fst (worldMousePos world)
-          dy :: Float
-          dy = traceShowId $ y - snd (worldMousePos world)
-          sh = fmap float2Double $ Vector.fromList $ GUI.slidersHeight (worldLayout world)
-          newControl h (Control n l u v) = Control n l u
-            (max l $ min u $ (v + (u - l) * float2Double dy / h))
-          selection :: Set Int
-          selection = worldKeyboardGrabControl world
-            & case worldMouseGrabControl world of
-                Nothing -> identity
-                Just i -> Set.insert i
-          newControls :: [(Int, Control)]
-          newControls = second (uncurry newControl)
-            <$> ((Vector.zip (Vector.fromList [0..length (worldControls world) - 1])
-                 $ Vector.zip sh (worldControls world)) Vector.!)
-            <$> Set.toList selection
-      in world
-         { worldControls = worldControls world Vector.// newControls
-         , worldMousePos = (x, y) }
-    _ -> world
+  traceShow event $
+  (foldl' (.) identity
+  $ fmap updateEvent (events event world))
+  $ world
+
 
 updateTime :: Float -> World -> World
 updateTime dt world =
