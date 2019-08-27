@@ -24,6 +24,7 @@ data Parameter = Parameter
   , parameterValue :: Double
   } deriving (Eq, Show)
 
+parameterSpeed :: Text -> Double -> Parameter
 parameterSpeed name value = Parameter
   { parameterName = name
   , parameterLowerBound = -5
@@ -31,6 +32,7 @@ parameterSpeed name value = Parameter
   , parameterValue = value
   }
 
+parameterAngle :: Text -> Double -> Parameter
 parameterAngle name value = Parameter
   { parameterName = name
   , parameterLowerBound = 0
@@ -38,6 +40,7 @@ parameterAngle name value = Parameter
   , parameterValue = value
   }
 
+parameterRadius :: Text -> Double -> Parameter
 parameterRadius name value = Parameter
   { parameterName = name
   , parameterLowerBound = 0
@@ -181,33 +184,34 @@ instance Monoid Trajectories where
     }
 
 positionsToTrajectories :: Positions -> Trajectories
-positionsToTrajectories positions = Trajectories
-    { trajectoryB = [positionB positions]
-    , trajectoryC = [positionC positions]
-    , trajectoryD = [positionD positions]
-    , trajectoryE = [positionE positions]
-    , trajectoryF = [positionF positions]
-    , trajectoryG = [positionG positions]
-    , trajectoryH = [positionH positions]
-    , trajectoryI = [positionI positions]
+positionsToTrajectories pos = Trajectories
+    { trajectoryB = [positionB pos]
+    , trajectoryC = [positionC pos]
+    , trajectoryD = [positionD pos]
+    , trajectoryE = [positionE pos]
+    , trajectoryF = [positionF pos]
+    , trajectoryG = [positionG pos]
+    , trajectoryH = [positionH pos]
+    , trajectoryI = [positionI pos]
     }
 
 trajectories :: Input -> Double -> Double -> Double -> Trajectories
 trajectories parameters t0 dt tmax =
-  let timesteps = [t0, t0 + dt .. tmax]
+  let -- timesteps = [t0, t0 + dt .. tmax]
+      timesteps = [tmax, tmax - dt .. t0]
       states = fmap (positions parameters) timesteps
   in Fold.fold (Fold.foldMap positionsToTrajectories identity) states
 
 trajectoriesToList :: Trajectories -> [[Point]]
-trajectoriesToList trajectories =
-    [ trajectoryB trajectories
-    , trajectoryC trajectories
-    , trajectoryD trajectories
-    , trajectoryE trajectories
-    , trajectoryF trajectories
-    , trajectoryG trajectories
-    , trajectoryH trajectories
-    , trajectoryI trajectories
+trajectoriesToList trajs =
+    [ trajectoryB trajs
+    , trajectoryC trajs
+    , trajectoryD trajs
+    , trajectoryE trajs
+    , trajectoryF trajs
+    , trajectoryG trajs
+    , trajectoryH trajs
+    , trajectoryI trajs
     ]
 
 -- Radius of a circle within which the trajectories fit.

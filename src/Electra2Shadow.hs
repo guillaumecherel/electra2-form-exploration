@@ -10,6 +10,8 @@ module Electra2Shadow
     , updateInputs
     , updateTime
     , view
+    , quadraticToLinear
+    , quadraticFromLinear
     ) where
 
 import Protolude
@@ -26,24 +28,60 @@ import qualified Graphics.Gloss.Interface.IO.Interact as Gloss
 import qualified Electra2Shadow.GUI as GUI
 import qualified Electra2Shadow.Model as Model
 
+displayMode :: Gloss.Display
 displayMode = (Gloss.InWindow "Nice Window" (worldWindow initialWorld) (0, 0))
 
+backgroundColor :: Gloss.Color
 backgroundColor = Gloss.black
 
 fps :: Int
 fps = 60
 
 -- Control name lowerBound upperBound value
-data Control = Control Text Double Double Double
+data Control =
+  LinearControl
+    { controlLabel :: Text
+    , controlLowerBound :: Double
+    , controlUpperBound :: Double
+    , controlValue :: Double }
+  | QuadraticControl
+    { controlLabel :: Text
+    , controlRadius :: Double
+    , controlValue :: Double }
   deriving (Show, Eq)
 
+bounded :: Double -> Double -> Double -> Double
+bounded lower upper x = min upper $ max lower x
+
+quadraticToLinear :: Double -> Double -> Double
+quadraticToLinear radius value =
+  let value' = if value >= 0
+                  then sqrt (value * radius)
+                  else - sqrt (-value * radius)
+  in bounded (- radius) radius value'
+
+quadraticFromLinear :: Double -> Double -> Double
+quadraticFromLinear radius value =
+  let value' = if value >= 0
+                  then value ** 2 / radius
+                  else - value ** 2 / radius
+  in bounded (-radius) radius value'
+
 controlSpecs :: Control -> (Text, Double, Double, Double)
-controlSpecs (Control name lower upper val) = (name, lower, upper, val)
+controlSpecs (LinearControl name lower upper val) = (name, lower, upper, val)
+controlSpecs (QuadraticControl name radius val) =
+  (name, -radius, radius, quadraticToLinear radius val)
 
 toInput :: Vector Control -> Model.Input
-toInput controls = Model.inputDefault v1 v2 v3 phi1 phi2 phi3
-  where [v1, v2, v3, phi1, phi2, phi3] =
-          fmap (\(Control _ _ _ v) -> v)$ Vector.toList controls
+toInput controls =
+  let values = controlValue <$> controls
+  in Model.inputDefault
+       (values Vector.! 0)
+       (values Vector.! 1)
+       (values Vector.! 2)
+       (values Vector.! 3)
+       (values Vector.! 4)
+       (values Vector.! 5)
 
 keyControl :: Char -> Maybe Int
 keyControl k = List.elemIndex k
@@ -64,12 +102,12 @@ data World = World
 initialWorld :: World
 initialWorld =
   let controls = Vector.fromList
-        [ Control "v1" (-5) 5 1
-        , Control "v2" (-5) 5 (-2)
-        , Control "v3" (-5) 5 0.5
-        , Control "phi1" 0 (2 * pi) 0
-        , Control "phi2" 0 (2 * pi) 0
-        , Control "phi3" 0 (2 * pi) 0
+        [ QuadraticControl "v1" 5 1
+        , QuadraticControl "v2" 5 (-2)
+        , QuadraticControl "v3" 5 0.5
+        , LinearControl "phi1" 0 (2 * pi) 0
+        , LinearControl "phi2" 0 (2 * pi) 0
+        , LinearControl "phi3" 0 (2 * pi) 0
         ]
       window = (400, 600)
   in World
@@ -108,16 +146,16 @@ data Event =
 
 events :: Gloss.Event -> World -> [Event]
 events event world =
-  trace (show event :: Text) $
+  -- trace (show event :: Text) $
   case event of
     Gloss.EventResize (width, height) -> [ResizeWindow (width, height)]
-    Gloss.EventKey (Gloss.MouseButton Gloss.LeftButton) Gloss.Up _ (x, y) ->
+    Gloss.EventKey (Gloss.MouseButton Gloss.LeftButton) Gloss.Up _ _ ->
       case worldMouseGrabControl world of
         Nothing -> []
         Just i -> [MouseReleaseControl i]
     Gloss.EventKey (Gloss.MouseButton Gloss.LeftButton) Gloss.Down _ (x, y) ->
       case GUI.layoutQuery (worldLayout world) (x, y) of
-        GUI.SliderAnswer i v -> [MouseGrabControl i]
+        GUI.SliderAnswer i _ -> [MouseGrabControl i]
         GUI.NoAnswer -> []
     Gloss.EventKey (Gloss.Char k) Gloss.Down _ _ ->
       toList $ KeyboardGrabControl <$> keyControl k
@@ -132,9 +170,7 @@ events event world =
           dragControls = flip fmap
             (Set.toList grabbedControls)
             (\i ->
-              let dx = x - fst (worldMousePos world)
-                  dy = y - snd (worldMousePos world)
-                  (Control _ l u v) = worldControls world Vector.! i
+              let dy = y - snd (worldMousePos world)
                   h = slidersHeight Vector.! i
                   dragAmount = float2Double dy / h
               in DragControl i dragAmount)
@@ -144,13 +180,13 @@ events event world =
 
 updateEvent :: Event -> World -> World
 updateEvent event world =
-  trace (show $ event :: Text) $
+  -- trace (show $ event :: Text) $
   case event of
     ResizeWindow (width, height) ->
       world{ worldWindow = (width, height) }
     MouseGrabControl i -> world
       {worldMouseGrabControl = Just i}
-    MouseReleaseControl i -> world
+    MouseReleaseControl _ -> world
       { worldMouseGrabControl = Nothing }
     KeyboardGrabControl i -> world
       { worldKeyboardGrabControl =
@@ -162,16 +198,18 @@ updateEvent event world =
       }
     SetMousePos pos -> world { worldMousePos = pos }
     DragControl i amount ->
-      let (Control n l u v) = worldControls world Vector.! i
-          v' = (max l $ min u $ v + (u - l) * amount)
-      in world
-        { worldControls = worldControls world Vector.//
-           [(i, Control n l u v')]
-        }
+      let newCtrl = case worldControls world Vector.! i of
+            (LinearControl n l u v) ->
+              (LinearControl n l u (bounded l u $ v + (u - l) * amount))
+            (QuadraticControl n r v) ->
+              let x = quadraticToLinear r v
+                  v' = quadraticFromLinear r (x + amount * 2 * r)
+              in QuadraticControl n r v'
+      in world { worldControls = worldControls world Vector.// [(i, newCtrl)] }
 
 updateInputs :: Gloss.Event -> World -> World
 updateInputs event world =
-  traceShow event $
+  -- traceShow event $
   (foldl' (.) identity
   $ fmap updateEvent (events event world))
   $ world
@@ -195,4 +233,4 @@ updateTime dt world =
         input = toInput ctrl
         ctrl = worldControls world
         tStart = t - 1/25
-        tResolution = 0.001
+        tResolution = 0.005

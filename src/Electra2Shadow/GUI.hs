@@ -22,10 +22,8 @@ module Electra2Shadow.GUI
 
 import Protolude
 
-import qualified Data.Text as Text
 import GHC.Float (double2Float, float2Double)
 import qualified Graphics.Gloss as Gloss
-import qualified Graphics.Gloss.Interface.IO.Interact as Gloss
 
 data Layout = Layout Dim Box LayoutElement
   deriving (Show, Eq)
@@ -58,7 +56,7 @@ data Length = AbsoluteLength Float | RelativeLength Float
   deriving (Show, Eq)
 
 absLength :: Float -> Length -> Float
-absLength parentLength length = case length of
+absLength parentLength length' = case length' of
   (AbsoluteLength l) -> l
   (RelativeLength l) -> l * parentLength
 
@@ -73,24 +71,24 @@ root (width, height) dim layout = layout dim box'
 row
   :: Justification -> [(Dim -> Box -> Layout, Dim, Alignment)]
   -> Dim -> Box -> Layout
-row justification seq dim box' =
+row justification elems dim box' =
   Layout dim box' row'
   where row' = Row justification seq'
         seq' :: [(Layout, Alignment)]
-        seq' = (\(b, (l, d, a)) -> (l d b, a)) <$> zip boxes seq
+        seq' = (\(b, (l, d, a)) -> (l d b, a)) <$> zip boxes elems
         boxes = boxRow justification box' das
-        das = ((\(_, d, a) -> (d, a)) <$> seq)
+        das = ((\(_, d, a) -> (d, a)) <$> elems)
 
 column
   :: Justification -> [(Dim -> Box -> Layout, Dim, Alignment)]
   -> Dim -> Box -> Layout
-column justification seq dim box' =
+column justification elems dim box' =
   Layout dim box' column'
   where column' = Column justification seq'
         seq' :: [(Layout, Alignment)]
-        seq' = (\(b, (l, d, a)) -> (l d b, a)) <$> zip boxes seq
+        seq' = (\(b, (l, d, a)) -> (l d b, a)) <$> zip boxes elems
         boxes = boxColumn justification box' das
-        das = ((\(_, d, a) -> (d, a)) <$> seq)
+        das = ((\(_, d, a) -> (d, a)) <$> elems)
 
 canvas :: [[(Gloss.Point)]] -> Dim -> Box -> Layout
 canvas trajectories dim box' =
@@ -100,7 +98,16 @@ slider
   :: Int -> Text -> Float -> Float -> Float
   -> Dim -> Box -> Layout
 slider index name lowerBound upperBound value dim box' =
-  Layout dim box' (Slider
+  let boxes = boxColumn SpaceBetween box'
+        [ (Fixed (RelativeLength 1, RelativeLength 0.1), Center)
+        , (Fixed (RelativeLength 1, RelativeLength 0.6), Center)
+        , (Fixed (RelativeLength 1, RelativeLength 0.1), Center)
+        , (Fixed (RelativeLength 1, RelativeLength 0.1), Center)
+        ]
+      (upperBox, sliderBox, lowerBox, labelBox) = case boxes of
+        [u, s, l, n] -> (u, s, l, n)
+        _ -> panic "GUI.slider pattern matching error."
+  in Layout dim box' (Slider
     { sliderIndex = index
     , sliderName = name
     , sliderLowerBound = lowerBound
@@ -111,13 +118,6 @@ slider index name lowerBound upperBound value dim box' =
     , sliderUpperBox = upperBox
     , sliderSliderBox = sliderBox
     })
-  where  [upperBox, sliderBox, lowerBox, labelBox] =
-           boxColumn SpaceBetween box'
-              [ (Fixed (RelativeLength 1, RelativeLength 0.1), Center)
-              , (Fixed (RelativeLength 1, RelativeLength 0.6), Center)
-              , (Fixed (RelativeLength 1, RelativeLength 0.1), Center)
-              , (Fixed (RelativeLength 1, RelativeLength 0.1), Center)
-              ]
 
 layoutWithControl
   :: (Int, Int)
@@ -142,23 +142,23 @@ layoutWithControl (width, height) slidersSpecs trajectories =
                        (zip [0..] slidersSpecs)
 
 layoutQuery :: Layout -> (Float, Float) -> LayoutAnswer
-layoutQuery (Layout d b e) (x, y) = case e of
-  Row j las ->
+layoutQuery (Layout _ _ e) (x, y) = case e of
+  Row _ las ->
     let target = head $ catMaybes $ foldr
           (\(l, _) -> (((l,) <$> inLayout (x, y) l) :)) [] las
     in case target  of
       Just (l,_) -> layoutQuery l (x, y)
       Nothing -> NoAnswer
-  Column j las -> 
+  Column _ las ->
     let target = head $ catMaybes $ foldr
           (\(l, _) -> (((l,) <$> inLayout (x, y) l) :)) [] las
     in case target  of
       Just (l,_) -> layoutQuery l (x, y)
       Nothing -> NoAnswer
-  Canvas trajectories -> NoAnswer
-  Slider i n l u v nb lb ub sb -> case inBox (x,y) sb of
+  Canvas _ -> NoAnswer
+  Slider i _ _ _ _ _ _ _ sb -> case inBox (x,y) sb of
     Nothing -> NoAnswer
-    Just (rx, ry) -> SliderAnswer i ry
+    Just (_, ry) -> SliderAnswer i ry
 
 
 inLayout :: (Float, Float) -> Layout -> Maybe (Double, Double)
@@ -177,9 +177,9 @@ data LayoutAnswer =
   deriving (Show, Eq)
 
 slidersHeight :: Layout -> [Float]
-slidersHeight (Layout _ box e) = case e of
-  Row j las -> las >>= slidersHeight . fst
-  Column j las -> las >>= slidersHeight . fst
+slidersHeight (Layout _ _ e) = case e of
+  Row _ las -> las >>= slidersHeight . fst
+  Column _ las -> las >>= slidersHeight . fst
   Slider{sliderSliderBox = (_, y1, _, y2) } -> [y2 - y1]
   _ -> []
 
@@ -214,15 +214,15 @@ extent dim (parentWidth, parentHeight) = case dim of
 
 boxColumn :: Justification -> Box -> [(Dim, Alignment)] -> [Box]
 boxColumn justification parent dims =
-  let (x1p, y1p, x2p, y2p) = parent
+  let 
       -- Transform to work in the horizontal direction
       symmetry (x1, y1, x2, y2) = (y1, x1, y2, x2)
       parent' = symmetry parent
       dim' dim = case dim of
         Fixed (width, height) -> Fixed (height, width)
         Stretch -> Stretch
-        StretchVertically dimWidth -> StretchHorizontally dimWidth
-        StretchHorizontally dimHeight -> StretchVertically dimHeight
+        StretchVertically dimWidth' -> StretchHorizontally dimWidth'
+        StretchHorizontally dimHeight' -> StretchVertically dimHeight'
         StretchRatio ratio ->
           StretchRatio (denominator ratio % numerator ratio)
       dims' = reverse $ first dim' <$> dims
@@ -239,11 +239,11 @@ boxRow justification parent dims =
       heightParent = y2p - y1p
       extentPending :: Dim -> Either ((Float, Float) -> (Float, Float)) (Float, Float)
       extentPending dim = case dim of
-        Fixed (width, height) -> Right $ extent dim (widthParent, heightParent)
+        Fixed (_, _) -> Right $ extent dim (widthParent, heightParent)
         Stretch -> Left (extent dim)
-        StretchVertically width -> Left (extent dim)
-        StretchHorizontally height -> Left (extent dim)
-        StretchRatio ratio -> Left (extent dim)
+        StretchVertically _ -> Left (extent dim)
+        StretchHorizontally _ -> Left (extent dim)
+        StretchRatio _ -> Left (extent dim)
       extentsPending
         :: [Either  ((Float, Float) -> (Float, Float)) (Float, Float)]
       extentsPending = extentPending . fst <$> dims
@@ -279,9 +279,9 @@ boxRow justification parent dims =
           Top -> (y2p - height, y2p)
       boxes :: [Box]
       (_, boxes) = foldr
-        (\(extent, alignment) (curPos, boxesAcc)->
-          let (x1,x2) = (curPos - fst extent, curPos)
-              (y1,y2) = verticalPos (snd extent, alignment)
+        (\(extent', alignment) (curPos, boxesAcc)->
+          let (x1,x2) = (curPos - fst extent', curPos)
+              (y1,y2) = verticalPos (snd extent', alignment)
               newPos = x1 - spaceBetween
           in (newPos, ((x1, y1, x2, y2)) : boxesAcc))
         (x2p - spaceAtEnd, [])
@@ -296,24 +296,28 @@ data Justification = Start | End | Middle | SpaceBetween | SpaceAround | SpaceEv
   deriving (Show, Eq)
 
 viewLayout :: Layout -> Gloss.Picture
-viewLayout (Layout dim box elem) = case elem of
-  (Row justification layouts) ->
+viewLayout (Layout _ box' elem') = case elem' of
+  (Row _ layouts) ->
     Gloss.pictures $ fmap viewLayout $ fmap fst layouts
-  (Column justification layouts) ->
+  (Column _ layouts) ->
     Gloss.pictures $ fmap viewLayout $ fmap fst layouts
-  (Canvas trajectories) -> viewTrajectories trajectories box
-  (Slider index name lower upper value nameBox lowerBox upperBox sliderBox) ->
+  (Canvas trajectories) -> viewTrajectories trajectories box'
+  (Slider _ name lower upper value nameBox lowerBox upperBox sliderBox) ->
     viewSlider name lower upper value nameBox lowerBox upperBox sliderBox
 
 viewTrajectories :: [[(Gloss.Point)]] -> Box -> Gloss.Picture
 viewTrajectories trajectories parent =
   assignBox parent
   $ Gloss.color Gloss.yellow
-  $ Gloss.pictures
-  $ fmap Gloss.line trajectories
+  $ dots <> traces
+  where traces = mconcat $ Gloss.line <$> trajectories
+        dots = mconcat
+               $ (\f -> f (Gloss.circleSolid (1/200)))
+               <$> (\(x, y) -> Gloss.translate x y)
+               <$> (catMaybes $ fmap head trajectories)
 
 viewSlider :: Text -> Float -> Float -> Float -> Box -> Box -> Box -> Box -> Gloss.Picture
-viewSlider label lowerBound upperBound value labelBox lowerBox upperBox sliderBox =
+viewSlider _ lowerBound upperBound value labelBox lowerBox upperBox sliderBox =
   Gloss.pictures $ zipWith assignBox boxes pics
   where pics = [upperBoundP, sliderP, lowerBoundP, labelP]
         boxes = [upperBox, sliderBox, lowerBox, labelBox]
@@ -342,6 +346,6 @@ assignBox (x1, y1, x2, y2) =
 data Direction = Horizontal | Vertical
   deriving (Show, Eq)
 
-viewSeq :: [(Box, Gloss.Picture)] -> Gloss.Picture
-viewSeq seq = Gloss.pictures $ fmap (uncurry assignBox) seq
+-- viewSeq :: [(Box, Gloss.Picture)] -> Gloss.Picture
+-- viewSeq elems = Gloss.pictures $ fmap (uncurry assignBox) elems
 
