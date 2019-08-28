@@ -16,9 +16,12 @@ module Electra2Shadow
 
 import Protolude
 
+import           Data.Char (isDigit)
 import qualified Data.List as List
 import qualified Data.Set as Set
 import           Data.Set (Set)
+import qualified Data.Text as Text
+import           Data.Text.Read (signed, decimal, double)
 import qualified Data.Vector as Vector
 import           Data.Vector (Vector)
 import           GHC.Float (double2Float, float2Double)
@@ -49,6 +52,10 @@ data Control =
     , controlRadius :: Double
     , controlValue :: Double }
   deriving (Show, Eq)
+
+setControl :: Control -> Double -> Control
+setControl c v = c{controlValue = v}
+
 
 quadraticToLinear :: Double -> Double -> Double
 quadraticToLinear radius value =
@@ -86,7 +93,7 @@ toInput controls =
 keyControl :: Char -> Maybe Int
 keyControl k = List.elemIndex k
   ['u', 'i', 'e'
-  ,'y', 'x', '.']
+  ,'é', 'p', 'o']
 
 data World = World
   { worldWindow :: (Int, Int)
@@ -98,7 +105,13 @@ data World = World
   , worldMouseGrabControl :: Maybe Int
   , worldKeyboardGrabControl :: Set Int
   , worldMousePos :: (Float, Float)
+  , worldNumberBuffer :: [Char]
   } deriving (Eq, Show)
+
+grabbedControls :: World -> Set Int
+grabbedControls world =
+  worldKeyboardGrabControl world
+  <> Set.fromList (toList $ worldMouseGrabControl world)
 
 initialWorld :: World
 initialWorld =
@@ -124,6 +137,7 @@ initialWorld =
   , worldMouseGrabControl = Nothing
   , worldKeyboardGrabControl = mempty
   , worldMousePos = (0, 0)
+  , worldNumberBuffer = []
   }
 
 view :: World -> Gloss.Picture
@@ -144,6 +158,8 @@ data Event =
   | MouseReleaseControl Int
   | KeyboardReleaseControl Int
   | SetMousePos (Float, Float)
+  | ReadDigit Char
+  | SetControl Int Double
   deriving (Show, Eq)
 
 events :: Gloss.Event -> World -> [Event]
@@ -160,17 +176,30 @@ events event world =
         GUI.SliderAnswer i _ -> [MouseGrabControl i]
         GUI.NoAnswer -> []
     Gloss.EventKey (Gloss.Char k) Gloss.Down _ _ ->
-      toList $ KeyboardGrabControl <$> keyControl k
+      if isDigit k || elem k ['.', '-', '+']
+        then [ReadDigit k]
+        else 
+          toList $ KeyboardGrabControl <$> keyControl k
     Gloss.EventKey (Gloss.Char k) Gloss.Up _ _ ->
-      toList $ KeyboardReleaseControl <$> keyControl k
+      if isDigit k || elem k ['.', '-', '+']
+        then [] 
+        else case keyControl k of
+          Nothing -> []
+          Just i ->
+            let value = double (Text.pack $ reverse $ worldNumberBuffer world)
+                setctrls = case value of
+                  Right (n, _) -> [SetControl i n]
+                  Left err -> [] &
+                    trace ("worldNumberBuffer cannot be read as a number: "
+                      <> show (worldNumberBuffer world)
+                      <> " " <> Text.pack err :: Text)
+                releases = [KeyboardReleaseControl i]
+            in setctrls <> releases
     Gloss.EventMotion (x, y) ->
-      let grabbedControls =
-            worldKeyboardGrabControl world
-            <> Set.fromList (toList $ worldMouseGrabControl world)
-          slidersHeight = fmap float2Double $ Vector.fromList
+      let slidersHeight = fmap float2Double $ Vector.fromList
             $ GUI.slidersHeight (worldLayout world)
           dragControls = flip fmap
-            (Set.toList grabbedControls)
+            (Set.toList $ grabbedControls world)
             (\i ->
               let dy = y - snd (worldMousePos world)
                   h = slidersHeight Vector.! i
@@ -182,7 +211,7 @@ events event world =
 
 updateEvent :: Event -> World -> World
 updateEvent event world =
-  -- trace (show $ event :: Text) $
+  traceShow event $
   case event of
     ResizeWindow (width, height) ->
       world{ worldWindow = (width, height) }
@@ -197,6 +226,7 @@ updateEvent event world =
     KeyboardReleaseControl i -> world
       { worldKeyboardGrabControl =
           Set.delete i $ worldKeyboardGrabControl world
+      , worldNumberBuffer = mempty
       }
     SetMousePos pos -> world { worldMousePos = pos }
     DragControl i amount ->
@@ -208,6 +238,10 @@ updateEvent event world =
                   v' = quadraticFromLinear r (x + amount * 2 * r)
               in QuadraticControl n r v'
       in world { worldControls = worldControls world Vector.// [(i, newCtrl)] }
+    ReadDigit d -> world {worldNumberBuffer = d : worldNumberBuffer world}
+    SetControl i n -> world { worldControls =
+      worldControls world Vector.// [(i, setControl (worldControls world Vector.! i) n )]
+      }
 
 updateInputs :: Gloss.Event -> World -> World
 updateInputs event world =
@@ -235,7 +269,7 @@ updateTime dt world =
           take (ceiling $ traceDuration / tResolution)
             (new <> prev))
         newTrajectories (worldTrajectories world)
-      traceDuration = 1 -- 1.0 / 25.0
+      traceDuration = 1.0 / 25.0
       input = toInput ctrl
       ctrl = worldControls world
   in 
