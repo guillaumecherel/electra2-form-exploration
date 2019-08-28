@@ -3,7 +3,11 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module Electra2Shadow.Model
-  ( Parameter (..)
+  ( Angles (..)
+  , angles
+  , inputSetAngles
+  , inputAddAngles
+  , Parameter (..)
   , Input
   , inputDefault
   , span
@@ -14,6 +18,7 @@ module Electra2Shadow.Model
 import Protolude
 
 import qualified Control.Foldl as Fold
+import Data.Fixed (mod')
 
 type Point = (Double, Double)
 
@@ -70,7 +75,6 @@ data Input = Input
 
 inputDefault :: Double -> Double -> Double -> Double -> Double -> Double -> Input
 inputDefault v1 v2 v3 phiB phiD phiF = Input
-  
   { -- Vitesses
     parametersV1 = parameterSpeed "v1" v1
   , parametersV2 = parameterSpeed "v2" v2
@@ -91,6 +95,24 @@ inputDefault v1 v2 v3 phiB phiD phiF = Input
   , parametersRH = parameterRadius "rH" (sqrt (0.5 ** 2 + 0.05 ** 2))
   , parametersRI = parameterRadius "rI" (sqrt (0.5 ** 2 + 0.05 ** 2))
   } 
+
+inputSetAngles :: Input -> Angles -> Input
+inputSetAngles input angles = input
+  { parametersPhiB = parameterAngle "phiB" (mod' (angleB angles) (2 * pi))
+  , parametersPhiD = parameterAngle "phiD" (mod' (angleD angles) (2 * pi))
+  , parametersPhiF = parameterAngle "phiF" (mod' (angleF angles) (2 * pi))
+  }
+
+inputAddAngles :: Input -> Angles -> Input
+inputAddAngles input angles = input
+  { parametersPhiB = parameterAngle "phiB"
+     (mod' (parameterValue (parametersPhiB input) + (angleB angles)) (2 * pi))
+  , parametersPhiD = parameterAngle "phiD" 
+     (mod' (parameterValue (parametersPhiD input) + (angleD angles)) (2 * pi))
+  , parametersPhiF = parameterAngle "phiF" 
+     (mod' (parameterValue (parametersPhiF input) + (angleF angles)) (2 * pi))
+  }
+  
 
 data Positions = Positions
   { positionB :: Point
@@ -146,6 +168,27 @@ positions parameters t =
       , positionG = (gX, gY)
       , positionH = (hX, hY)
       , positionI = (iX, iY)
+      }
+
+data Angles = Angles
+  { angleB :: Double
+  , angleD :: Double
+  , angleF :: Double
+  }
+  deriving (Eq, Show)
+
+angles :: Input -> Double -> Angles
+angles parameters t =
+  let v1 = parameterValue $ parametersV1 parameters
+      v2 = parameterValue $ parametersV2 parameters
+      v3 = parameterValue $ parametersV3 parameters
+      phiB = parameterValue $ parametersPhiB parameters
+      phiD = parameterValue $ parametersPhiD parameters
+      phiF = parameterValue $ parametersPhiF parameters
+  in Angles
+      { angleB = 2 * pi * v1 * t + phiB
+      , angleD = 2 * pi * v2 * t + phiD
+      , angleF = 2 * pi * v3 * t + phiF
       }
 
 data Trajectories = Trajectories

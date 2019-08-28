@@ -50,9 +50,6 @@ data Control =
     , controlValue :: Double }
   deriving (Show, Eq)
 
-bounded :: Double -> Double -> Double -> Double
-bounded lower upper x = min upper $ max lower x
-
 quadraticToLinear :: Double -> Double -> Double
 quadraticToLinear radius value =
   let value' = if value >= 0
@@ -66,6 +63,9 @@ quadraticFromLinear radius value =
                   then value ** 2 / radius
                   else - value ** 2 / radius
   in bounded (-radius) radius value'
+
+bounded :: Double -> Double -> Double -> Double
+bounded lower upper x = min upper $ max lower x
 
 controlSpecs :: Control -> (Text, Double, Double, Double)
 controlSpecs (LinearControl name lower upper val) = (name, lower, upper, val)
@@ -93,6 +93,7 @@ data World = World
   , worldControls :: Vector Control
   , worldTime :: Double
   , worldTrajectories :: [[(Double, Double)]]
+  , worldAngles :: Model.Angles
   , worldLayout :: GUI.Layout
   , worldMouseGrabControl :: Maybe Int
   , worldKeyboardGrabControl :: Set Int
@@ -114,7 +115,8 @@ initialWorld =
   { worldWindow = window
   , worldControls = controls
   , worldTime = 0
-  , worldTrajectories = []
+  , worldTrajectories = replicate 8 []
+  , worldAngles = Model.Angles 0 0 0
   , worldLayout = GUI.layoutWithControl
       window
       (fmap controlSpecs $ Vector.toList controls)
@@ -217,20 +219,32 @@ updateInputs event world =
 
 updateTime :: Float -> World -> World
 updateTime dt world =
-  world{ worldTime = t
-       , worldTrajectories = trajectories
-       , worldLayout = GUI.layoutWithControl
-          (worldWindow world)
-          (controlSpecs <$> Vector.toList ctrl)
-          ((fmap . fmap) (bimap double2Float double2Float) trajectories)
-       }
-  where t = worldTime world + float2Double dt
-        trajectories =
-           (fmap . fmap) (bimap scale scale)
-           $ Model.trajectoriesToList
-           $ Model.trajectories input tStart tResolution t
-        scale x = x / (2 * Model.span input)
-        input = toInput ctrl
-        ctrl = worldControls world
-        tStart = t - 1/25
-        tResolution = 0.005
+  let newAngles = Model.angles
+        (Model.inputSetAngles input (worldAngles world))
+        (float2Double dt)
+      newTrajectories =
+        (fmap . fmap) (bimap scale scale)
+        $ Model.trajectoriesToList
+        $ Model.trajectories inputShiftAngles 0 tResolution (float2Double dt)
+      inputShiftAngles = Model.inputAddAngles input newAngles
+      tResolution = 0.005
+      t = worldTime world + float2Double dt
+      scale x = x / (2 * Model.span input)
+      trajectories = zipWith
+        (\new prev ->
+          take (ceiling $ traceDuration / tResolution)
+            (new <> prev))
+        newTrajectories (worldTrajectories world)
+      traceDuration = 1 -- 1.0 / 25.0
+      input = toInput ctrl
+      ctrl = worldControls world
+  in 
+     world
+     { worldTime = t
+     , worldTrajectories = trajectories
+     , worldAngles = newAngles
+     , worldLayout = GUI.layoutWithControl
+        (worldWindow world)
+        (controlSpecs <$> Vector.toList ctrl)
+        ((fmap . fmap) (bimap double2Float double2Float) trajectories)
+     }
