@@ -93,7 +93,7 @@ toInput controls =
 keyControl :: Char -> Maybe Int
 keyControl k = List.elemIndex k
   ['u', 'i', 'e'
-  ,'é', 'p', 'o']
+  ,'\195', 'p', 'o']
 
 data World = World
   { worldWindow :: (Int, Int)
@@ -211,7 +211,7 @@ events event world =
 
 updateEvent :: Event -> World -> World
 updateEvent event world =
-  traceShow event $
+  -- traceShow event $
   case event of
     ResizeWindow (width, height) ->
       world{ worldWindow = (width, height) }
@@ -223,10 +223,13 @@ updateEvent event world =
       { worldKeyboardGrabControl =
           Set.insert i $ worldKeyboardGrabControl world
       }
-    KeyboardReleaseControl i -> world
-      { worldKeyboardGrabControl =
-          Set.delete i $ worldKeyboardGrabControl world
-      , worldNumberBuffer = mempty
+    KeyboardReleaseControl i ->
+      let keyGrab = Set.delete i $ worldKeyboardGrabControl world
+      in world
+      { worldKeyboardGrabControl = keyGrab
+      , worldNumberBuffer = if null keyGrab
+        then mempty
+        else (worldNumberBuffer world)
       }
     SetMousePos pos -> world { worldMousePos = pos }
     DragControl i amount ->
