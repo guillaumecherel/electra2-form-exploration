@@ -1,14 +1,31 @@
+{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE NoImplicitPrelude #-}
+
 module Main where
 
-import qualified Graphics.Gloss as Gloss
-import qualified Electra2Shadow
+import Protolude
+
+import qualified Data.ByteString.Lazy as BL
+import           Graphics.Gloss (play)
+import           Electra2Shadow
 
 main :: IO ()
-main = Gloss.play
-         Electra2Shadow.displayMode
-         Electra2Shadow.backgroundColor
-         Electra2Shadow.fps
-         Electra2Shadow.initialWorld
-         Electra2Shadow.view
-         Electra2Shadow.updateInputs
-         Electra2Shadow.updateTime
+main = do
+  csv <- BL.readFile csvFilePath
+  let (names, ctrlMap) = controlMapFromCSV csv
+  putStrLn $ (show names :: Text)
+  play
+   displayMode
+   backgroundColor
+   fps
+   (initialWorld $ controlsFromInputValues 1 (-2) 0.5 0 0 0)
+   -- (initialWorld $ controlsFromMap ctrlMap 0 0 0 0 0)
+   view
+   updateInputs
+   updateTime
+
+csvFilePath :: FilePath
+csvFilePath = "data/resultsDirectSampling3.csv"

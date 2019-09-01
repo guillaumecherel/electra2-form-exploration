@@ -97,20 +97,20 @@ inputDefault v1 v2 v3 phiB phiD phiF = Input
   } 
 
 inputSetAngles :: Input -> Angles -> Input
-inputSetAngles input angles = input
-  { parametersPhiB = parameterAngle "phiB" (mod' (angleB angles) (2 * pi))
-  , parametersPhiD = parameterAngle "phiD" (mod' (angleD angles) (2 * pi))
-  , parametersPhiF = parameterAngle "phiF" (mod' (angleF angles) (2 * pi))
+inputSetAngles input angles' = input
+  { parametersPhiB = parameterAngle "phiB" (mod' (angleB angles') (2 * pi))
+  , parametersPhiD = parameterAngle "phiD" (mod' (angleD angles') (2 * pi))
+  , parametersPhiF = parameterAngle "phiF" (mod' (angleF angles') (2 * pi))
   }
 
 inputAddAngles :: Input -> Angles -> Input
-inputAddAngles input angles = input
+inputAddAngles input angles' = input
   { parametersPhiB = parameterAngle "phiB"
-     (mod' (parameterValue (parametersPhiB input) + (angleB angles)) (2 * pi))
+     (mod' (parameterValue (parametersPhiB input) + (angleB angles')) (2 * pi))
   , parametersPhiD = parameterAngle "phiD" 
-     (mod' (parameterValue (parametersPhiD input) + (angleD angles)) (2 * pi))
+     (mod' (parameterValue (parametersPhiD input) + (angleD angles')) (2 * pi))
   , parametersPhiF = parameterAngle "phiF" 
-     (mod' (parameterValue (parametersPhiF input) + (angleF angles)) (2 * pi))
+     (mod' (parameterValue (parametersPhiF input) + (angleF angles')) (2 * pi))
   }
   
 
