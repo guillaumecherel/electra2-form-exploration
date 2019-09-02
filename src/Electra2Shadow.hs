@@ -22,7 +22,7 @@ module Electra2Shadow
     , quadraticFromLinear
     ) where
 
-import Protolude hiding (get)
+import Protolude 
 
 import qualified Data.ByteString.Lazy as BL
 import           Data.Char (isDigit)
@@ -58,9 +58,9 @@ data Control =
     -- label radius value
   deriving (Show, Eq)
 
-getControlValue :: Control -> Double
-getControlValue (LinearControl _ _ _ v) = v
-getControlValue (QuadraticControl _ _ v) = v
+getControlValue :: (Double -> a) -> Control -> a
+getControlValue f (LinearControl _ _ _ v) = f v
+getControlValue f (QuadraticControl _ _ v) = f v
 
 setControlValue :: (Double -> Double) -> Control -> Control
 setControlValue f (LinearControl n l u v) = (LinearControl n l u (f v))
@@ -97,90 +97,100 @@ data Controls =
   deriving (Show)
 
 
-getControlsV1 ::  Controls -> Maybe Control
-getControlsV1 (ControlInput v1 _ _ _ _ _) = Just v1
-getControlsV1 _ = Nothing
+getControlsV1 :: (Control -> a) -> Controls -> Maybe a
+getControlsV1 f (ControlInput v1 _ _ _ _ _) = Just $ f v1
+getControlsV1 _ _ = Nothing
 
-getControlsV2 ::  Controls -> Maybe Control
-getControlsV2 (ControlInput _ v2 _ _ _ _) = Just v2
-getControlsV2 _ = Nothing
+getControlsV2 :: (Control -> a) ->  Controls -> Maybe a
+getControlsV2 f (ControlInput _ v2 _ _ _ _) = Just $ f v2
+getControlsV2 _ _ = Nothing
 
-getControlsV3 :: Controls -> Maybe Control
-getControlsV3 (ControlInput _ _ v3 _ _ _) = Just v3
-getControlsV3 _ = Nothing
+getControlsV3 :: (Control -> a) -> Controls -> Maybe a
+getControlsV3 f (ControlInput _ _ v3 _ _ _) = Just $ f v3
+getControlsV3 _ _ = Nothing
 
-getControlsPhi1 :: Controls -> Maybe Control
-getControlsPhi1 (ControlInput _  _  _ phi1 _  _) = Just phi1
-getControlsPhi1 _ = Nothing
+getControlsPhi1 :: (Control -> a) -> Controls -> Maybe a
+getControlsPhi1 f (ControlInput _  _  _ phi1 _  _) = Just $ f phi1
+getControlsPhi1 _ _ = Nothing
 
-getControlsPhi2 :: Controls -> Maybe Control
-getControlsPhi2 (ControlInput _  _  _  _ phi2 _) = Just phi2
-getControlsPhi2 _ = Nothing
+getControlsPhi2 :: (Control -> a) -> Controls -> Maybe a
+getControlsPhi2 f (ControlInput _  _  _  _ phi2 _) = Just $ f phi2
+getControlsPhi2 _ _ = Nothing
 
-getControlsPhi3 :: Controls -> Maybe Control
-getControlsPhi3 (ControlInput _  _  _  _  _ phi3) = Just phi3
-getControlsPhi3 _ = Nothing
+getControlsPhi3 :: (Control -> a) -> Controls -> Maybe a
+getControlsPhi3 f (ControlInput _  _  _  _  _ phi3) = Just $ f phi3
+getControlsPhi3 _ _ = Nothing
 
-getControlsNumberSingular :: Controls -> Maybe Control
-getControlsNumberSingular (ControlForm _ ns _  _  _  _) = Just ns
-getControlsNumberSingular _ = Nothing
+getControlsNumberSingular :: (Control -> a) -> Controls -> Maybe a
+getControlsNumberSingular f (ControlForm _ ns _  _  _  _) = Just $ f ns
+getControlsNumberSingular _ _ = Nothing
 
-getControlsDensity :: Controls -> Maybe Control
-getControlsDensity (ControlForm _  _ d _  _  _) = Just d
-getControlsDensity _ = Nothing
+getControlsDensity :: (Control -> a) -> Controls -> Maybe a
+getControlsDensity f (ControlForm _  _ d _  _  _) = Just $ f d
+getControlsDensity _ _ = Nothing
 
-getControlsMoran :: Controls -> Maybe Control
-getControlsMoran (ControlForm _  _  _ m _  _) = Just m
-getControlsMoran _ = Nothing
+getControlsMoran :: (Control -> a) -> Controls -> Maybe a
+getControlsMoran f (ControlForm _  _  _ m _  _) = Just $ f m
+getControlsMoran _ _ = Nothing
 
-getControlsMeanCurvature :: Controls -> Maybe Control
-getControlsMeanCurvature (ControlForm _  _  _  _ mc _) = Just mc
-getControlsMeanCurvature _ = Nothing
+getControlsMeanCurvature :: (Control -> a) -> Controls -> Maybe a
+getControlsMeanCurvature f (ControlForm _  _  _  _ mc _) = Just $ f mc
+getControlsMeanCurvature _ _ = Nothing
 
-getControlsReturnTime :: Controls -> Maybe Control
-getControlsReturnTime (ControlForm _  _  _  _  _ rt) = Just rt
-getControlsReturnTime _ = Nothing
+getControlsReturnTime :: (Control -> a) -> Controls -> Maybe a
+getControlsReturnTime f (ControlForm _  _  _  _  _ rt) = Just $ f rt
+getControlsReturnTime _ _ = Nothing
 
 setControlsV1 :: (Control -> Control) -> Controls -> Controls
 setControlsV1 f (ControlInput v1 v2 v3 phi1 phi2 phi3) =
  ControlInput (f v1) v2 v3 phi1 phi2 phi3
 setControlsV1 _ c = c
+
 setControlsV2 :: (Control -> Control) ->  Controls -> Controls
 setControlsV2 f (ControlInput v1 v2 v3 phi1 phi2 phi3) =
  ControlInput v1 (f v2) v3 phi1 phi2 phi3
 setControlsV2 _ c = c
+
 setControlsV3 :: (Control -> Control) ->  Controls -> Controls
 setControlsV3 f (ControlInput v1 v2 v3 phi1 phi2 phi3) =
  ControlInput v1 v2 (f v3) phi1 phi2 phi3
 setControlsV3 _ c = c
+
 setControlsPhi1 :: (Control -> Control) ->  Controls -> Controls
 setControlsPhi1 f (ControlInput v1 v2 v3 phi1 phi2 phi3) =
  ControlInput v1 v2 v3 (f phi1) phi2 phi3
 setControlsPhi1 _ c = c
+
 setControlsPhi2 :: (Control -> Control) ->  Controls -> Controls
 setControlsPhi2 f (ControlInput v1 v2 v3 phi1 phi2 phi3) =
  ControlInput v1 v2 v3 phi1 (f phi2) phi3
 setControlsPhi2 _ c = c
+
 setControlsPhi3 :: (Control -> Control) ->  Controls -> Controls
 setControlsPhi3 f (ControlInput v1 v2 v3 phi1 phi2 phi3) =
  ControlInput v1 v2 v3 phi1 phi2 (f phi3)
 setControlsPhi3 _ c = c
+
 setControlsNumberSingular :: (Control -> Control) ->  Controls -> Controls
 setControlsNumberSingular f (ControlForm kdm ns d m mc rt) =
  ControlForm kdm (f ns) d m mc rt
 setControlsNumberSingular _ c = c
+
 setControlsDensity :: (Control -> Control) ->  Controls -> Controls
 setControlsDensity f (ControlForm kdm ns d m mc rt) =
  ControlForm kdm ns (f d) m mc rt
 setControlsDensity _ c = c
+
 setControlsMoran :: (Control -> Control) ->  Controls -> Controls
 setControlsMoran f (ControlForm kdm ns d m mc rt) =
  ControlForm kdm ns d (f m) mc rt
 setControlsMoran _ c = c
+
 setControlsMeanCurvature :: (Control -> Control) ->  Controls -> Controls
 setControlsMeanCurvature f (ControlForm kdm ns d m mc rt) =
  ControlForm kdm ns d m (f mc) rt
 setControlsMeanCurvature _ c = c
+
 setControlsReturnTime :: (Control -> Control) -> Controls -> Controls
 setControlsReturnTime f (ControlForm kdm ns d m mc rt) =
  ControlForm kdm ns d m mc (f rt)
@@ -220,19 +230,19 @@ controlMapFromCSV csv = case CSV.decodeByName csv of
 controlsValues :: Controls -> ControlsValues
 controlsValues (ControlInput v1 v2 v3 phi1 phi2 phi3) =
   InputValues $ ModelInputValues
-    (getControlValue v1)
-    (getControlValue v2)
-    (getControlValue v3)
-    (getControlValue phi1)
-    (getControlValue phi2)
-    (getControlValue phi3)
+    (getControlValue identity v1)
+    (getControlValue identity v2)
+    (getControlValue identity v3)
+    (getControlValue identity phi1)
+    (getControlValue identity phi2)
+    (getControlValue identity phi3)
 controlsValues (ControlForm _ ns d m mc rt) =
   FormValues
-    (getControlValue ns)
-    (getControlValue d)
-    (getControlValue m)
-    (getControlValue mc)
-    (getControlValue rt)
+    (getControlValue identity ns)
+    (getControlValue identity d)
+    (getControlValue identity m)
+    (getControlValue identity mc)
+    (getControlValue identity rt)
 
 controlsValuesList :: ControlsValues -> [Double]
 controlsValuesList (InputValues (ModelInputValues v1 v2 v3 phi1 phi2 phi3)) =
@@ -259,19 +269,19 @@ controlsList (ControlInput v1 v2 v3 phi1 phi2 phi3) =
 controlsList (ControlForm _ ns d m mc rt) =
   [ ns, d, m, mc, rt ]
  
-getControlAt :: Int -> Controls -> Maybe Control
-getControlAt 0 ctrls@ControlInput{} = getControlsV1 ctrls
-getControlAt 1 ctrls@ControlInput{} = getControlsV2 ctrls
-getControlAt 2 ctrls@ControlInput{} = getControlsV3 ctrls
-getControlAt 3 ctrls@ControlInput{} = getControlsPhi1 ctrls
-getControlAt 4 ctrls@ControlInput{} = getControlsPhi2 ctrls
-getControlAt 5 ctrls@ControlInput{} = getControlsPhi3 ctrls
-getControlAt 0 ctrls@ControlForm{} = getControlsNumberSingular ctrls
-getControlAt 1 ctrls@ControlForm{} = getControlsDensity ctrls
-getControlAt 2 ctrls@ControlForm{} = getControlsMoran ctrls
-getControlAt 3 ctrls@ControlForm{} = getControlsMeanCurvature ctrls
-getControlAt 4 ctrls@ControlForm{} = getControlsReturnTime ctrls
-getControlAt _ _ = Nothing
+getControlAt :: Int -> (Control -> a) -> Controls -> Maybe a
+getControlAt 0 f ctrls@ControlInput{} = getControlsV1 f ctrls
+getControlAt 1 f ctrls@ControlInput{} = getControlsV2 f ctrls
+getControlAt 2 f ctrls@ControlInput{} = getControlsV3 f ctrls
+getControlAt 3 f ctrls@ControlInput{} = getControlsPhi1 f ctrls
+getControlAt 4 f ctrls@ControlInput{} = getControlsPhi2 f ctrls
+getControlAt 5 f ctrls@ControlInput{} = getControlsPhi3 f ctrls
+getControlAt 0 f ctrls@ControlForm{} = getControlsNumberSingular f ctrls
+getControlAt 1 f ctrls@ControlForm{} = getControlsDensity f ctrls
+getControlAt 2 f ctrls@ControlForm{} = getControlsMoran f ctrls
+getControlAt 3 f ctrls@ControlForm{} = getControlsMeanCurvature f ctrls
+getControlAt 4 f ctrls@ControlForm{} = getControlsReturnTime f ctrls
+getControlAt _ _ _ = Nothing
 
 setControlAt :: Int -> (Control -> Control) -> Controls -> Controls
 setControlAt 0 f ctrls@ControlInput{} = setControlsV1 f ctrls
@@ -291,12 +301,12 @@ setControlAt i _ ctrls = panic
 controlsToInput :: Controls -> Model.Input
 controlsToInput (ControlInput v1 v2 v3 phi1 phi2 phi3 ) =
   Model.inputDefault
-    (getControlValue v1)
-    (getControlValue v2)
-    (getControlValue v3)
-    (getControlValue phi1)
-    (getControlValue phi2)
-    (getControlValue phi3)
+    (getControlValue identity v1)
+    (getControlValue identity v2)
+    (getControlValue identity v3)
+    (getControlValue identity phi1)
+    (getControlValue identity phi2)
+    (getControlValue identity phi3)
 controlsToInput ctrl@(ControlForm kdm _ _ _ _ _) =
   let (_, ModelInputValues v1 v2 v3 phi1 phi2 phi3) =
         KDM.nearest kdm (controlsValues ctrl)
@@ -342,62 +352,63 @@ keyControl k = List.elemIndex k
   ,'\195', 'p', 'o']
 
 data World = World
-  { getWorldWindow :: (Int, Int)
-  , getWorldControls :: Controls
-  , getWorldTime :: Double
-  , getWorldTrajectories :: [[(Double, Double)]]
-  , getWorldAngles :: Model.Angles
-  , getWorldLayout :: GUI.Layout
-  , getWorldMouseGrabControl :: Maybe Int
-  , getWorldKeyboardGrabControl :: Set Int
-  , getWorldMousePos :: (Float, Float)
-  , getWorldNumberBuffer :: [Char]
+  { worldWindow :: (Int, Int)
+  , worldControls :: Controls
+  , worldTime :: Double
+  , worldTrajectories :: [[(Double, Double)]]
+  , worldAngles :: Model.Angles
+  , worldLayout :: GUI.Layout
+  , worldMouseGrabControl :: Maybe Int
+  , worldKeyboardGrabControl :: Set Int
+  , worldMousePos :: (Float, Float)
+  , worldNumberBuffer :: [Char]
   } deriving (Show)
 
+getWorldWindow :: ((Int, Int) -> a) -> World -> a
+getWorldWindow f w = f $  worldWindow w
+getWorldControls :: (Controls -> a) -> World -> a
+getWorldControls f w = f $ worldControls w
+getWorldTime :: (Double -> a) -> World -> a
+getWorldTime f w = f $  worldTime w
+getWorldTrajectories :: ([[(Double, Double)]] -> a) -> World -> a
+getWorldTrajectories f w = f $  worldTrajectories w
+getWorldAngles :: (Model.Angles -> a) -> World -> a
+getWorldAngles f w = f $  worldAngles w
+getWorldLayout :: (GUI.Layout -> a) -> World -> a
+getWorldLayout f w = f $  worldLayout w
+getWorldMouseGrabControl :: (Maybe Int -> a) -> World -> a
+getWorldMouseGrabControl f w = f $  worldMouseGrabControl w
+getWorldKeyboardGrabControl :: (Set Int -> a) -> World -> a
+getWorldKeyboardGrabControl f w = f $  worldKeyboardGrabControl w
+getWorldMousePos :: ((Float, Float) -> a) -> World -> a
+getWorldMousePos f w = f $  worldMousePos w
+getWorldNumberBuffer :: ([Char] -> a) -> World -> a
+getWorldNumberBuffer f w = f $  worldNumberBuffer w
+
 setWorldWindow :: ((Int, Int) -> (Int, Int)) -> World -> World
-setWorldWindow f w = w { getWorldWindow = f $ getWorldWindow w }
+setWorldWindow f w = w { worldWindow = f $ worldWindow w }
 
 setWorldControls :: (Controls -> Controls) -> World -> World
-setWorldControls f w = w { getWorldControls = f $ getWorldControls w }
-
--- worldTimeSet :: (Double -> Double) -> World -> World
--- worldTimeSet f w = w { worldTime = f $ worldTime w }
--- worldTimeSet' :: Double -> World -> World
--- worldTimeSet' v = worldTimeSet (const v)
-
--- worldTrajectoriesSet :: ([[(Double, Double)]] -> [[(Double, Double)]]) -> World -> World
--- worldTrajectoriesSet f w = w { worldTrajectories = f $ worldTrajectories w }
--- worldTrajectoriesSet' :: [[(Double, Double)]] -> World -> World
--- worldTrajectoriesSet' v = worldTrajectoriesSet (const v)
-
--- worldAnglesSet :: (Model.Angles -> Model.Angles) -> World -> World
--- worldAnglesSet f w = w { worldAngles = f $ worldAngles w }
--- worldAnglesSet' :: Model.Angles -> World -> World
--- worldAnglesSet' v = worldAnglesSet (const v)
-
--- worldLayoutSet :: (GUI.Layout -> GUI.Layout) -> World -> World
--- worldLayoutSet f w = w { worldLayout = f $ worldLayout w }
--- worldLayoutSet' :: GUI.Layout -> World -> World
--- worldLayoutSet' v = worldLayoutSet (const v)
+setWorldControls f w = w { worldControls = f $ worldControls w }
 
 setWorldMouseGrabControl :: (Maybe Int -> Maybe Int) -> World -> World
 setWorldMouseGrabControl f w =
-  w { getWorldMouseGrabControl = f $ getWorldMouseGrabControl w }
+  w { worldMouseGrabControl = f $ worldMouseGrabControl w }
 
 setWorldKeyboardGrabControl :: (Set Int -> Set Int) -> World -> World
 setWorldKeyboardGrabControl f w =
-  w { getWorldKeyboardGrabControl = f $ getWorldKeyboardGrabControl w }
+  w { worldKeyboardGrabControl = f $ worldKeyboardGrabControl w }
 
 setWorldMousePos :: ((Float, Float) -> (Float, Float)) -> World -> World
-setWorldMousePos f w = w { getWorldMousePos = f $ getWorldMousePos w }
+setWorldMousePos f w = w { worldMousePos = f $ worldMousePos w }
 
 setWorldNumberBuffer :: ([Char] -> [Char]) -> World -> World
-setWorldNumberBuffer f w = w { getWorldNumberBuffer = f $ getWorldNumberBuffer w }
+setWorldNumberBuffer f w = w { worldNumberBuffer = f $ worldNumberBuffer w }
 
 grabbedControls :: World -> Set Int
 grabbedControls world =
-  getWorldKeyboardGrabControl world
-  <> Set.fromList (toList $ getWorldMouseGrabControl world)
+  getWorldKeyboardGrabControl identity world
+  <> Set.fromList (toList $ getWorldMouseGrabControl identity world)
 
 initialWorld :: Controls -> World
 initialWorld controls =
@@ -405,29 +416,29 @@ initialWorld controls =
         (Gloss.InWindow _ xy _) -> xy
         Gloss.FullScreen -> (800, 800)
   in World
-      { getWorldWindow = windowSize
-      , getWorldControls = controls
-      , getWorldTime = 0
-      , getWorldTrajectories = replicate 8 []
-      , getWorldAngles = Model.Angles 0 0 0
-      , getWorldLayout = GUI.layoutWithControl
+      { worldWindow = windowSize
+      , worldControls = controls
+      , worldTime = 0
+      , worldTrajectories = replicate 8 []
+      , worldAngles = Model.Angles 0 0 0
+      , worldLayout = GUI.layoutWithControl
           windowSize
           (controlSpecs <$> controlsList controls)
           []
-      , getWorldMouseGrabControl = Nothing
-      , getWorldKeyboardGrabControl = mempty
-      , getWorldMousePos = (0, 0)
-      , getWorldNumberBuffer = []
+      , worldMouseGrabControl = Nothing
+      , worldKeyboardGrabControl = mempty
+      , worldMousePos = (0, 0)
+      , worldNumberBuffer = []
       }
 
 view :: World -> Gloss.Picture
 view world =
   Gloss.pictures
-    [ GUI.viewLayout (getWorldLayout world)
+    [ GUI.viewLayout (getWorldLayout identity world)
     , Gloss.color Gloss.white
       $ Gloss.rectangleWire
-          (fromIntegral $ fst (getWorldWindow world) - 1)
-          (fromIntegral $ snd (getWorldWindow world) - 1)
+          (fromIntegral $ fst (getWorldWindow identity world) - 1)
+          (fromIntegral $ snd (getWorldWindow identity world) - 1)
     ]
 
 data Event =
@@ -448,11 +459,11 @@ events event world =
   case event of
     Gloss.EventResize (width, height) -> [ResizeWindow (width, height)]
     Gloss.EventKey (Gloss.MouseButton Gloss.LeftButton) Gloss.Up _ _ ->
-      case getWorldMouseGrabControl world of
+      case getWorldMouseGrabControl identity world of
         Nothing -> []
         Just i -> [MouseReleaseControl i]
     Gloss.EventKey (Gloss.MouseButton Gloss.LeftButton) Gloss.Down _ (x, y) ->
-      case GUI.layoutQuery (getWorldLayout world) (x, y) of
+      case GUI.layoutQuery (getWorldLayout identity world) (x, y) of
         GUI.SliderAnswer i _ -> [MouseGrabControl i]
         GUI.NoAnswer -> []
     Gloss.EventKey (Gloss.Char k) Gloss.Down _ _ ->
@@ -466,22 +477,22 @@ events event world =
         else case keyControl k of
           Nothing -> []
           Just i ->
-            let value = double (Text.pack $ reverse $ getWorldNumberBuffer world)
+            let value = double (Text.pack $ reverse $ getWorldNumberBuffer identity world)
                 setctrls = case value of
                   Right (n, _) -> [SetControl i n]
                   Left err -> [] &
                     trace ("getWorldNumberBuffer cannot be read as a number: "
-                      <> show (getWorldNumberBuffer world)
+                      <> show (getWorldNumberBuffer identity world)
                       <> " " <> Text.pack err :: Text)
                 releases = [KeyboardReleaseControl i]
             in setctrls <> releases
     Gloss.EventMotion (x, y) ->
       let slidersHeight = fmap float2Double $ Vector.fromList
-            $ GUI.slidersHeight (getWorldLayout world)
+            $ GUI.slidersHeight (getWorldLayout identity world)
           dragControls = flip fmap
             (Set.toList $ grabbedControls world)
             (\i ->
-              let dy = y - snd (getWorldMousePos world)
+              let dy = y - snd (getWorldMousePos identity world)
                   h = slidersHeight Vector.! i
                   dragAmount = float2Double dy / h
               in DragControl i dragAmount)
@@ -498,16 +509,16 @@ updateEvent event world =
     MouseReleaseControl _ -> setWorldMouseGrabControl (const Nothing) world
     KeyboardGrabControl i ->  setWorldKeyboardGrabControl (Set.insert i) world
     KeyboardReleaseControl i ->
-      let keyGrab = Set.delete i $ getWorldKeyboardGrabControl world
+      let keyGrab = Set.delete i $ getWorldKeyboardGrabControl identity world
           numBuf = if null keyGrab
                       then mempty
-                      else (getWorldNumberBuffer world)
+                      else (getWorldNumberBuffer identity world)
       in setWorldKeyboardGrabControl (const keyGrab)
          $ setWorldNumberBuffer (const numBuf)
          $ world
     SetMousePos pos -> setWorldMousePos (const pos) world
     DragControl i amount ->
-      let newCtrl = case getControlAt i (getWorldControls world) of
+      let newCtrl = case (getWorldControls . getControlAt i) identity world of
             Just (LinearControl n l u v) ->
               (LinearControl n l u (bounded l u $ v + (u - l) * amount))
             Just (QuadraticControl n r v) ->
@@ -531,7 +542,7 @@ updateInputs event world =
 updateTime :: Float -> World -> World
 updateTime dt world =
   let newAngles = Model.angles
-        (Model.inputSetAngles input (getWorldAngles world))
+        (Model.inputSetAngles input (getWorldAngles identity world))
         (float2Double dt)
       newTrajectories =
         (fmap . fmap) (bimap scale scale)
@@ -539,23 +550,23 @@ updateTime dt world =
         $ Model.trajectories inputShiftAngles 0 tResolution (float2Double dt)
       inputShiftAngles = Model.inputAddAngles input newAngles
       tResolution = 0.005
-      t = getWorldTime world + float2Double dt
+      t = getWorldTime identity world + float2Double dt
       scale x = x / (2 * Model.span input)
       trajectories = zipWith
         (\new prev ->
           take (ceiling $ traceDuration / tResolution)
             (new <> prev))
-        newTrajectories (getWorldTrajectories world)
+        newTrajectories (getWorldTrajectories identity world)
       traceDuration = 1.0 / 25.0
       input = controlsToInput ctrls
-      ctrls = getWorldControls world
+      ctrls = getWorldControls identity world
   in 
      world
-     { getWorldTime = t
-     , getWorldTrajectories = trajectories
-     , getWorldAngles = newAngles
-     , getWorldLayout = GUI.layoutWithControl
-        (getWorldWindow world)
+     { worldTime = t
+     , worldTrajectories = trajectories
+     , worldAngles = newAngles
+     , worldLayout = GUI.layoutWithControl
+        (getWorldWindow identity world)
         (controlSpecs <$> controlsList ctrls)
         ((fmap . fmap) (bimap double2Float double2Float) trajectories)
      }
