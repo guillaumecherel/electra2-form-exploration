@@ -9,7 +9,6 @@ module Electra2Shadow
     , backgroundColor
     , controlsFromInputValues
     , controlsFromMap
-    , fps
     , ModelInputValues (..)
     , ControlsValues (..)
     , controlMapFromCSV
@@ -38,17 +37,19 @@ import           GHC.Float (double2Float, float2Double)
 import qualified Graphics.Gloss as Gloss
 import qualified Graphics.Gloss.Interface.IO.Interact as Gloss
 
+import qualified Electra2Shadow.Options as Options
+import           Electra2Shadow.Options (Options)
 import qualified Electra2Shadow.GUI as GUI
 import qualified Electra2Shadow.Model as Model
 
-displayMode :: Gloss.Display
-displayMode = (Gloss.InWindow "Nice Window" (400, 600) (0, 0))
+displayMode :: Options -> Gloss.Display
+displayMode options =
+  (Gloss.InWindow "Nice Window"
+    (Options.initialWindowSize options)
+    (Options.initialWindowPosition options))
 
 backgroundColor :: Gloss.Color
 backgroundColor = Gloss.black
-
-fps :: Int
-fps = 60
 
 -- Control name lowerBound upperBound value
 data Control =
@@ -249,20 +250,6 @@ controlsValuesList (InputValues (ModelInputValues v1 v2 v3 phi1 phi2 phi3)) =
   [v1, v2, v3, phi1, phi2, phi3]
 controlsValuesList (FormValues ns d m mc rt) = [ns, d, m, mc, rt]
 
--- controlsValues :: (ControlsValues -> (a, ControlsValues)) -> Controls -> (a, Controls)
--- controlsValues f (ControlForm kdm ns d m mc rt) =
---   (fst $ f vals, controlsFromMap kdm $ snd $ f vals)
---   where vals = FormValues
---                  (get controlValue ns)
---                  (get controlValue d)
---                  (get controlValue m)
---                  (get controlValue mc)
---                  (get controlValue rt)
--- controlsValues f (ControlInput v1 v2 v3 phi1 phi2 phi3) =
---   (fst $ f vals, controlsFromInputValues $ snd $ f vals)
---   where vals = 
-      
-
 controlsList :: Controls -> [Control]
 controlsList (ControlInput v1 v2 v3 phi1 phi2 phi3) =
   [ v1, v2, v3, phi1, phi2, phi3 ]
@@ -345,11 +332,8 @@ instance CSV.FromNamedRecord (ControlsValues, ModelInputValues) where
     <$> CSV.parseNamedRecord m
     <*> CSV.parseNamedRecord m
 
-
-keyControl :: Char -> Maybe Int
-keyControl k = List.elemIndex k
-  ['u', 'i', 'e'
-  ,'\195', 'p', 'o']
+keyControl :: [Char] -> Char -> Maybe Int
+keyControl l k = List.elemIndex k l
 
 data World = World
   { worldWindow :: (Int, Int)
@@ -410,11 +394,11 @@ grabbedControls world =
   getWorldKeyboardGrabControl identity world
   <> Set.fromList (toList $ getWorldMouseGrabControl identity world)
 
-initialWorld :: Controls -> World
-initialWorld controls =
-  let windowSize = case displayMode of
+initialWorld :: Options -> Controls -> World
+initialWorld options controls =
+  let windowSize = case displayMode options of
         (Gloss.InWindow _ xy _) -> xy
-        Gloss.FullScreen -> (800, 800)
+        Gloss.FullScreen -> (Options.initialWindowSize options)
   in World
       { worldWindow = windowSize
       , worldControls = controls
@@ -453,8 +437,8 @@ data Event =
   | SetControl Int Double
   deriving (Show, Eq)
 
-events :: Gloss.Event -> World -> [Event]
-events event world =
+events :: Options -> Gloss.Event -> World -> [Event]
+events options event world =
   -- trace (show event :: Text) $
   case event of
     Gloss.EventResize (width, height) -> [ResizeWindow (width, height)]
@@ -470,11 +454,12 @@ events event world =
       if isDigit k || elem k ['.', '-', '+']
         then [ReadDigit k]
         else 
-          toList $ KeyboardGrabControl <$> keyControl k
+          toList $ KeyboardGrabControl
+          <$> keyControl (Options.controlKeys options) k
     Gloss.EventKey (Gloss.Char k) Gloss.Up _ _ ->
       if isDigit k || elem k ['.', '-', '+']
         then [] 
-        else case keyControl k of
+        else case keyControl (Options.controlKeys options) k of
           Nothing -> []
           Just i ->
             let value = double (Text.pack $ reverse $ getWorldNumberBuffer identity world)
@@ -531,17 +516,19 @@ updateEvent event world =
     SetControl i n ->
       (setWorldControls . setControlAt i . setControlValue) (const n) world
 
-updateInputs :: Gloss.Event -> World -> World
-updateInputs event world = 
+updateInputs :: Options -> Gloss.Event -> World -> World
+updateInputs options event world =
   -- traceShow event $
   (foldl' (.) identity
-  $ fmap updateEvent (events event world))
+  $ fmap updateEvent (events options event world))
   $ world
 
 
-updateTime :: Float -> World -> World
-updateTime dt world =
-  let newAngles = Model.angles
+updateTime :: Options -> Float -> World -> World
+updateTime options dt world =
+  let tResolution = Options.timeResolution options
+      traceDuration = Options.traceDuration options
+      newAngles = Model.angles
         (Model.inputSetAngles input (getWorldAngles identity world))
         (float2Double dt)
       newTrajectories =
@@ -549,7 +536,6 @@ updateTime dt world =
         $ Model.trajectoriesToList
         $ Model.trajectories inputShiftAngles 0 tResolution (float2Double dt)
       inputShiftAngles = Model.inputAddAngles input newAngles
-      tResolution = 0.005
       t = getWorldTime identity world + float2Double dt
       scale x = x / (2 * Model.span input)
       trajectories = zipWith
@@ -557,7 +543,6 @@ updateTime dt world =
           take (ceiling $ traceDuration / tResolution)
             (new <> prev))
         newTrajectories (getWorldTrajectories identity world)
-      traceDuration = 1.0 / 25.0
       input = controlsToInput ctrls
       ctrls = getWorldControls identity world
   in 

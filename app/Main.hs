@@ -6,26 +6,32 @@
 
 module Main where
 
-import Protolude
+import Protolude hiding (option)
 
 import qualified Data.ByteString.Lazy as BL
 import           Graphics.Gloss (play)
 import           Electra2Shadow
+import           Electra2Shadow.Options
 
 main :: IO ()
 main = do
-  csv <- BL.readFile csvFilePath
-  let (names, ctrlMap) = controlMapFromCSV csv
-  putStrLn $ (show names :: Text)
+  op <- options
+  controls <- case (csvPath op) of
+    Nothing -> return $controlsFromInputValues 1 (-2) 0.5 0 0 0
+    Just p -> do
+      csv <- BL.readFile p
+      let (names, ctrlMap) = controlMapFromCSV csv
+      putStrLn $ (show names :: Text)
+      return $ controlsFromMap ctrlMap 0 0 0 0 0
   play
-   displayMode
-   backgroundColor
-   fps
-   (initialWorld $ controlsFromInputValues 1 (-2) 0.5 0 0 0)
-   -- (initialWorld $ controlsFromMap ctrlMap 0 0 0 0 0)
-   view
-   updateInputs
-   updateTime
+    (displayMode op)
+    backgroundColor
+    (fps op)
+    (initialWorld op controls)
+    -- (initialWorld $ )
+    view
+    (updateInputs op)
+    (updateTime op)
 
 csvFilePath :: FilePath
 csvFilePath = "data/resultsDirectSampling3.csv"
