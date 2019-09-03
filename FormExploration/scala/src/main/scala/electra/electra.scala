@@ -313,9 +313,11 @@ object Electra extends App {
 
   val T = 10.0
   val deltaT = 0.001
+  /*
   val res = dynamicTrajectoryStationnary(rB=1.0,rH=0.5,rD=0.25)(v1=2.0,v2=(-6.0))(T,deltaT)
   val res2 = convertResultStationnary(res)
   val res3 = trajectoryLightChoice(res2)(lightB = false)
+  */
   //val res3 = trajectoryLightChoice(res2)()
   //val res3 = trajectoryLightChoice(res2)(lightB = false,lightC = false,lightD = false,lightE = false,lightF = false,lightG = false)
   //println(res3.Cx)
@@ -1967,6 +1969,15 @@ object MesurePSE{
   def meanCourbureAllTrajectories(res:TrajectoryStationnary): Double ={
     mean(courbureAllTrajectories(res).toArray).getOrElse(0.0)
   }
+
+  def meanAbsoluteSpeed(speedX:Vector[Double],speedY:Vector[Double]):Double ={
+    mean(speedX.zip(speedY).map(x=>x._1+x._2) .toArray).getOrElse(0.0)
+  }
+
+  def meanSpeedAllTrajectories(res:TrajectoryStationnary): Double ={
+    mean(meanSpeed(res.speedBx))
+  }
+
 
 
 }

@@ -151,6 +151,55 @@ p
 
 
 
+# save a trajectory, true electra param
+## Paramètres fixes
+# longueur tiges (rayon)
+rB = 0.935; rC = 0.935
+rH = sqrt(0.50^2+0.05^2); rI = sqrt(0.50^2+0.05^2)
+rD = 0.43; rE = 0.38
+rF = 0.417; rG = 0.417
+# H,I
+angleH = atan(0.05/0.5) 
+angleI = atan(0.05/0.5)
+
+# position initiale (from angle)
+angleIni_B = 0   # from OM
+# D,E
+angleIni_D = 1
+# F,G 
+angleIni_F = 2
+
+v1=1.8 ; v2=(-2.66) ; v3=3.14  # from OM
+
+# save plots for different times
+dirRes = "plotElectra2_1"
+dir.create(dirRes)
+
+# time
+timeStep = 0.005 # sec
+times = seq(0,10, by = timeStep)
+
+
+#savePlot_index(times,dirRes,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
+# savePlot_index_and_paramsInFile(times,dirRes,v1,v2,v3,r1B,r1C,r2D,r2E,r3F,r3G,alphaH,alphaI,angleIni_B,angleIni_D,angleIni_F)
+savePlot_index_v2(times,dirRes,v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F)
+
+# command line in linux to create a video from images with index (adapt the framerate)
+# ffmpeg -framerate 1/0.005 -i plot_%01d.png -crf 15  output1.mp4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -94,6 +94,41 @@ plot_oneTime_v2 = function(t, v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, 
 
 
 
+savePlot_index_v2 = function(times,dirRes,v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F){
+  df = positions_t_Stationnaire_v2(times, v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F)
+  rayonMax = max( max(rB,rC) ,  max(rH+rD,rH+rE,rI+rF,rI+rG) ) 
+  for (i in 1:length(times)){
+    t=times[i]
+    p <- ggplot(df %>% filter(times == t)) + #labs(title= paste0("t = ",t)) +
+      geom_point(aes(x=Bx, y=By), col="yellow", size = 3) +
+      geom_point(aes(x=Cx, y=Cy), col="yellow", size = 3) +
+      geom_point(aes(x=Dx, y=Dy), col="yellow", size = 3) +
+      geom_point(aes(x=Ex, y=Ey), col="yellow", size = 3) +
+      geom_point(aes(x=Fx, y=Fy), col="yellow", size = 3) +
+      geom_point(aes(x=Gx, y=Gy), col="yellow", size = 3) #+
+    #geom_point(aes(x=Hx, y=Hy), col="black")  #+
+    #geom_point(aes(x=Ix, y=Iy), col="black")
+    #p + xlim(rayonMax, rayonMax) + ylim(rayonMax,rayonMax) 
+    p <- p + expand_limits(x=c(-rayonMax,rayonMax), y=c(-rayonMax, rayonMax)) +
+      coord_fixed(ratio=1) + 
+      theme(axis.text.y=element_blank(), axis.text.x=element_blank(),
+            axis.ticks=element_blank(),
+            axis.title.x=element_blank(), axis.title.y=element_blank(),legend.position="none",
+            #panel.background=element_blank(),
+            #panel.border=element_blank(), 
+            panel.grid.major=element_blank(),
+            panel.grid.minor=element_blank(),
+            plot.background=element_blank())
+    # save ggplot
+    plot_file_name = paste0(dirRes, "/plot_",i,".svg")
+    ggsave(plot_file_name,p, width = 8, height = 8, dpi = 72)
+    #dev.off()
+  }
+}
+
+
+
+
 
 create_df_v2 = function(times, v1,v2,v3, rB,rC,rD,rE,rF,rG,rH,rI, angleH,angleI, angleIni_B,angleIni_D,angleIni_F){
   df = data.frame(Bx = double(), By = double(), Cx = double(), Cy = double(),
