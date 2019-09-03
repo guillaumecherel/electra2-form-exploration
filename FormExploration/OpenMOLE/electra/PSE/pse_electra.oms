@@ -1,0 +1,33 @@
+import _parent_._file_.modelElectraStationnaire._
+
+// val env = LocalEnvironment(2)
+val env = EGIEnvironment("vo.complex-systems.eu")
+
+val explorationPSE =
+    PSEEvolution(
+      evaluation = model,
+      genome =
+        Seq(
+          v1 in (-5.0, 5.0),
+          v2 in (-5.0, 5.0),
+          v3 in (-5.8, 5.0),
+          angleIni_D in (0.0, 6.28),
+          angleIni_F in (0.0, 6.28)),
+      objectives =
+        Seq(
+          totalDensity in (0.0 to 1.0 by 0.05)  //,
+          //rescued in (0 to 250 by 25),  // Range[Int]("0", "humanSize", "5") 
+          ),   
+      parallelism = 100,
+      termination = 4000,
+      distribution = Island(5 minutes)
+    )
+
+
+val savePopulationHook = SavePopulationHook(explorationPSE, workDirectory / "resultsPSE", frequency = 100)
+
+explorationPSE hook savePopulationHook on env
+
+
+
+

@@ -1,12 +1,13 @@
 */.Rhistory
 */.Rdata
 *.class
-scala/target
-scala/project/target
-scala/project/*/target
+*/scala/target
+*/scala/project/target
+*/scala/project/*/target
 *.aux
 *.log
 *.pdf
+.idea
 */.idea
 */.kaks
 

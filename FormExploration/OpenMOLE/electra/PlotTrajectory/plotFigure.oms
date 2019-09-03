@@ -1,0 +1,40 @@
+
+import _parent_._file_.modelElectraStationnaire._
+
+
+val fichierImageOM = Val[File]
+
+val rPlotTask =
+  RTask("""
+    source("plotFigureRTask.R")
+    plotTrajectory(Bx,By,Cx,Cy,Dx,Dy,Ex,Ey,Fx,Fy,Gx,Gy,
+                    v1,v2,v3,
+                    angleIni_B,angleIni_D,angleIni_F)
+    """,
+    //install = Seq("apt update", "apt install -y libgdal-dev libproj-dev "), 
+    libraries = Seq("ggplot2")
+  ) set(
+    resources += workDirectory / "plotFigureRTask.R",
+    
+    inputs += (v1.mapped,v2.mapped,v3.mapped),
+    inputs += (angleIni_B.mapped,angleIni_D.mapped,angleIni_F.mapped),
+    outputs += (v1,v2,v3),
+    outputs += (angleIni_B,angleIni_D,angleIni_F),
+    inputs += (times),
+    outputs += (times),  
+    //inputs += i.mapped,
+    inputs += (Bx.mapped,By.mapped,Cx.mapped,Cy.mapped,Dx.mapped,Dy.mapped,Ex.mapped,Ey.mapped,Fx.mapped,Fy.mapped,Gx.mapped,Gy.mapped),
+    //inputs += (Bx,By,Cx,Cy,Dx,Dy,Ex,Ey,Fx,Fy,Gx,Gy),
+    outputFiles += ("plot.png",fichierImageOM)
+  )
+  
+  
+  
+val hookPlot = CopyFileHook(fichierImageOM , workDirectory /"plotTrajectory.png")
+
+
+model --  (rPlotTask hook (hookPlot) )
+
+
+
+

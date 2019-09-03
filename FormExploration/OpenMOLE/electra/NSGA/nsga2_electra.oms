@@ -1,0 +1,67 @@
+import electra._
+import _parent_._file_.modelElectraStationnaire._
+
+
+/*
+But: essayer de reporoduire une figurée simple
+*/
+
+
+//val env = LocalEnvironment(2)
+val env = EGIEnvironment("vo.complex-systems.eu")
+
+
+
+val obj = Val[Double]
+
+val objective = 
+  ScalaTask("""
+  import _root_.electra._
+    
+  // la figure de référence
+  val rayon = 2.3
+  val nbPointsCircle = 100
+  val (x_circle,y_circle) = Mesure.createCircle(rayon,nbPointsCircle)
+  val distance = 1.0  // avoid to consider time  
+  
+  val obj = Mesure.distanceTwoTrajectories(x_circle,y_circle,Dx,Dy,distance)
+
+    """) set (
+    inputs += (Dx,Dy),
+    outputs += (obj),
+    plugins += pluginsOf[electra.FixedParametersModel]
+    )
+
+
+
+val nsga = 
+  NSGA2Evolution(
+    evaluation =  MoleTask (model-- objective), 
+    genome = Seq(
+          v1 in (-5.0, 5.0),
+          v2 in (-5.0, 5.0),
+          v3 in (-5.8, 5.0),
+          angleIni_D in (0.0, 6.28),
+          angleIni_F in (0.0, 6.28)),
+    objectives = Seq(// -totalDensity // maximiser la densite ,  
+                     //humansDynamic aggregate distanceMedianArray(f) 
+                     obj 
+                      ),
+    parallelism = 100,
+    termination = 5000,
+    distribution = Island(5 minutes)
+ ) 
+ /*
+ set(
+     f := workDirectory / "meanHumansDynamicCalibration.csv"
+     resources += workDirectory / "meanHumansDynamicCalibration.csv"
+      )
+  */
+  
+val savePopulationHook = SavePopulationHook(nsga, workDirectory / "resultsNSGA", frequency = 10)
+
+nsga hook savePopulationHook on env
+
+
+
+

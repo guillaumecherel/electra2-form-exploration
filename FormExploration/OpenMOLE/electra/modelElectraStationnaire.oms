@@ -1,0 +1,193 @@
+import electra._
+
+// inputs
+val v1 = Val[Double]
+val v2 = Val[Double]
+val v3 = Val[Double]
+// conditions initiales (angles) 
+val angleIni_B = Val[Double]
+val angleIni_D = Val[Double]
+val angleIni_F = Val[Double]
+
+                         
+
+// outputs
+val times = Val[Array[Double]]
+// Positions
+val Bx = Val[Array[Double]]
+val By = Val[Array[Double]]
+val Cx = Val[Array[Double]]
+val Cy = Val[Array[Double]]
+val Dx = Val[Array[Double]]
+val Dy = Val[Array[Double]]
+val Ex = Val[Array[Double]]
+val Ey = Val[Array[Double]]
+val Fx = Val[Array[Double]]
+val Fy = Val[Array[Double]]
+val Gx = Val[Array[Double]]
+val Gy = Val[Array[Double]]
+// Speed
+val speedBx = Val[Array[Double]]
+val speedBy = Val[Array[Double]]
+val speedCx = Val[Array[Double]]
+val speedCy = Val[Array[Double]]
+val speedDx = Val[Array[Double]]
+val speedDy = Val[Array[Double]]
+val speedEx = Val[Array[Double]]
+val speedEy = Val[Array[Double]]
+val speedFx = Val[Array[Double]]
+val speedFy = Val[Array[Double]]
+val speedGx = Val[Array[Double]]
+val speedGy = Val[Array[Double]]
+
+
+// Mesures
+// Points singuliers 
+val numberPointSinguliersD = Val[Integer]
+val timesPointSinguliersD = Val[Array[Integer]]
+
+// Densité
+val densiteB = Val[Double]
+val totalDensity = Val[Double]
+
+// Courbure
+val meanCourburesB = Val[Double]
+val courburesB = Val[Array[Double]]
+val courburesD = Val[Array[Double]]
+
+// Temps premier retour 
+val tempsRetourB = Val[Array[Integer]]  
+val tempsRetourD = Val[Array[Integer]]  
+val indiceRetourB = Val[Array[Integer]]  
+val indiceRetourD = Val[Array[Integer]]  
+
+// Moran
+
+  
+val model =
+  ScalaTask("""
+
+  import _root_.electra._
+
+  // val T = 0.005
+  // val T = 0.45
+  val T = 4.0
+  val deltaT = 0.0005
+  
+  val tempRes = Model.dynamicTrajectoryStationnary_v2(angleIni_B = angleIni_B, angleIni_D = angleIni_D,
+                                                            angleIni_F = angleIni_F)(v1,v2,v3)(T,deltaT)
+  val res = Model.convertResultStationnary(tempRes)
+  
+  // times, positions and speed
+  val times = res.time.toArray
+  val Bx = res.Bx.toArray
+  val By = res.By.toArray
+  val Cx = res.Cx.toArray
+  val Cy = res.Cy.toArray
+  val Dx = res.Dx.toArray
+  val Dy = res.Dy.toArray
+  val Ex = res.Ex.toArray
+  val Ey = res.Ey.toArray
+  val Fx = res.Fx.toArray
+  val Fy = res.Fy.toArray
+  val Gx = res.Gx.toArray
+  val Gy = res.Gy.toArray
+ 
+  val speedBx = res.speedBx.toArray
+  val speedBy = res.speedBy.toArray
+  val speedCx = res.speedCx.toArray
+  val speedCy = res.speedCy.toArray
+  val speedDx = res.speedDx.toArray
+  val speedDy = res.speedDy.toArray
+  val speedEx = res.speedEx.toArray
+  val speedEy = res.speedEy.toArray
+  val speedFx = res.speedFx.toArray
+  val speedFy = res.speedFy.toArray
+  val speedGx = res.speedGx.toArray
+  val speedGy = res.speedGy.toArray
+  
+  // Mesures
+  // Point Singuliers
+  val seuilPointSingulier = 4
+  val numberPointSinguliersD = Mesure.countSingularPoints(res.speedDx,res.speedDy,seuilPointSingulier)
+  val timesPointSinguliersD = Mesure.timesOfSingularPoints(res.speedDx,res.speedDy,seuilPointSingulier) //.toArray
+
+  // Densités
+  val N = 30  // pas de la subdiviion du carré
+  val xmax = Mesure.maxSquareForDensity()
+  val xmin = -xmax
+  val ymax = xmax
+  val ymin = xmin
+  val densiteB =  Mesure.pointsDensitySquare(res.Bx,res.By,xmin,xmax,ymin,ymax,N)
+  val totalDensity = Mesure.allTrajectoriesDensitySquare(res,xmin,xmax,ymin,ymax,N)
+
+  // Courbures
+  val tempCourburesB = Mesure.courbure(res.speedBx,res.speedBy,res.accBx,res.accBy)
+  val courburesB = tempCourburesB.toArray
+  val meanCourburesB = Mesure.mean(tempCourburesB)
+  
+  val courburesD = Mesure.courbure(res.speedDx,res.speedDy,res.accDx,res.accDy).toArray
+
+  // Temps premier retour 
+  //val seuilLoop = 1.0
+  val seuilLoop = 0.01
+  val (tmp_indiceRetourB,tmp_tempsRetourB) = Mesure.indiceEtTempsPremierRetour(res.Bx,res.By,seuilLoop)
+  val (tmp_indiceRetourD,tmp_tempsRetourD) = Mesure.indiceEtTempsPremierRetour(res.Dx,res.Dy,seuilLoop)
+  // convert in Array
+  val indiceRetourB = tmp_indiceRetourB.toArray
+  val tempsRetourB = tmp_tempsRetourB.toArray
+  val indiceRetourD = tmp_indiceRetourD.toArray
+  val tempsRetourD = tmp_tempsRetourD.toArray
+  
+
+  """) set (
+    inputs += (v1,v2,v3),
+    inputs += (angleIni_B,angleIni_D,angleIni_F),
+    outputs += (v1,v2,v3),
+    outputs += (angleIni_B,angleIni_D,angleIni_F),
+    outputs += (times),
+    outputs += (Bx,By,Cx,Cy,Dx,Dy,Ex,Ey,Fx,Fy,Gx,Gy),
+    outputs += (speedBx,speedBy,speedCx,speedCy,speedDx,speedDy,speedEx,speedEy,speedFx,speedFy,speedGx,speedGy),
+    // Point singuliers
+    outputs += (numberPointSinguliersD,timesPointSinguliersD),
+    // Densité
+    outputs += (densiteB,totalDensity),
+    // Courbures
+    outputs += (courburesB,meanCourburesB, courburesD),
+    // Temps premier retour
+    outputs += (indiceRetourB,tempsRetourB,indiceRetourD,tempsRetourD),
+    /*
+    v1:=2.0,
+    v2:=(-6.0) ,
+    v3:=3.0,
+    */
+    v1:=5.0,
+    v2:=4.0,
+    v3:=5.0,
+    angleIni_B := 0.0,
+    angleIni_D := 1.0,
+    angleIni_F := 2.0,
+    plugins += pluginsOf[electra.FixedParametersModel]
+    )
+
+
+
+val h1 = DisplayHook(numberPointSinguliersD,timesPointSinguliersD,
+                     densiteB,totalDensity,
+                     courburesB,meanCourburesB)
+                     
+                     
+val hook_trajectoire =  CSVHook(workDirectory / "trajectoryElectra.csv", values = Seq(times,Bx,By,Cx,Cy,Dx,Dy,Ex,Ey,Fx,Fy,Gx,Gy,
+            speedBx,speedBy,speedCx,speedCy,speedDx,speedDy,speedEx,speedEy,speedFx,speedFy,speedGx,speedGy) )
+            //, header = "i, j")
+
+//val hook_courbureD = CSVHook(workDirectory / "courburesD.csv", values = Seq(courburesD))
+//val hook_tempsRetourB = CSVHook(workDirectory / "tempsRetourB.csv", values = Seq(indiceRetourB,tempsRetourB))
+val hook_tempsRetourD = CSVHook(workDirectory / "tempsRetourD.csv", values = Seq(indiceRetourD,tempsRetourD))
+
+
+model //hook (hook_trajectoire, hook_tempsRetourD) //, hook_courbureD hook_tempsRetourB,hook_tempsRetourD)  //(workDirectory / "trajectoryElectra.csv") //ToStringHook(Bx,By)
+
+
+
+

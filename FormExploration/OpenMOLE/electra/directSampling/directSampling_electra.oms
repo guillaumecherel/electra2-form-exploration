@@ -1,0 +1,58 @@
+import _parent_._file_.modelElectraStationnaire._
+
+// val env = LocalEnvironment(2)
+// val env = EGIEnvironment("vo.complex-systems.eu")
+
+
+
+val sampling =
+    (v1 in (-5.0 to 5.0 by 1.0)) x
+    (v2 in (-5.0 to 5.0 by 1.0)) x
+    (v3 in (-5.0 to 5.0 by 1.0)) 
+
+
+val samplingHook = CSVHook(workDirectory / "resultsSampling/resultsDirectSampling.csv",  values = Seq(    
+    // inputs 
+    v1,v2,v3,angleIni_B,angleIni_D,angleIni_F,
+    // outputs
+    numberPointSinguliersD)
+    )
+
+
+val myExploration = DirectSampling(
+  evaluation =  model hook samplingHook, // model on env by 200, 
+  sampling = sampling  
+)
+
+
+myExploration 
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
