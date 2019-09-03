@@ -17,6 +17,7 @@ module Electra2Shadow.Options
 
 import Protolude hiding (option)
 
+import qualified Data.Text as Text
 import Options.Applicative
 
 data Options = Options

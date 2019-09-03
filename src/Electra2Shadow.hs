@@ -215,11 +215,11 @@ controlsFromMap
 controlsFromMap cim ns d m mc rt =
   ControlForm
     (KDM.build (controlsValuesList) cim)
-    (LinearControl "singular" 0 1000 ns)
+    (LinearControl "singular" 0 10 ns)
     (LinearControl "density" 0 1 d)
     (LinearControl "moran" (-1) 1 m)
-    (QuadraticControl "curv" 5 mc)
-    (LinearControl "return time" 0 5 rt)
+    (QuadraticControl "curv" 50 mc)
+    (LinearControl "return time" 0 10 rt)
 
 controlMapFromCSV :: BL.ByteString -> ([Text], [(ControlsValues, ModelInputValues)])
 controlMapFromCSV csv = case CSV.decodeByName csv of
@@ -312,18 +312,19 @@ data ModelInputValues =
 
 instance CSV.FromNamedRecord ControlsValues where
   parseNamedRecord m = FormValues
-    <$> m CSV..: "numberPointSinguliersTotal"
-    <*> m CSV..: "totalDensity"
-    <*> m CSV..: "totalmoran"
-    <*> m CSV..: "meanCourbures"
-    <*> m CSV..: "nbTempsRetour"
+    <$> m CSV..: "nbPointsSinguliers"
+    <*> m CSV..: "densite"
+    <*> m CSV..: "moran"
+    <*> m CSV..: "courbureMoyenne"
+    <*> m CSV..: "nbPointsRetour"
 
 instance CSV.FromNamedRecord ModelInputValues where
   parseNamedRecord m = ModelInputValues
     <$> m CSV..: "v1"
     <*> m CSV..: "v2"
     <*> m CSV..: "v3"
-    <*> m CSV..: "angleIni_B"
+    -- <*> m CSV..: "angleIni_B"
+    <*> pure 0
     <*> m CSV..: "angleIni_D"
     <*> m CSV..: "angleIni_F"
 
@@ -405,7 +406,8 @@ initialWorld options controls =
       , worldTime = 0
       , worldTrajectories = replicate 8 []
       , worldAngles = Model.Angles 0 0 0
-      , worldLayout = GUI.layoutWithControl
+      , worldLayout = GUI.layout
+          (Options.hideControls options)
           windowSize
           (controlSpecs <$> controlsList controls)
           []
@@ -550,7 +552,8 @@ updateTime options dt world =
      { worldTime = t
      , worldTrajectories = trajectories
      , worldAngles = newAngles
-     , worldLayout = GUI.layoutWithControl
+     , worldLayout = GUI.layout
+         (Options.hideControls options)
         (getWorldWindow identity world)
         (controlSpecs <$> controlsList ctrls)
         ((fmap . fmap) (bimap double2Float double2Float) trajectories)

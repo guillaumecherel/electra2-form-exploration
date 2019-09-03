@@ -6,7 +6,7 @@ module Electra2Shadow.GUI
   ( Layout(..)
   , LayoutAnswer(..)
   , layoutQuery
-  , layoutWithControl
+  , layout
   , slidersHeight
   , viewLayout
   -- DEBUG
@@ -119,12 +119,13 @@ slider index name lowerBound upperBound value dim box' =
     , sliderSliderBox = sliderBox
     })
 
-layoutWithControl
-  :: (Int, Int)
+layout
+  :: Bool
+  -> (Int, Int)
   -> [(Text, Double, Double, Double)]
   -> [[Gloss.Point]]
   -> Layout
-layoutWithControl (width, height) slidersSpecs trajectories =
+layout showControls (width, height) slidersSpecs trajectories =
   root (width, height) (StretchRatio (6 % 10))
   $ column SpaceAround
           [ ( canvas trajectories
