@@ -10,4 +10,6 @@
 .idea
 */.idea
 */.kaks
-
+shadow/.stack-work/
+shadow/electra2shadow.cabal
+*~
