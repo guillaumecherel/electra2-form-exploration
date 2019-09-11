@@ -31,7 +31,7 @@ data Layout = Layout Dim Box LayoutElement
 data LayoutElement =
   Row Justification [(Layout, Alignment)]
   | Column Justification [(Layout, Alignment)]
-  | Canvas [[(Gloss.Point)]]
+  | Canvas [(Double, [(Gloss.Point)])] -- [(light intensity, trajectory)]
   | Slider { sliderIndex :: Int
            , sliderName :: Text
            , sliderLowerBound :: Float
@@ -64,7 +64,7 @@ absLength parentLength length' = case length' of
 type Box = (Float, Float, Float, Float)
 
 root :: (Int, Int) -> Dim -> (Dim -> Box -> Layout) -> Layout
-root (width, height) dim layout = layout dim box'
+root (width, height) dim layout' = layout' dim box'
   where box' = box dim (-width' / 2, - height' / 2, width' / 2, height' / 2)
         width' = fromIntegral width
         height' = fromIntegral height
@@ -90,7 +90,7 @@ column justification elems dim box' =
         boxes = boxColumn justification box' das
         das = ((\(_, d, a) -> (d, a)) <$> elems)
 
-canvas :: [[(Gloss.Point)]] -> Dim -> Box -> Layout
+canvas :: [(Double, [(Gloss.Point)])] -> Dim -> Box -> Layout
 canvas trajectories dim box' =
   Layout dim box' (Canvas trajectories)
 
@@ -123,7 +123,7 @@ layout
   :: Bool
   -> (Int, Int)
   -> [(Text, Double, Double, Double)]
-  -> [[Gloss.Point]]
+  -> [(Double, [Gloss.Point])]
   -> Layout
 layout showControls (width, height) slidersSpecs trajectories =
   root (width, height) (StretchRatio (6 % 10))
@@ -306,16 +306,25 @@ viewLayout (Layout _ box' elem') = case elem' of
   (Slider _ name lower upper value nameBox lowerBox upperBox sliderBox) ->
     viewSlider name lower upper value nameBox lowerBox upperBox sliderBox
 
-viewTrajectories :: [[(Gloss.Point)]] -> Box -> Gloss.Picture
+viewTrajectories :: [(Double, [(Gloss.Point)])] -> Box -> Gloss.Picture
 viewTrajectories trajectories parent =
   assignBox parent
-  $ Gloss.color Gloss.yellow
-  $ dots <> traces
-  where traces = mconcat $ Gloss.line <$> trajectories
-        dots = mconcat
-               $ (\f -> f (Gloss.circleSolid (1/200)))
-               <$> (\(x, y) -> Gloss.translate x y)
-               <$> (catMaybes $ fmap head trajectories)
+  $ Gloss.pictures
+  $ (\t -> dot t <> trace t)
+  <$> trajectories
+  where trace :: (Double, [Gloss.Point]) -> Gloss.Picture
+        trace trajectory =
+              Gloss.color
+                (Gloss.withAlpha (double2Float $ fst trajectory) Gloss.yellow)
+            $ Gloss.line (snd trajectory)
+        dot :: (Double, [Gloss.Point]) -> Gloss.Picture
+        dot trajectory =
+              fromMaybe mempty
+            $ Gloss.color
+                (Gloss.withAlpha (double2Float $ fst trajectory) Gloss.yellow)
+          <$> (\f -> f (Gloss.circleSolid (1/200)))
+          <$> (\(x, y) -> Gloss.translate x y)
+          <$> head (snd trajectory)
 
 viewSlider :: Text -> Float -> Float -> Float -> Box -> Box -> Box -> Box -> Gloss.Picture
 viewSlider _ lowerBound upperBound value labelBox lowerBox upperBox sliderBox =

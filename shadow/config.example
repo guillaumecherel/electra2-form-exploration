@@ -11,7 +11,7 @@ in { csvPath = Some "data/controlInputMap.csv" -- None Text
    , fps = 60
    , timeResolution = 0.005
    , traceDuration = 0.04
-   , controlKeys = "uieépo"
+   , controlKeys = "auieyx"
    , initialControls = 
      [ Control.LinearControl 
         { name = "nbPointsSinguliers"
@@ -26,7 +26,7 @@ in { csvPath = Some "data/controlInputMap.csv" -- None Text
         , value = 0.0
         }
      , Control.LinearControl 
-        { name = "moran"
+        { name = "meanSpeed"
         , lowerBound = -1.0 
         , upperBound = 1.0
         , value = 0.0
@@ -46,8 +46,14 @@ in { csvPath = Some "data/controlInputMap.csv" -- None Text
    , v1name = "v1"
    , v2name = "v2"
    , v3name = "v3"
-   , phi1name = "angleIni_D"
-   , phi2name = "angleIni_D"
-   , phi3name = "angleIni_F"
+   , phi1name = "phi1"
+   , phi2name = "phi2"
+   , phi3name = "phi3"
+   , lightBname = "lightB_double"
+   , lightCname = "lightC_double"
+   , lightDname = "lightD_double"
+   , lightEname = "lightE_double"
+   , lightFname = "lightF_double"
+   , lightGname = "lightG_double"
    }
  

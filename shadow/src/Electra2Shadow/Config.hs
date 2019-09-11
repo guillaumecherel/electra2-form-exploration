@@ -31,6 +31,12 @@ data Config = Config
   , phi1name :: Text
   , phi2name :: Text
   , phi3name :: Text
+  , lightBname :: Text
+  , lightCname :: Text
+  , lightDname :: Text
+  , lightEname :: Text
+  , lightFname :: Text
+  , lightGname :: Text
   }
   deriving (Generic, Show, Eq)
 
@@ -76,5 +82,11 @@ getConfig opt = do
     , phi1name = phi1name conf
     , phi2name = phi2name conf
     , phi3name = phi3name conf
+    , lightBname = lightBname conf
+    , lightCname = lightCname conf
+    , lightDname = lightDname conf
+    , lightEname = lightEname conf
+    , lightFname = lightFname conf
+    , lightGname = lightGname conf
     }
 

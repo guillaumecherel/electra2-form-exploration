@@ -259,6 +259,13 @@ updateTime options dt world =
         newTrajectories (getWorldTrajectories identity world)
       input = Control.toInput ctrls
       ctrls = getWorldControls identity world
+      lightIntensities = [ Model.parameterValue $ Model.parametersLightB input
+                         , Model.parameterValue $ Model.parametersLightC input
+                         , Model.parameterValue $ Model.parametersLightD input
+                         , Model.parameterValue $ Model.parametersLightE input
+                         , Model.parameterValue $ Model.parametersLightF input
+                         , Model.parameterValue $ Model.parametersLightG input
+                         ]
   in 
      world
      { worldTime = t
@@ -266,7 +273,8 @@ updateTime options dt world =
      , worldAngles = newAngles
      , worldLayout = GUI.layout
          (Config.hideControls options)
-        (getWorldWindow identity world)
-        (Control.specs <$> Control.toList ctrls)
-        ((fmap . fmap) (bimap double2Float double2Float) trajectories)
+         (getWorldWindow identity world)
+         (Control.specs <$> Control.toList ctrls)
+         (zip lightIntensities
+           $ (fmap . fmap) (bimap double2Float double2Float) trajectories)
      }

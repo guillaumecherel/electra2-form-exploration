@@ -28,6 +28,12 @@ main = do
                          (phi1name config, 0)
                          (phi2name config, 0)
                          (phi3name config, 0)
+                         (lightBname config, 1)
+                         (lightCname config, 1)
+                         (lightDname config, 1)
+                         (lightEname config, 1)
+                         (lightFname config, 1)
+                         (lightGname config, 1)
     Just p -> do
       csv <- BL.readFile p
       let names = Control.getControlName identity
@@ -40,6 +46,12 @@ main = do
             (phi1name config)
             (phi2name config)
             (phi3name config)
+            (lightBname config)
+            (lightCname config)
+            (lightDname config)
+            (lightEname config)
+            (lightFname config)
+            (lightGname config)
             csv
       putStrLn $ (show names :: Text)
       return $ Control.fromMap ctrlMap $ initialControls config
@@ -48,10 +60,7 @@ main = do
     backgroundColor
     (fromIntegral $ Electra2Shadow.Config.fps config)
     (initialWorld config controls)
-    -- (initialWorld $ )
     view
     (updateInputs config)
     (updateTime config)
 
-csvFilePath :: FilePath
-csvFilePath = "data/resultsDirectSampling3.csv"
