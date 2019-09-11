@@ -11,4 +11,7 @@
 */.idea
 */.kaks
 shadow/.stack-work/
+shadow/.ghci
+shadow/data
+shadow/dist
 *~

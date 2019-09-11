@@ -1,0 +1,53 @@
+let Control : Type = 
+    < LinearControl : { name: Text, lowerBound : Double, upperBound : Double
+                      , value : Double }
+    | QuadraticControl : { name: Text, radius : Double, value : Double }
+    >
+
+in { csvPath = Some "data/controlInputMap.csv" -- None Text
+   , hideControls = True
+   , initialWindowSize  =  {width = 400, height = 600}
+   , initialWindowPosition = {x = 0, y = 0}
+   , fps = 60
+   , timeResolution = 0.005
+   , traceDuration = 0.04
+   , controlKeys = "uieépo"
+   , initialControls = 
+     [ Control.LinearControl 
+        { name = "nbPointsSinguliers"
+        , lowerBound = 0.0
+        , upperBound = 10.0 
+        , value = 0.0
+        }
+     , Control.LinearControl 
+        { name = "densite"
+        , lowerBound = 0.0 
+        , upperBound = 1.0
+        , value = 0.0
+        }
+     , Control.LinearControl 
+        { name = "moran"
+        , lowerBound = -1.0 
+        , upperBound = 1.0
+        , value = 0.0
+        }
+     , Control.QuadraticControl 
+        { name = "courbureMoyenne" 
+        , radius = 50.0 
+        , value = 0.0
+        }
+     , Control.LinearControl 
+        { name = "nbPointsRetour"
+        , lowerBound = 0.0 
+        , upperBound = 1.0
+        , value = 0.0
+        }
+     ]
+   , v1name = "v1"
+   , v2name = "v2"
+   , v3name = "v3"
+   , phi1name = "angleIni_D"
+   , phi2name = "angleIni_D"
+   , phi3name = "angleIni_F"
+   }
+ 
