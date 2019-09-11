@@ -1,11 +1,11 @@
 {-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BangPatterns      #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TupleSections     #-}
 {-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE NamedFieldPuns    #-}
+{-# LANGUAGE RecordWildCards   #-}
 
 module Electra2Shadow.Control where
 
@@ -34,7 +34,9 @@ data Control =
       }
   | QuadraticControl
       { name :: Text
-      , radius :: Double
+      , lowerBound :: Double
+      , center :: Double
+      , upperBound :: Double
       , value :: Double
       }
   deriving (Generic, Show, Eq)
@@ -43,37 +45,37 @@ instance Dhall.Interpret Control
 
 getControlName :: (Text -> a) -> Control -> a
 getControlName f (LinearControl n _ _ _) = f n
-getControlName f (QuadraticControl n _ _) = f n
+getControlName f (QuadraticControl n _ _ _ _) = f n
 
 getControlValue :: (Double -> a) -> Control -> a
 getControlValue f (LinearControl _ _ _ v) = f v
-getControlValue f (QuadraticControl _ _ v) = f v
+getControlValue f (QuadraticControl _ _ _ _ v) = f v
 
 setControlValue :: (Double -> Double) -> Control -> Control
 setControlValue f (LinearControl n l u v) = (LinearControl n l u (f v))
-setControlValue f (QuadraticControl n r v) = (QuadraticControl n r (f v))
+setControlValue f (QuadraticControl n l c u v) = (QuadraticControl n l c u (f v))
 
-quadraticToLinear :: Double -> Double -> Double
-quadraticToLinear r v =
-  let v' = if v >= 0
-                  then sqrt (v * r)
-                  else - sqrt (-v * r)
-  in bounded (- r) r v'
+quadraticToLinear :: Double -> Double -> Double -> Double -> Double
+quadraticToLinear l c u v =
+  let v' = if v >= c
+                  then sqrt (v * (u - c) ** 2 / u ) - c
+                  else c - sqrt (- v * (l - c) ** 2 / l)
+  in bounded l u v'
 
-quadraticFromLinear :: Double -> Double -> Double
-quadraticFromLinear r v =
-  let v' = if v >= 0
-                  then v ** 2 / r
-                  else - v ** 2 / r
-  in bounded (-r) r v'
+quadraticFromLinear :: Double -> Double -> Double -> Double -> Double
+quadraticFromLinear l c u v =
+  let v' = if v >= c
+                  then (v - c) ** 2 * (u / (u - c) ** 2)
+                  else - (v -c) ** 2 * (-l / (l - c) ** 2)
+  in bounded (-l) u v'
 
 bounded :: Double -> Double -> Double -> Double
 bounded lower upper x = min upper $ max lower x
 
-specs :: Control -> (Text, Double, Double, Double)
-specs (LinearControl n l u v) = (n, l, u, v)
-specs (QuadraticControl n r v) =
-  (n, -r, r, quadraticToLinear r v)
+specs :: Control -> (Text, Double, Double, Double, Double)
+specs (LinearControl n l u v) = (n, l, u, v, v)
+specs (QuadraticControl n l c u v) =
+  (n, l, u, quadraticToLinear l c u v, v)
 
 data Controls =
     ControlInput
@@ -217,9 +219,9 @@ fromInputValues
   (lightBn, lightB) (lightCn, lightC) (lightDn, lightD)
   (lightEn, lightE) (lightFn, lightF) (lightGn, lightG) =
     ControlInput
-      (QuadraticControl v1n 5 v1)
-      (QuadraticControl v2n 5 v2)
-      (QuadraticControl v3n 5 v3)
+      (QuadraticControl v1n (-5) 0 5 v1)
+      (QuadraticControl v2n (-5) 0 5 v2)
+      (QuadraticControl v3n (-5) 0 5 v3)
       (LinearControl phi1n 0 (2 * pi) phi1)
       (LinearControl phi2n 0 (2 * pi) phi2)
       (LinearControl phi3n 0 (2 * pi) phi3)

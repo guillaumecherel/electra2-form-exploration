@@ -167,7 +167,7 @@ events options event world =
     Gloss.EventKey (Gloss.Char k) Gloss.Down _ _ ->
       if isDigit k || elem k ['.', '-', '+']
         then [ReadDigit k]
-        else 
+        else
           toList $ KeyboardGrabControl
           <$> Control.keyControl (Config.controlKeys options) k
     Gloss.EventKey (Gloss.Char k) Gloss.Up _ _ ->
@@ -192,7 +192,7 @@ events options event world =
             (Set.toList $ grabbedControls world)
             (\i ->
               let dy = y - snd (getWorldMousePos identity world)
-                  h = slidersHeight Vector.! i
+                  h = fromIntegral $ snd $ worldWindow world -- slidersHeight Vector.! i
                   dragAmount = float2Double dy / h
               in DragControl i dragAmount)
           setMousePos = SetMousePos (x, y)
@@ -220,10 +220,10 @@ updateEvent event world =
       let newCtrl = case (getWorldControls . Control.getControlAt i) identity world of
             Just (Control.LinearControl n l u v) ->
               (Control.LinearControl n l u (Control.bounded l u $ v + (u - l) * amount))
-            Just (Control.QuadraticControl n r v) ->
-              let x = Control.quadraticToLinear r v
-                  v' = Control.quadraticFromLinear r (x + amount * 2 * r)
-              in Control.QuadraticControl n r v'
+            Just (Control.QuadraticControl n l c u v) ->
+              let x = Control.quadraticToLinear l c u v
+                  v' = Control.quadraticFromLinear l c u (x + amount * (u - l))
+              in Control.QuadraticControl n l c u v'
             Nothing -> panic $ "updateEvent: No control at index " <> show i
       in (setWorldControls . Control.setControlAt i) (const newCtrl) world
     ReadDigit d -> setWorldNumberBuffer (d :) world
