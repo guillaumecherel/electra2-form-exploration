@@ -1,0 +1,64 @@
+let Control : Type = 
+    < LinearControl : { name: Text, lowerBound : Double, upperBound : Double
+                      , value : Double }
+    | QuadraticControl : { name: Text, lowerBound : Double, center : Double 
+                         , upperBound : Double, value : Double }
+    >
+
+in { csvPath = Some "data/controlInputMap.csv" -- None Text
+   , hideControls = True
+   , initialWindowSize  =  {width = 400, height = 600}
+   , initialWindowPosition = {x = 0, y = 0}
+   , fps = 120
+   , timeResolution = 0.005
+   , traceDuration = 0.04
+   , controlKeys = "auieyx"
+   , initialControls = 
+     [ Control.LinearControl 
+        { name = "meanSpeed"
+        , lowerBound = 0.0 
+        , upperBound = 30.0
+        , value = 0.0
+        }
+     , Control.LinearControl 
+        { name = "densite"
+        , lowerBound = 0.0 
+        , upperBound = 1.0
+        , value = 0.0
+        }
+     , Control.QuadraticControl 
+        { name = "nbPointsSinguliers"
+        , lowerBound = 0.0
+        , center = 0.0
+        , upperBound = 168.0 
+        , value = 0.0
+        }
+     , Control.QuadraticControl 
+        { name = "courbureMoyenne" 
+        , lowerBound = 0.0
+        , center = 0.0
+        , upperBound = 66.0 
+        , value = 0.0
+        }
+     , Control.QuadraticControl 
+        { name = "nbPointsRetour"
+        , lowerBound = 0.0 
+        , center = 0.0
+        , upperBound = 92898.0
+        , value = 0.0
+        }
+     ]
+   , v1name = "v1"
+   , v2name = "v2"
+   , v3name = "v3"
+   , phi1name = "phi1"
+   , phi2name = "phi2"
+   , phi3name = "phi3"
+   , lightBname = "lightB_double"
+   , lightCname = "lightC_double"
+   , lightDname = "lightD_double"
+   , lightEname = "lightE_double"
+   , lightFname = "lightF_double"
+   , lightGname = "lightG_double"
+   }
+ 

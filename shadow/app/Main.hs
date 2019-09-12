@@ -9,29 +9,58 @@ module Main where
 import Protolude hiding (option)
 
 import qualified Data.ByteString.Lazy as BL
+import qualified Data.Vector as Vector
 import           Graphics.Gloss (play)
 import           Electra2Shadow
 import           Electra2Shadow.Options
+import           Electra2Shadow.Config
+import qualified Electra2Shadow.Control as Control
 
 main :: IO ()
 main = do
-  op <- options
-  controls <- case (csvPath op) of
-    Nothing -> return $controlsFromInputValues 1 (-2) 0.5 0 0 0
+  op <-options
+  config <- getConfig op
+  controls <- case (Electra2Shadow.Config.csvPath config) of
+    Nothing -> return $ Control.fromInputValues
+                         (v1name config, 1)
+                         (v2name config, (-2))
+                         (v3name config, 0.5)
+                         (phi1name config, 0)
+                         (phi2name config, 0)
+                         (phi3name config, 0)
+                         (lightBname config, 1)
+                         (lightCname config, 1)
+                         (lightDname config, 1)
+                         (lightEname config, 1)
+                         (lightFname config, 1)
+                         (lightGname config, 1)
     Just p -> do
       csv <- BL.readFile p
-      let (names, ctrlMap) = controlMapFromCSV csv
+      let names = Control.getControlName identity
+              <$> Vector.toList (initialControls config)
+      let ctrlMap = Control.mapFromCSV
+            names
+            (v1name config)
+            (v2name config)
+            (v3name config)
+            (phi1name config)
+            (phi2name config)
+            (phi3name config)
+            (lightBname config)
+            (lightCname config)
+            (lightDname config)
+            (lightEname config)
+            (lightFname config)
+            (lightGname config)
+            csv
       putStrLn $ (show names :: Text)
-      return $ controlsFromMap ctrlMap 0 0 0 0 0
+      return $ Control.fromMap ctrlMap $ initialControls config
   play
-    (displayMode op)
+    (displayMode config)
     backgroundColor
-    (fps op)
-    (initialWorld op controls)
-    -- (initialWorld $ )
+    (fromIntegral $ Electra2Shadow.Config.fps config)
+    (initialWorld config controls)
     view
-    (updateInputs op)
-    (updateTime op)
+    (updateInputs config)
+    (updateTime config)
 
-csvFilePath :: FilePath
-csvFilePath = "data/resultsDirectSampling3.csv"

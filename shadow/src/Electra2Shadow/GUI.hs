@@ -22,6 +22,7 @@ module Electra2Shadow.GUI
 
 import Protolude
 
+import qualified Data.Text as Text
 import GHC.Float (double2Float, float2Double)
 import qualified Graphics.Gloss as Gloss
 
@@ -31,7 +32,7 @@ data Layout = Layout Dim Box LayoutElement
 data LayoutElement =
   Row Justification [(Layout, Alignment)]
   | Column Justification [(Layout, Alignment)]
-  | Canvas [[(Gloss.Point)]]
+  | Canvas [(Double, [(Gloss.Point)])] -- [(light intensity, trajectory)]
   | Slider { sliderIndex :: Int
            , sliderName :: Text
            , sliderLowerBound :: Float
@@ -42,6 +43,7 @@ data LayoutElement =
            , sliderUpperBox :: Box
            , sliderSliderBox :: Box
            }
+  | TextBox { scaleX :: Double, scaleY :: Double, content :: Text }
   deriving (Show, Eq)
 
 data Dim =
@@ -64,7 +66,7 @@ absLength parentLength length' = case length' of
 type Box = (Float, Float, Float, Float)
 
 root :: (Int, Int) -> Dim -> (Dim -> Box -> Layout) -> Layout
-root (width, height) dim layout = layout dim box'
+root (width, height) dim layout' = layout' dim box'
   where box' = box dim (-width' / 2, - height' / 2, width' / 2, height' / 2)
         width' = fromIntegral width
         height' = fromIntegral height
@@ -90,7 +92,7 @@ column justification elems dim box' =
         boxes = boxColumn justification box' das
         das = ((\(_, d, a) -> (d, a)) <$> elems)
 
-canvas :: [[(Gloss.Point)]] -> Dim -> Box -> Layout
+canvas :: [(Double, [(Gloss.Point)])] -> Dim -> Box -> Layout
 canvas trajectories dim box' =
   Layout dim box' (Canvas trajectories)
 
@@ -119,26 +121,52 @@ slider index name lowerBound upperBound value dim box' =
     , sliderSliderBox = sliderBox
     })
 
+textBox :: Double -> Double -> Text -> Dim -> Box -> Layout
+textBox scaleX' scaleY' txt dim box' = Layout dim box' (TextBox scaleX' scaleY' txt)
+
 layout
   :: Bool
   -> (Int, Int)
-  -> [(Text, Double, Double, Double)]
-  -> [[Gloss.Point]]
+  -> [(Text, Double, Double, Double, Double)]
+  -> [(Double, [Gloss.Point])]
   -> Layout
-layout showControls (width, height) slidersSpecs trajectories =
-  root (width, height) (StretchRatio (6 % 10))
-  $ column SpaceAround
-          [ ( canvas trajectories
-            , StretchRatio 1
-            , Center
-            )
-          , ( row SpaceAround $ fmap (, StretchRatio (1 % 5), Center) sliders
-            , Fixed (RelativeLength 1, RelativeLength (1.0/6.0))
-            , Center
-            )
-          ]
+layout hideControls (width, height) slidersSpecs trajectories =
+  root (width, height) (StretchRatio (1))
+  $ row SpaceAround
+    [ ( column SpaceAround
+        ([ ( canvas trajectories
+          , StretchRatio 1
+          , Center
+          )
+        ]
+        <> if hideControls
+             then []
+             else
+              [ ( row SpaceAround $ fmap (, StretchRatio (1 % 5), Center) sliders
+                , Fixed (RelativeLength 1, RelativeLength (1.0/6.0))
+                , Center
+                )
+              ]
+        )
+      , StretchVertically (RelativeLength 0.7)
+      , Center
+      )
+    , ( column Middle
+         (fmap
+           (\(txt, _, _, sliderPos, val) ->
+             ( textBox
+                 (1 / 2000) (1 / 200)
+                 (txt <> ": "<> show (fromIntegral (round (100 * val)) / 100))
+             , StretchHorizontally (AbsoluteLength 30)
+             , Bottom
+             ))
+           slidersSpecs)
+      , StretchVertically (RelativeLength 0.3)
+      , Center
+      )
+    ]
   where sliders :: [Dim -> Box -> Layout]
-        sliders = fmap (\(i,(a,b,c,d)) -> slider i a (double2Float b)
+        sliders = fmap (\(i,(a,b,c,d,_)) -> slider i a (double2Float b)
                          (double2Float c) (double2Float d))
                        (zip [0..] slidersSpecs)
 
@@ -160,6 +188,7 @@ layoutQuery (Layout _ _ e) (x, y) = case e of
   Slider i _ _ _ _ _ _ _ sb -> case inBox (x,y) sb of
     Nothing -> NoAnswer
     Just (_, ry) -> SliderAnswer i ry
+  TextBox _ _ _ -> NoAnswer
 
 
 inLayout :: (Float, Float) -> Layout -> Maybe (Double, Double)
@@ -305,17 +334,27 @@ viewLayout (Layout _ box' elem') = case elem' of
   (Canvas trajectories) -> viewTrajectories trajectories box'
   (Slider _ name lower upper value nameBox lowerBox upperBox sliderBox) ->
     viewSlider name lower upper value nameBox lowerBox upperBox sliderBox
+  (TextBox scaleX' scaleY' txt) -> viewText scaleX' scaleY' txt box'
 
-viewTrajectories :: [[(Gloss.Point)]] -> Box -> Gloss.Picture
+viewTrajectories :: [(Double, [(Gloss.Point)])] -> Box -> Gloss.Picture
 viewTrajectories trajectories parent =
   assignBox parent
-  $ Gloss.color Gloss.yellow
-  $ dots <> traces
-  where traces = mconcat $ Gloss.line <$> trajectories
-        dots = mconcat
-               $ (\f -> f (Gloss.circleSolid (1/200)))
-               <$> (\(x, y) -> Gloss.translate x y)
-               <$> (catMaybes $ fmap head trajectories)
+  $ Gloss.pictures
+  $ (\t -> dot t <> trace t)
+  <$> trajectories
+  where trace :: (Double, [Gloss.Point]) -> Gloss.Picture
+        trace trajectory =
+              Gloss.color
+                (Gloss.withAlpha (double2Float $ fst trajectory) Gloss.yellow)
+            $ Gloss.line (snd trajectory)
+        dot :: (Double, [Gloss.Point]) -> Gloss.Picture
+        dot trajectory =
+              fromMaybe mempty
+            $ Gloss.color
+                (Gloss.withAlpha (double2Float $ fst trajectory) Gloss.yellow)
+          <$> (\f -> f (Gloss.circleSolid (1/200)))
+          <$> (\(x, y) -> Gloss.translate x y)
+          <$> head (snd trajectory)
 
 viewSlider :: Text -> Float -> Float -> Float -> Box -> Box -> Box -> Box -> Gloss.Picture
 viewSlider _ lowerBound upperBound value labelBox lowerBox upperBox sliderBox =
@@ -336,13 +375,20 @@ viewSlider _ lowerBound upperBound value labelBox lowerBox upperBox sliderBox =
         upperBoundP = Gloss.color Gloss.green $ Gloss.rectangleWire 1 1
           -- Gloss.color Gloss.green $ Gloss.text (show upperBound)
 
+viewText :: Double -> Double -> Text -> Box -> Gloss.Picture
+viewText scaleX' scaleY' txt (x1, y1, x2, y2) =
+    assignBox (x1 - (x2 - x1), y1, x2, y2)
+  $ Gloss.color Gloss.white
+  $ Gloss.scale (double2Float scaleX') (double2Float scaleY')
+  $ Gloss.text (Text.unpack txt)
+
 assignBox :: Box -> Gloss.Picture -> Gloss.Picture
 assignBox (x1, y1, x2, y2) =
-  Gloss.translate moveX moveY . Gloss.scale scaleX scaleY
+  Gloss.translate moveX moveY . Gloss.scale scaleX' scaleY'
   where moveX = ((x1 + x2 - 1) / 2.0) 
         moveY = ((y1 + y2 - 1) / 2.0) 
-        scaleX = (x2 - x1) 
-        scaleY = (y2 - y1)
+        scaleX' = (x2 - x1)
+        scaleY' = (y2 - y1)
 
 data Direction = Horizontal | Vertical
   deriving (Show, Eq)

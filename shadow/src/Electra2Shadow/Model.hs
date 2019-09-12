@@ -13,6 +13,12 @@ module Electra2Shadow.Model
   , span
   , trajectories
   , trajectoriesToList
+  , parametersLightB
+  , parametersLightC
+  , parametersLightD
+  , parametersLightE
+  , parametersLightF
+  , parametersLightG
   ) where
 
 import Protolude
@@ -53,6 +59,14 @@ parameterRadius name value = Parameter
   , parameterValue = value
   }
 
+parameterLight :: Text -> Double -> Parameter
+parameterLight name value = Parameter
+  { parameterName = name
+  , parameterLowerBound = 0
+  , parameterUpperBound = 1
+  , parameterValue = value
+  }
+
 data Input = Input
   { parametersV1 :: Parameter
   , parametersV2 :: Parameter
@@ -70,11 +84,21 @@ data Input = Input
   , parametersRG :: Parameter
   , parametersRH :: Parameter
   , parametersRI :: Parameter
+  , parametersLightB :: Parameter
+  , parametersLightC :: Parameter
+  , parametersLightD :: Parameter
+  , parametersLightE :: Parameter
+  , parametersLightF :: Parameter
+  , parametersLightG :: Parameter
   }
   deriving (Eq, Show)
 
-inputDefault :: Double -> Double -> Double -> Double -> Double -> Double -> Input
-inputDefault v1 v2 v3 phiB phiD phiF = Input
+inputDefault
+  :: Double -> Double -> Double -> Double -> Double -> Double
+  -> Double -> Double -> Double -> Double -> Double -> Double
+  -> Input
+inputDefault v1 v2 v3 phiB phiD phiF
+  lightB lightC lightD lightE lightF lightG = Input
   { -- Vitesses
     parametersV1 = parameterSpeed "v1" v1
   , parametersV2 = parameterSpeed "v2" v2
@@ -94,6 +118,13 @@ inputDefault v1 v2 v3 phiB phiD phiF = Input
   , parametersRG = parameterRadius "rG" 0.417
   , parametersRH = parameterRadius "rH" (sqrt (0.5 ** 2 + 0.05 ** 2))
   , parametersRI = parameterRadius "rI" (sqrt (0.5 ** 2 + 0.05 ** 2))
+    -- Light
+  , parametersLightB = parameterLight "B" lightB
+  , parametersLightC = parameterLight "C" lightC
+  , parametersLightD = parameterLight "D" lightD
+  , parametersLightE = parameterLight "E" lightE
+  , parametersLightF = parameterLight "F" lightF
+  , parametersLightG = parameterLight "G" lightG
   } 
 
 inputSetAngles :: Input -> Angles -> Input
