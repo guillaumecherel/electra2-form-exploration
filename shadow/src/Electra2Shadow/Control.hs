@@ -56,18 +56,26 @@ setControlValue f (LinearControl n l u v) = (LinearControl n l u (f v))
 setControlValue f (QuadraticControl n l c u v) = (QuadraticControl n l c u (f v))
 
 quadraticToLinear :: Double -> Double -> Double -> Double -> Double
-quadraticToLinear l c u v =
-  let v' = if v >= c
-                  then sqrt (v * (u - c) ** 2 / u ) - c
-                  else c - sqrt (- v * (l - c) ** 2 / l)
-  in bounded l u v'
+quadraticToLinear l c u v 
+  | v < l || v > u = bounded l u v
+  | u == l && u == c = c
+  | l == c = c + sqrt ((v - c) * (u - c))
+  | u == c = c - sqrt ((v - c) * (l - c))
+  | otherwise = 
+     if v >= c  
+	  then c + sqrt ((v - c) * (u - c))
+	  else c - sqrt ((v - c) * (l - c))
 
 quadraticFromLinear :: Double -> Double -> Double -> Double -> Double
-quadraticFromLinear l c u v =
-  let v' = if v >= c
-                  then (v - c) ** 2 * (u / (u - c) ** 2)
-                  else - (v -c) ** 2 * (-l / (l - c) ** 2)
-  in bounded (-l) u v'
+quadraticFromLinear l c u v 
+  | v < l || v > u = bounded l u v
+  | u == l && u == c = c
+  | l == c = 1 / (u - c) * (v - c) ** 2 + c
+  | u == c = 1 / (l - c) * (v - c) ** 2 + c 
+  | otherwise = 
+     if v >= c  
+	  then 1 / (u - c) * (v - c) ** 2 + c
+	  else 1 / (l - c) * (v - c) ** 2 + c
 
 bounded :: Double -> Double -> Double -> Double
 bounded lower upper x = min upper $ max lower x
