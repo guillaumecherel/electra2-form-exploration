@@ -121,7 +121,8 @@ initialWorld options controls =
       , worldLayout = GUI.layout
           (Config.hideControls options)
           windowSize
-          (Control.specs <$> Control.toList controls)
+          (zip (Control.specs <$> Control.toList controls)
+               (const 0 <$> Control.toList controls))
           []
           []
       , worldMouseGrabControl = Nothing
@@ -258,7 +259,7 @@ updateTime options dt world =
           take (ceiling $ traceDuration / tResolution)
             (new <> prev))
         newTrajectories (getWorldTrajectories identity world)
-      input = Control.toInput ctrls
+      (nearestCtrlVals, input) = Control.toInput ctrls
       ctrls = getWorldControls identity world
       lightIntensities = [ Model.parameterValue $ Model.parametersLightB input
                          , Model.parameterValue $ Model.parametersLightC input
@@ -281,7 +282,8 @@ updateTime options dt world =
      , worldLayout = GUI.layout
          (Config.hideControls options)
          (getWorldWindow identity world)
-         (Control.specs <$> Control.toList ctrls)
+         (zip (Control.specs <$> Control.toList ctrls)
+              (Control.controlsValuesList nearestCtrlVals))
          speeds
          (zip lightIntensities
            $ (fmap . fmap) (bimap double2Float double2Float) trajectories)
