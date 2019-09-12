@@ -9,7 +9,7 @@ in { csvPath = Some "data/controlInputMap.csv" -- None Text
    , hideControls = True
    , initialWindowSize  =  {width = 400, height = 600}
    , initialWindowPosition = {x = 0, y = 0}
-   , fps = 120
+   , fps = 60
    , timeResolution = 0.005
    , traceDuration = 0.04
    , controlKeys = "auieyx"

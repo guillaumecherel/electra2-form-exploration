@@ -123,6 +123,7 @@ initialWorld options controls =
           windowSize
           (Control.specs <$> Control.toList controls)
           []
+          []
       , worldMouseGrabControl = Nothing
       , worldKeyboardGrabControl = mempty
       , worldMousePos = (0, 0)
@@ -266,6 +267,12 @@ updateTime options dt world =
                          , Model.parameterValue $ Model.parametersLightF input
                          , Model.parameterValue $ Model.parametersLightG input
                          ]
+      speeds :: [(Text, Double)]
+      speeds = ((,) <$> Model.parameterName <*> Model.parameterValue)
+               <$> [ Model.parametersV1 input
+                   , Model.parametersV2 input
+                   , Model.parametersV3 input
+                   ]
   in 
      world
      { worldTime = t
@@ -275,6 +282,7 @@ updateTime options dt world =
          (Config.hideControls options)
          (getWorldWindow identity world)
          (Control.specs <$> Control.toList ctrls)
+         speeds
          (zip lightIntensities
            $ (fmap . fmap) (bimap double2Float double2Float) trajectories)
      }

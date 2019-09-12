@@ -13,6 +13,9 @@ module Electra2Shadow.Model
   , span
   , trajectories
   , trajectoriesToList
+  , parametersV1
+  , parametersV2
+  , parametersV3
   , parametersLightB
   , parametersLightC
   , parametersLightD
