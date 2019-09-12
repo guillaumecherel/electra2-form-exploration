@@ -30,21 +30,21 @@ in { csvPath = Some "data/controlInputMap.csv" -- None Text
         { name = "nbPointsSinguliers"
         , lowerBound = 0.0
         , center = 0.0
-        , upperBound = 168.0 
+        , upperBound = 10.0 
         , value = 0.0
         }
      , Control.QuadraticControl 
         { name = "courbureMoyenne" 
-        , lowerBound = 0.0
+        , lowerBound = -50.0
         , center = 0.0
-        , upperBound = 66.0 
+        , upperBound = 50.0 
         , value = 0.0
         }
      , Control.QuadraticControl 
         { name = "nbPointsRetour"
         , lowerBound = 0.0 
         , center = 0.0
-        , upperBound = 92898.0
+        , upperBound = 10.0
         , value = 0.0
         }
      ]

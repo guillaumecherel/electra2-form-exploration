@@ -127,7 +127,7 @@ textBox scaleX' scaleY' txt dim box' = Layout dim box' (TextBox scaleX' scaleY' 
 layout
   :: Bool
   -> (Int, Int)
-  -> [(Text, Double, Double, Double, Double)]
+  -> [((Text, Double, Double, Double, Double), Double)]
   -> [(Text, Double)]
   -> [(Double, [Gloss.Point])]
   -> Layout
@@ -154,10 +154,16 @@ layout hideControls (width, height) slidersSpecs speeds trajectories =
       )
     , ( column Start
         (    fmap
-               (\(txt, _, _, _, val) ->
+               (\((txt, _, _, sliderVal, val), nearest) ->
                  ( textBox
                      (1 / 10) (1 / 10)
-                     (txt <> ": "<> show (fromIntegral (round (100 * val) :: Int) / 100 :: Double))
+                     (txt <> ": "
+                      <> show (fromIntegral
+                         (round (100 * sliderVal) :: Int) / 100 :: Double)
+                      <> " // " <> show (fromIntegral
+                         (round (100 * val) :: Int) / 100 :: Double)
+                      <> " // " <> show (fromIntegral
+                         (round (100 * nearest) :: Int) / 100 :: Double))
                  , StretchHorizontally (AbsoluteLength 30)
                  , Bottom
                  ))
@@ -185,7 +191,7 @@ layout hideControls (width, height) slidersSpecs speeds trajectories =
       )
     ]
   where sliders :: [Dim -> Box -> Layout]
-        sliders = fmap (\(i,(a,b,c,d,_)) -> slider i a (double2Float b)
+        sliders = fmap (\(i,((a,b,c,d,_), _)) -> slider i a (double2Float b)
                          (double2Float c) (double2Float d))
                        (zip [0..] slidersSpecs)
 

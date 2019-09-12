@@ -334,9 +334,10 @@ setControlAt i f (ControlForm cim vs) =
   
   
 
-toInput :: Controls -> Model.Input
+toInput :: Controls -> (ControlsValues, Model.Input)
 toInput (ControlInput v1 v2 v3 phi1 phi2 phi3 lB lC lD lE lF lG) =
-  Model.inputDefault
+  ( controlsValues (ControlInput v1 v2 v3 phi1 phi2 phi3 lB lC lD lE lF lG)
+  , Model.inputDefault
     (getControlValue identity v1)
     (getControlValue identity v2)
     (getControlValue identity v3)
@@ -348,11 +349,11 @@ toInput (ControlInput v1 v2 v3 phi1 phi2 phi3 lB lC lD lE lF lG) =
     (getControlValue identity lD)
     (getControlValue identity lE)
     (getControlValue identity lF)
-    (getControlValue identity lG)
+    (getControlValue identity lG))
 toInput ctrl@(ControlForm kdm _) =
-  let (_, ModelInputValues v1 v2 v3 phi1 phi2 phi3 lB lC lD lE lF lG) =
+  let (ctrlvals, ModelInputValues v1 v2 v3 phi1 phi2 phi3 lB lC lD lE lF lG) =
         KDM.nearest kdm (controlsValues ctrl)
-  in Model.inputDefault v1 v2 v3 phi1 phi2 phi3 lB lC lD lE lF lG
+  in (ctrlvals, Model.inputDefault v1 v2 v3 phi1 phi2 phi3 lB lC lD lE lF lG)
 
 data ControlsValues =
     FormValues (Vector (Text, Double))
