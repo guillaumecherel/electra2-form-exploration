@@ -128,11 +128,12 @@ layout
   :: Bool
   -> (Int, Int)
   -> [(Text, Double, Double, Double, Double)]
+  -> [(Text, Double)]
   -> [(Double, [Gloss.Point])]
   -> Layout
-layout hideControls (width, height) slidersSpecs trajectories =
-  root (width, height) (StretchRatio (1))
-  $ row SpaceAround
+layout hideControls (width, height) slidersSpecs speeds trajectories =
+  root (width, height) (Stretch)
+  $ row Middle
     [ ( column SpaceAround
         ([ ( canvas trajectories
           , StretchRatio 1
@@ -151,16 +152,34 @@ layout hideControls (width, height) slidersSpecs trajectories =
       , StretchVertically (RelativeLength 0.7)
       , Center
       )
-    , ( column Middle
-         (fmap
-           (\(txt, _, _, sliderPos, val) ->
-             ( textBox
-                 (1 / 2000) (1 / 200)
-                 (txt <> ": "<> show (fromIntegral (round (100 * val)) / 100))
-             , StretchHorizontally (AbsoluteLength 30)
-             , Bottom
-             ))
-           slidersSpecs)
+    , ( column Start
+        (    fmap
+               (\(txt, _, _, _, val) ->
+                 ( textBox
+                     (1 / 10) (1 / 10)
+                     (txt <> ": "<> show (fromIntegral (round (100 * val) :: Int) / 100 :: Double))
+                 , StretchHorizontally (AbsoluteLength 30)
+                 , Bottom
+                 ))
+               slidersSpecs
+          <> [( textBox (1 / 10) (1 / 10) ""
+              , StretchHorizontally (AbsoluteLength 30), Bottom )]
+          <> fmap
+               (\(txt, val) ->
+                 ( textBox
+                     (1 / 10) (1 / 10)
+                     (txt <> ": "<> show (fromIntegral (round (100 * val) :: Int) / 100 :: Double))
+                 , StretchHorizontally (AbsoluteLength 30)
+                 , Bottom
+                 ))
+               speeds
+          <> [ ( textBox (1 / 10) (1 / 10)
+                   (mconcat $ bool "0" "1" . (>= 0.5) . fst <$> trajectories)
+               , StretchHorizontally (AbsoluteLength 30)
+               , Bottom
+               )
+             ]
+          )
       , StretchVertically (RelativeLength 0.3)
       , Center
       )
@@ -379,7 +398,8 @@ viewText :: Double -> Double -> Text -> Box -> Gloss.Picture
 viewText scaleX' scaleY' txt (x1, y1, x2, y2) =
     assignBox (x1 - (x2 - x1), y1, x2, y2)
   $ Gloss.color Gloss.white
-  $ Gloss.scale (double2Float scaleX') (double2Float scaleY')
+  $ Gloss.scale (double2Float scaleX' / (x2 - x1))
+                (double2Float scaleY' / (y2 - y1))
   $ Gloss.text (Text.unpack txt)
 
 assignBox :: Box -> Gloss.Picture -> Gloss.Picture
