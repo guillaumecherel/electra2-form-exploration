@@ -191,22 +191,24 @@ events options event world =
                 releases = [KeyboardReleaseControl i]
             in setctrls <> releases
     Gloss.EventMotion (x, y) ->
-      let slidersHeight = fmap float2Double $ Vector.fromList
-            $ GUI.slidersHeight (getWorldLayout identity world)
-          -- Controls grabbed with the keyboard get dragged more slowly than those grabbed with the mouse, allowing higher accuracy.
+      let 
+          dy = y - snd (getWorldMousePos identity world)
+          dx = x - fst (getWorldMousePos identity world)
+          slidersSpan = Vector.fromList
+            $ GUI.slidersSpan (getWorldLayout identity world)
+          -- Controls grabbed with the keyboard always react to vertical mouse drag, whereas controls grapped with the mouse react to mouse drag along the slider's orientation.
           kDragControls = flip fmap
             (Set.toList $ getWorldKeyboardGrabControl identity world)
             (\i ->
-              let dy = y - snd (getWorldMousePos identity world)
-                  h = fromIntegral $ snd $ worldWindow world
+              let h = fromIntegral $ snd $ worldWindow world
                   dragAmount = float2Double dy / h
               in DragControl i dragAmount)
           mDragControls = flip fmap
             (toList $ getWorldMouseGrabControl identity world)
             (\i ->
-              let dy = y - snd (getWorldMousePos identity world)
-                  h = slidersHeight Vector.! i
-                  dragAmount = float2Double dy / h
+              let dragAmount = case slidersSpan Vector.! i of
+                    GUI.VerticalSpan s -> float2Double $ dy / s
+                    GUI.HorizontalSpan s -> float2Double $ dx / s
               in DragControl i dragAmount)
           setMousePos = SetMousePos (x, y)
       in setMousePos : kDragControls <> mDragControls

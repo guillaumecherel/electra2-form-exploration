@@ -7,7 +7,8 @@ module Electra2Shadow.GUI
   , LayoutAnswer(..)
   , layoutQuery
   , layout
-  , slidersHeight
+  , slidersSpan
+  , SliderSpan(..)
   , viewLayout
   -- DEBUG
   , boxColumn
@@ -33,7 +34,8 @@ data LayoutElement =
   Row Justification [(Layout, Alignment)]
   | Column Justification [(Layout, Alignment)]
   | Canvas [(Double, [(Gloss.Point)])] -- [(light intensity, trajectory)]
-  | Slider { sliderIndex :: Int
+  | Slider { sliderVertical :: Bool
+           , sliderIndex :: Int
            , sliderName :: Text
            , sliderLowerBound :: Float
            , sliderUpperBound :: Float
@@ -94,11 +96,12 @@ canvas trajectories dim box' =
   Layout dim box' (Canvas trajectories)
 
 slider
-  :: Int -> Text -> Float -> Float -> Float
+  :: Bool -> Int -> Text -> Float -> Float -> Float
   -> Dim -> Box -> Layout
-slider index name lowerBound upperBound value dim box' =
+slider vertical index name lowerBound upperBound value dim box' =
   Layout dim box' (Slider
-    { sliderIndex = index
+    { sliderVertical = vertical
+    , sliderIndex = index
     , sliderName = name
     , sliderLowerBound = lowerBound
     , sliderUpperBound = upperBound
@@ -119,27 +122,13 @@ layout
 layout hideControls (width, height) slidersSpecs speeds trajectories =
   root (width, height) (Stretch)
   $ row Middle
-    [ ( column SpaceAround
-        ([ ( canvas trajectories
-          , StretchRatio 1
-          , Center
-          )
-        ]
-        <> if hideControls
-             then []
-             else
-              [ ( row SpaceAround $ fmap (, StretchRatio (1 % 5), Center) sliders
-                , Fixed (RelativeLength 1, RelativeLength (1.0/6.0))
-                , Center
-                )
-              ]
-        )
-      , StretchVertically (RelativeLength 0.7)
+    [ ( canvas trajectories
+      , StretchRatio 1
       , Center
       )
     , ( column Start
-        (    fmap
-               (\((txt, _, _, sliderVal, val), nearest) ->
+        (    mconcat ( fmap
+               (\(index, ((txt, lower, upper, sliderVal, val), nearest)) ->
                  ( textBox
                      (1 / 10) (1 / 10)
                      (txt <> ": "
@@ -149,10 +138,16 @@ layout hideControls (width, height) slidersSpecs speeds trajectories =
                          (round (100 * val) :: Int) / 100 :: Double)
                       <> " // " <> show (fromIntegral
                          (round (100 * nearest) :: Int) / 100 :: Double))
-                 , StretchHorizontally (AbsoluteLength 30)
-                 , Bottom
-                 ))
-               slidersSpecs
+                   , StretchHorizontally (AbsoluteLength 30)
+                   , Bottom
+                   )
+                 : if hideControls then []
+                     else [( slider False index txt (double2Float lower)
+                               (double2Float upper) (double2Float sliderVal)
+                           , StretchHorizontally (AbsoluteLength 30)
+                           , Bottom )]
+               )
+               $ zip [0..] slidersSpecs)
           <> [( textBox (1 / 10) (1 / 10) ""
               , StretchHorizontally (AbsoluteLength 30), Bottom )]
           <> fmap
@@ -175,10 +170,6 @@ layout hideControls (width, height) slidersSpecs speeds trajectories =
       , Center
       )
     ]
-  where sliders :: [Dim -> Box -> Layout]
-        sliders = fmap (\(i,((a,b,c,d,_), _)) -> slider i a (double2Float b)
-                         (double2Float c) (double2Float d))
-                       (zip [0..] slidersSpecs)
 
 layoutQuery :: Layout -> (Float, Float) -> LayoutAnswer
 layoutQuery (Layout _ _ e) (x, y) = case e of
@@ -195,9 +186,9 @@ layoutQuery (Layout _ _ e) (x, y) = case e of
       Just (l,_) -> layoutQuery l (x, y)
       Nothing -> NoAnswer
   Canvas _ -> NoAnswer
-  Slider i _ _ _ _ sb -> case inBox (x,y) sb of
+  Slider v i _ _ _ _ sb -> case inBox (x,y) sb of
     Nothing -> NoAnswer
-    Just (_, ry) -> SliderAnswer i ry
+    Just (rx, ry) -> SliderAnswer i (if v then ry else rx)
   TextBox _ _ _ -> NoAnswer
 
 
@@ -207,7 +198,7 @@ inLayout pos (Layout _ b _) = inBox pos b
 inBox :: (Float, Float) -> Box -> Maybe (Double, Double)
 inBox (x, y) (x1, y1, x2, y2) =
   if (x >= x1 && x <= x2 && y >= y1 && y <= y2)
-    then Just ( float2Double $ (x - x1) / (x2 + x1)
+    then Just ( float2Double $ (x - x1) / (x2 - x1)
               , float2Double $ (y - y1) / (y2 - y1))
     else Nothing
 
@@ -216,11 +207,16 @@ data LayoutAnswer =
   | NoAnswer
   deriving (Show, Eq)
 
-slidersHeight :: Layout -> [Float]
-slidersHeight (Layout _ _ e) = case e of
-  Row _ las -> las >>= slidersHeight . fst
-  Column _ las -> las >>= slidersHeight . fst
-  Slider{sliderSliderBox = (_, y1, _, y2) } -> [y2 - y1]
+data SliderSpan =
+    HorizontalSpan Float
+  | VerticalSpan Float
+
+slidersSpan :: Layout -> [SliderSpan]
+slidersSpan (Layout _ _ e) = case e of
+  Row _ las -> las >>= slidersSpan . fst
+  Column _ las -> las >>= slidersSpan . fst
+  Slider{sliderVertical = vertical, sliderSliderBox = (x1, y1, x2, y2) } ->
+    if vertical then [VerticalSpan $ y2 - y1] else [HorizontalSpan $ x2 - x1]
   _ -> []
 
 -- Compute the coordinates of the box specified by the given dimensions, inside
@@ -342,8 +338,8 @@ viewLayout (Layout _ box' elem') = case elem' of
   (Column _ layouts) ->
     Gloss.pictures $ fmap viewLayout $ fmap fst layouts
   (Canvas trajectories) -> viewTrajectories trajectories box'
-  (Slider _ name lower upper value sliderBox) ->
-    viewSlider name lower upper value sliderBox
+  (Slider vertical _ name lower upper value sliderBox) ->
+    viewSlider vertical name lower upper value sliderBox
   (TextBox scaleX' scaleY' txt) -> viewText scaleX' scaleY' txt box'
 
 viewTrajectories :: [(Double, [(Gloss.Point)])] -> Box -> Gloss.Picture
@@ -366,9 +362,9 @@ viewTrajectories trajectories parent =
           <$> (\(x, y) -> Gloss.translate x y)
           <$> head (snd trajectory)
 
-viewSlider :: Text -> Float -> Float -> Float -> Box -> Gloss.Picture
-viewSlider _ lowerBound upperBound value sliderBox =
-  assignBox sliderBox sliderP
+viewSlider :: Bool -> Text -> Float -> Float -> Float -> Box -> Gloss.Picture
+viewSlider vertical _ lowerBound upperBound value sliderBox =
+  assignBox sliderBox (Gloss.rotate 90 sliderP)
   where position = (value - lowerBound) / (upperBound - lowerBound)
         line = Gloss.color Gloss.green $ Gloss.line [(0, -0.5), (0,0.5)]
         mark = Gloss.color Gloss.green
