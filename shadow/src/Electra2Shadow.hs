@@ -82,21 +82,16 @@ getWorldNumberBuffer f w = f $  worldNumberBuffer w
 
 setWorldWindow :: ((Int, Int) -> (Int, Int)) -> World -> World
 setWorldWindow f w = w { worldWindow = f $ worldWindow w }
-
 setWorldControls :: (Controls -> Controls) -> World -> World
 setWorldControls f w = w { worldControls = f $ worldControls w }
-
 setWorldMouseGrabControl :: (Maybe Int -> Maybe Int) -> World -> World
 setWorldMouseGrabControl f w =
   w { worldMouseGrabControl = f $ worldMouseGrabControl w }
-
 setWorldKeyboardGrabControl :: (Set Int -> Set Int) -> World -> World
 setWorldKeyboardGrabControl f w =
   w { worldKeyboardGrabControl = f $ worldKeyboardGrabControl w }
-
 setWorldMousePos :: ((Float, Float) -> (Float, Float)) -> World -> World
 setWorldMousePos f w = w { worldMousePos = f $ worldMousePos w }
-
 setWorldNumberBuffer :: ([Char] -> [Char]) -> World -> World
 setWorldNumberBuffer f w = w { worldNumberBuffer = f $ worldNumberBuffer w }
 
@@ -143,9 +138,9 @@ view world =
 
 data Event =
   ResizeWindow (Int, Int)
-  | DragControl Int Double
   | MouseGrabControl Int
   | KeyboardGrabControl Int
+  | DragControl Int Double
   | MouseReleaseControl Int
   | KeyboardReleaseControl Int
   | SetMousePos (Float, Float)
@@ -164,7 +159,16 @@ events options event world =
         Just i -> [MouseReleaseControl i]
     Gloss.EventKey (Gloss.MouseButton Gloss.LeftButton) Gloss.Down _ (x, y) ->
       case GUI.layoutQuery (getWorldLayout identity world) (x, y) of
-        GUI.SliderAnswer i _ -> [MouseGrabControl i]
+        GUI.SliderAnswer i r ->
+          let newValue = case (getWorldControls . Control.getControlAt i) identity world of
+                Just (Control.LinearControl _ l u _) ->
+                  Control.bounded l u
+                  $ r * (u - l)
+                Just (Control.QuadraticControl _ l c u _) ->
+                  Control.bounded l u
+                  $ Control.quadraticFromLinear l c u (r * (u - l))
+                Nothing -> panic $ "events: No control at index " <> show i
+          in [MouseGrabControl i, SetControl i newValue ]
         GUI.NoAnswer -> []
     Gloss.EventKey (Gloss.Char k) Gloss.Down _ _ ->
       if isDigit k || elem k ['.', '-', '+']
@@ -190,15 +194,23 @@ events options event world =
     Gloss.EventMotion (x, y) ->
       let slidersHeight = fmap float2Double $ Vector.fromList
             $ GUI.slidersHeight (getWorldLayout identity world)
-          dragControls = flip fmap
-            (Set.toList $ grabbedControls world)
+          -- Controls grabbed with the keyboard get dragged more slowly than those grabbed with the mouse, allowing higher accuracy.
+          kDragControls = flip fmap
+            (Set.toList $ getWorldKeyboardGrabControl identity world)
             (\i ->
               let dy = y - snd (getWorldMousePos identity world)
-                  h = fromIntegral $ snd $ worldWindow world -- slidersHeight Vector.! i
+                  h = fromIntegral $ snd $ worldWindow world
+                  dragAmount = float2Double dy / h
+              in DragControl i dragAmount)
+          mDragControls = flip fmap
+            (toList $ getWorldMouseGrabControl identity world)
+            (\i ->
+              let dy = y - snd (getWorldMousePos identity world)
+                  h = slidersHeight Vector.! i
                   dragAmount = float2Double dy / h
               in DragControl i dragAmount)
           setMousePos = SetMousePos (x, y)
-      in setMousePos : dragControls
+      in setMousePos : kDragControls <> mDragControls
     _ -> []
 
 updateEvent :: Event -> World -> World

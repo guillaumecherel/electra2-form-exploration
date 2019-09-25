@@ -5,8 +5,8 @@ let Control : Type =
                          , upperBound : Double, value : Double }
     >
 
-in { csvPath = None Text -- Some "data/controlInputMap.csv" -- None Text
-   , hideControls = True
+in { csvPath =  Some "data/controlInputMap.csv" -- None Text
+   , hideControls = False
    , initialWindowSize  =  {width = 400, height = 600}
    , initialWindowPosition = {x = 0, y = 0}
    , fps = 60
