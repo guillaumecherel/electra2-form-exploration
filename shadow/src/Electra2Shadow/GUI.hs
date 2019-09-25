@@ -132,19 +132,21 @@ layout hideControls (width, height) slidersSpecs speeds trajectories =
                  ( textBox
                      (1 / 10) (1 / 10)
                      (txt <> ": "
+                      -- <> show (fromIntegral
+                      --   (round (100 * sliderVal) :: Int) / 100 :: Double)
+                      -- <> " // "
                       <> show (fromIntegral
-                         (round (100 * sliderVal) :: Int) / 100 :: Double)
-                      <> " // " <> show (fromIntegral
                          (round (100 * val) :: Int) / 100 :: Double)
-                      <> " // " <> show (fromIntegral
-                         (round (100 * nearest) :: Int) / 100 :: Double))
+                      <> " (" <> show (fromIntegral
+                         (round (100 * nearest) :: Int) / 100 :: Double)
+                      <> ")")
                    , StretchHorizontally (AbsoluteLength 30)
                    , Bottom
                    )
                  : if hideControls then []
                      else [( slider False index txt (double2Float lower)
                                (double2Float upper) (double2Float sliderVal)
-                           , StretchHorizontally (AbsoluteLength 30)
+                           , StretchHorizontally (AbsoluteLength 20)
                            , Bottom )]
                )
                $ zip [0..] slidersSpecs)
@@ -366,8 +368,8 @@ viewSlider :: Bool -> Text -> Float -> Float -> Float -> Box -> Gloss.Picture
 viewSlider vertical _ lowerBound upperBound value sliderBox =
   assignBox sliderBox (Gloss.rotate 90 sliderP)
   where position = (value - lowerBound) / (upperBound - lowerBound)
-        line = Gloss.color Gloss.green $ Gloss.line [(0, -0.5), (0,0.5)]
-        mark = Gloss.color Gloss.green
+        line = Gloss.color Gloss.azure $ Gloss.line [(0, -0.5), (0,0.5)]
+        mark = Gloss.color Gloss.azure
                $ Gloss.translate 0 (position - 0.5)
                $ Gloss.line [(-0.25, 0), (0.25, 0)]
         sliderP = Gloss.pictures [line, mark]
