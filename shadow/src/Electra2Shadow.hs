@@ -163,12 +163,11 @@ events options event world =
           let newValue = case (getWorldControls . Control.getControlAt i) identity world of
                 Just (Control.LinearControl _ l u _) ->
                   Control.bounded l u
-                  $ r * (u - l)
+                  $ r * (u - l) + l
                 Just (Control.QuadraticControl _ l c u _) ->
-                  Control.bounded l u
-                  $ Control.quadraticFromLinear l c u (r * (u - l))
+                  Control.quadraticFromLinear l c u (r * (u - l) + l)
                 Nothing -> panic $ "events: No control at index " <> show i
-          in [MouseGrabControl i, SetControl i newValue ]
+          in  [MouseGrabControl i, SetControl i newValue ]
         GUI.NoAnswer -> []
     Gloss.EventKey (Gloss.Char k) Gloss.Down _ _ ->
       if isDigit k || elem k ['.', '-', '+']
