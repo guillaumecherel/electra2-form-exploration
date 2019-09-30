@@ -311,13 +311,21 @@ object Electra extends App {
   ////////////////////////////////
 
 
-  val T = 10.0
-  val deltaT = 0.001
-  /*
-  val res = dynamicTrajectoryStationnary(rB=1.0,rH=0.5,rD=0.25)(v1=2.0,v2=(-6.0))(T,deltaT)
+  //val T = 10.0
+  //val deltaT = 0.001
+
+
+  // /*
+  //val res = dynamicTrajectoryStationnary(rB=1.0,rH=0.5,rD=0.25)(v1=2.0,v2=(-6.0))(T,deltaT)
+  //val res = dynamicTrajectoryStationnary(rB=1.0,rH=0.5,rD=0.25)(v1=0.0,v2=(-0.0),v3=0.0)(T,deltaT)
+
+ /*
+  val res = dynamicTrajectoryStationnary()(v1=1.0,v2=(-4.0),v3=0.0)(T,deltaT)
   val res2 = convertResultStationnary(res)
   val res3 = trajectoryLightChoice(res2)(lightB = false)
-  */
+ */
+
+
   //val res3 = trajectoryLightChoice(res2)()
   //val res3 = trajectoryLightChoice(res2)(lightB = false,lightC = false,lightD = false,lightE = false,lightF = false,lightG = false)
   //println(res3.Cx)
@@ -387,7 +395,129 @@ object Electra extends App {
   println(meanCourbureAllTrajectories(res3))
 */
 
+  // Mean Speed
+/*
+  println(meanSpeed(res3.speedBx,res3.speedBy))
+  println(meanSpeedAllTrajectories(res3))
+*/
+
+
+  // sd Speed
+/*
+  println(varianceSpeed(res3.speedBx,res3.speedBy))
+  println(varianceSpeedAllTrajectories(res3))
+*/
+
+  //println(res3.Dx)
+  //println(simplifiedTrajectory(res3.Dx,res3.Dy,0.0).map(x=>x._1))
+
+
+  val T = 1.0
+  val deltaT = 0.001
+
+  //val res = dynamicTrajectoryStationnary()(v1=4.0,v2=(-Pi),v3=0.0)(T,deltaT)  // 0: ok
+  //val res = dynamicTrajectoryStationnary()(v1=4.0,v2=(-2),v3=0.01)(T,deltaT)  // 0
+  //val res = dynamicTrajectoryStationnary()(v1=4.0,v2=(-2),v3=0)(T,deltaT)  // 500
+  //val res = dynamicTrajectoryStationnary()(v1=1.0,v2=(-3),v3=2)(T,deltaT)
+  val res = dynamicTrajectoryStationnary()(v1=1.0,v2=(-3),v3=2)(T,deltaT)
+
+
+  val res2 = convertResultStationnary(res)
+  val res3 = trajectoryLightChoice(res2)(lightB = false, lightF = false)
+  //val res3 = trajectoryLightChoice(res2)(lightB = false, lightC = false,lightF = false,lightG = false)
+
+
+  // prériodicité figure globale
+
+  val seuil_perio = 0.01
+  val indice_periode = figurePeriodiqueRetour(res3, seuil_perio)
+  //println(indice_periode )
+  //println(1/deltaT)
+
+
+
+
+  // seuil
+  // dérivée
+  def borne_acceleration(rH:Double=FixedParameterModel.rH,v1:Double=DefaultValuesParameterModel.v1,rD:Double=FixedParameterModel.rD,v2:Double=DefaultValuesParameterModel.v2)={
+    sqrt(pow(2*Pi,4)* pow((rH*v1*v1 + rD*(v1+v2)*(v1+v2)),2))
+  }
+  //println(borne_acceleration()* deltaT)
+
+
+
+  val ress = calculAngleEtDistance2Points((1,0),(0,-1))
+  //println(ress)
+
+  //println(Vector(3,4,5,6).drop(0))
+  //println(Vector(Vector(1,2,3,4),Vector(5,6,7,8),Vector(9,10,11,12)).transpose )
+  //println(Vector(Vector(1,2,3,4,13),Vector(5,6,7,8),Vector(9,10,11,12)).map(x=>x.take(4)).transpose )
+  //println(Vector(Vector((1,13),(2,13),(3,13),(4,13)),Vector((5,13),(6,13),(7,13),(8,13)),Vector((9,13),(10,13),(11,13),(12,13))).transpose )
+
+
+  //val N = 5
+  //val seuilAngle = 0.1
+  //val seuilDistance = 0.2
+
+
+  //val ress2 = find_symetrie_rotation (res3, N, seuilAngle, seuilDistance)
+  //print(ress2)
+
+/*
+  val ress3 = calculAngleEtDistanceVector_Indice(res3.Dx.zip(res3.Dy),0)
+  //println(ress3)
+  val ress4 = calculAngleEtDistanceVector(res3.Dx.zip(res3.Dy),N)
+  //println(ress4)
+
+  val trajB = if (res3.Bx.isEmpty) {res3.time.map(x => (1.0, 1.0)).toVector} else {res3.Bx.zip(res3.By)}
+  val ress5 = calculAngleEtDistanceVector_Indice(trajB,N)
+  //println(ress5)
+*/
+
+/*
+  val temp5 = Vector(1,1,0,0,0,1,1,0,1,0,0).zipWithIndex
+  val ress5 = findIndexSymetrie(temp5)
+  //println(ress5)
+*/
+
+
+  val trajD = res3.Dx.zip(res3.Dy)
+  val trajF = res3.Fx.zip(res3.Fy)
+  val N = 5
+  //val seuilAngle = 8*pow(10,-7)
+  //val seuilDistance = 0.089
+  val ress6 = find_symetrie_rotation_1traj(trajD,N)
+  //println(ress6)
+
+  val ress7 = find_symetrie_rotation_1traj(trajF,N)
+  //println(ress7)
+  //val seuilAngle = ress6._1.filter(_ != 0).reduceLeft(_ min _)
+  //println(seuilAngle)
+  //println(ress6._1.map(x=> if(x< seuilAngle * 5){1} else{0}))
+
+
+
+  // test nsga traj rangé par angle
+  val ress8 = findPlageAngulaire(8.9*Pi/6,4)
+  //println(ress8)
+
+  val ress9 = meanPointDistanceByPlage(trajD,50)
+  //println(ress9)
+
+
+  val ress10 = meanPointDistanceByPlageAndInd(trajD,20)
+  //println(ress10)
+
+
+  //println(minTriplet( (4,2,10) , (4,2,6) ) )
+  println(maxTriplet( (4,2,7) , (4,2,6) ) )
+
+
 }
+
+
+
+
 
 
 
@@ -1077,8 +1207,8 @@ object DefaultValuesParameterModel {
 
   // initial positions (angle)
   val  angleIni_B = 0.0
-  val  angleIni_D = 1.0
-  val  angleIni_F = 2.0
+  val  angleIni_D = 0.0
+  val  angleIni_F = 0.0
 
 
   // Persistence rétinienne stationnaire
@@ -1651,7 +1781,7 @@ object FixedParameterModel {
         // fonctions à executer sur une trajectoire:
         // Le seuil c'est pour ne pas avoir la période, pour les trajectoires périodiques, mais les boucle locales
         def numberRetour(v1:Vector[Double], v2:Vector[Double], seuil:Int)={
-          val resPremierRetour = retour( v1.zip(v2) )
+          val resPremierRetour = retour( v1.zip(v2) ).filter(_._4 < seuil)
           val nbRetour= resPremierRetour.map(x=>x._4).length
           nbRetour
         }
@@ -1760,7 +1890,7 @@ object FixedParameterModel {
 
         // formule: x' y'' - y' x'' / ( x'^2 + y' ^2 )^(3/2)
         def slaveCourbure(sx:Double, sy:Double, acx:Double, acy:Double)={
-          ((sx*acy) - (sy*acx)) / pow( sx*sx + sy*sy , 3/2)
+          if (sx*sx + sy*sy != 0) {((sx*acy) - (sy*acx)) / pow( sx*sx + sy*sy , 3/2) } else {0.0}
         }
 
 
@@ -1897,14 +2027,24 @@ object FixedParameterModel {
         }
 
 
+      def successiveDistance(v:Vector[(Double,Double)]) = {
+        val v1 = v.dropRight(1)
+        val v2 = v.tail
+        v1.zip(v2).map(x => distanceLoopPoint(x._1,x._2) )
+
+      }
+
+
+
 
         def nextSimplifiedTrajectory (current:Vector[(Double,Double)],res:Vector[(Double,Double)], distance:Double):Vector[(Double,Double)] = {
           if (current.isEmpty) {
             res
           } else {
             val temp = current(0)
-            val temp2 = comparePointsToAllElemnts(temp, current)
-            val temp3 = current.zip(cumSum(temp2))
+            val temp2 = successiveDistance(current)
+            //val temp2 = comparePointsToAllElemnts(temp, current)
+            val temp3 = (current.tail).zip(cumSum(temp2))
             val temp4 = temp3.filter(_._2 > distance)
             if (temp4.isEmpty){
               val newCurrent = Vector[(Double,Double)]()
@@ -1924,6 +2064,7 @@ object FixedParameterModel {
           val res = Vector(current(0))
           nextSimplifiedTrajectory(current,res,distance)
         }
+
 
         def createCircle(rayon:Double, nbPoints:Int)={
           val temp = (0 to nbPoints).map(x=> (x*2*Pi/nbPoints)).toArray
@@ -1958,6 +2099,9 @@ object FixedParameterModel {
 
 
 
+
+
+
 // on ne garde que les mesures nécessaires pour PSE
 object MesurePSE{
 
@@ -1966,16 +2110,624 @@ object MesurePSE{
     mean(courbure(speedX,speedY,accX,accY).toArray).getOrElse(0.0)
   }
 
+
+  def meanAbsoluteCourbure(speedX:Vector[Double],speedY:Vector[Double],accX:Vector[Double],accY:Vector[Double]): Double ={
+    mean(courbure(speedX,speedY,accX,accY).toArray.map(x=>abs(x))).getOrElse(0.0)
+  }
+
+
+
   def meanCourbureAllTrajectories(res:TrajectoryStationnary): Double ={
     mean(courbureAllTrajectories(res).toArray).getOrElse(0.0)
   }
 
-  def meanAbsoluteSpeed(speedX:Vector[Double],speedY:Vector[Double]):Double ={
-    mean(speedX.zip(speedY).map(x=>x._1+x._2) .toArray).getOrElse(0.0)
+
+  def meanAbsoluteCourbureAllTrajectories(res:TrajectoryStationnary): Double ={
+    mean(courbureAllTrajectories(res).toArray.map(x=>abs(x))).getOrElse(0.0)
+  }
+
+
+
+  // mean speed
+  def meanSpeed(speedX:Vector[Double], speedY:Vector[Double]):Double ={
+    mean(speedX.zip(speedY).map(x=> sqrt(x._1*x._1 + x._2*x._2)) .toArray).getOrElse(0.0)
   }
 
   def meanSpeedAllTrajectories(res:TrajectoryStationnary): Double ={
-    mean(meanSpeed(res.speedBx))
+    mean(Array( meanSpeed(res.speedBx,res.speedBy) , meanSpeed(res.speedCx,res.speedCy),
+      meanSpeed(res.speedDx,res.speedDy) , meanSpeed(res.speedEx,res.speedEy),
+      meanSpeed(res.speedFx,res.speedFy) , meanSpeed(res.speedGx,res.speedGy) )).getOrElse(0.0)
+  }
+
+
+  // sd speed
+  def varianceSpeed(speedX:Vector[Double], speedY:Vector[Double]):Double ={
+    sqrt(variance(speedX.zip(speedY).map(x=> sqrt(x._1*x._1 + x._2*x._2)) .toArray).getOrElse(0.0))
+  }
+
+
+  def varianceSpeedAllTrajectories(res:TrajectoryStationnary): Double ={
+    mean(Array( varianceSpeed(res.speedBx,res.speedBy) , varianceSpeed(res.speedCx,res.speedCy),
+      varianceSpeed(res.speedDx,res.speedDy) , varianceSpeed(res.speedEx,res.speedEy),
+      varianceSpeed(res.speedFx,res.speedFy) , varianceSpeed(res.speedGx,res.speedGy) )).getOrElse(0.0)
+  }
+
+
+
+
+// retour global (periodicité figure mais par rapport aux positions et un seuil)
+  def elementWiseProductVector(v1:Vector[Int],v2:Vector[Int]) ={
+    v1.zip(v2).map(x=> x._1 * x._2)
+  }
+
+  def nextProductVectorOfVectors(v:Vector[Vector[Int]],acc: Vector[Int]): Vector[Int]= {
+    if (v.isEmpty){acc} else{
+      val temp = v(0)
+      val newV = v.tail
+      val newAcc = elementWiseProductVector(acc,temp)
+      nextProductVectorOfVectors(newV,newAcc)
+    }
+
+  }
+
+  def productVectorOfVectors(v:Vector[Vector[Int]]) = {
+    val acc = v(0)
+    nextProductVectorOfVectors(v.tail,acc)
+  }
+
+
+  def slaveRetour(vecX:Vector[Double],vecY:Vector[Double],seuil:Double)={
+    // renvoit un vecteur de 0 et 1 selon que le points courant soit proche du point de référence
+    val trajPoints = vecX.zip(vecY)
+    val pointRef = trajPoints(0)
+    comparePointsToAllElemnts(pointRef,trajPoints).map(x=> if(x<seuil){1}else{0} ).toVector
+  }
+
+
+  // to erase the firsts 1 of the vector
+  // output is a vector that start with 0
+  // or empty if trajectoire is empty
+  def nextEraseFirstOne(vec:Vector[(Int,Int)]): Vector[(Int,Int)]  ={
+    // le 1er int c'est le 0 ou 1, le deuxieme c'est l'index
+    if(vec.isEmpty){Vector[(Int,Int)]()} else{
+      if (vec(0)._1 ==1){nextEraseFirstOne(vec.tail)}else{vec}
+    }
+
+  }
+
+
+  def nextEraseFirstsZeros(vec:Vector[(Int,Int)]): Vector[(Int,Int)]  ={
+    // le 1er int c'est le 0 ou 1, le deuxieme c'est l'index
+    if(vec.isEmpty){Vector[(Int,Int)]()} else{
+      if (vec(0)._1 ==0){nextEraseFirstsZeros(vec.tail)}else{vec}
+    }
+
+  }
+
+
+  def nextFindFirstOne(vec:Vector[(Int,Int)]): Int  ={
+    // le 1er int c'est le 0 ou 1, le deuxieme c'est l'index
+    if(vec.isEmpty){0}else{
+      if (vec(0)._1 == 0){nextFindFirstOne(vec.tail)}else{vec(0)._2}
+    }
+  }
+
+  def figurePeriodiqueRetour(res:TrajectoryStationnary, seuil:Double): Int = {
+
+    val tempB = if(res.Bx.isEmpty){res.time.map(x=>1).toVector}else{slaveRetour(res.Bx,res.By,seuil)}
+    val tempC = if(res.Cx.isEmpty){res.time.map(x=>1)}else{slaveRetour(res.Cx,res.Cy,seuil)}
+    val tempD = if(res.Dx.isEmpty){res.time.map(x=>1)}else{slaveRetour(res.Dx,res.Dy,seuil)}
+    val tempE = if(res.Ex.isEmpty){res.time.map(x=>1)}else{slaveRetour(res.Ex,res.Ey,seuil)}
+    val tempF = if(res.Fx.isEmpty){res.time.map(x=>1)}else{slaveRetour(res.Fx,res.Fy,seuil)}
+    val tempG = if(res.Gx.isEmpty){res.time.map(x=>1)}else{slaveRetour(res.Gx,res.Gy,seuil)}
+
+
+    val retourTraj =  productVectorOfVectors(Vector(tempB,tempC,tempD,tempE,tempF,tempG))
+    val temp = nextEraseFirstOne(retourTraj.zipWithIndex)  // erase the first ones
+    nextFindFirstOne(temp)  // give the index of the fist one (the vector starts with 0, if no 1, return 0)
+
+  }
+
+
+
+
+
+  //  détecter la répétition d'un motif
+
+  def produitScalaire(vec1:(Double,Double),vec2:(Double,Double))={
+    vec1._1 * vec2._1 + vec1._2 * vec2._2
+  }
+
+  def norme(vec:(Double,Double)) = {
+    distance(vec._1,vec._2)
+  }
+
+  def normerVecteur(vec:(Double,Double))={
+    (vec._1/norme(vec).toDouble,(vec._2/norme(vec)).toDouble)
+  }
+
+  def rotation(point:(Double,Double),angle:Double)={
+    (point._1 * cos(angle) - sin(angle)* point._2,  point._1 * sin(angle) + cos(angle)* point._2)
+  }
+
+
+  def calculAngleEtDistance2Points(pointRef:(Double,Double),pointCourrant:(Double,Double))={
+    val angleRef = calculAngle(pointRef._1,pointRef._2)
+    val angleCourant = calculAngle(pointCourrant._1,pointCourrant._2)
+    val angleRotation = (angleCourant - angleRef) %(2*Pi)
+    val absolueAngleRotation =  min(angleRotation, abs(2*Pi-angleRotation))
+    //val absolueAngleRotation = abs(angleRotation)
+
+    val normePointRef = norme(pointRef)
+    val normePointCourantApresRotation = norme(pointCourrant)   //norme(rotation(pointCourrant,-angleRotation))
+    val differenceNorme = abs(normePointCourantApresRotation - normePointRef)
+
+    (absolueAngleRotation, differenceNorme)
+
+  }
+
+  def calculAngleEtDistanceVector_Indice(traj:Vector[(Double,Double)],i:Int)={
+    val traj_i = traj.drop(i)
+    val point_ref = traj_i(0)
+    traj_i.map(x=> calculAngleEtDistance2Points(point_ref,x))
+  }
+
+  def calculAngleEtDistanceVector(traj:Vector[(Double,Double)], N:Int)={
+    // les vecteur dans le vecteur résultat ont des tailles différentes, de m à m-N+1 (m= longueur de traj)
+    (0 to (N-1)).map(i => calculAngleEtDistanceVector_Indice(traj,i))
+  }
+
+  /*
+  def calculeVarianceAngle_SumDistance_onN (traj:Vector[(Double,Double)], N:Int) : (Vector[Double],Vector[Double])={
+    val traj_length = traj.length
+    val res = calculAngleEtDistanceVector(traj,N).map(x=>x.take(traj_length-N+1)).transpose
+    // passage de vecteur de vecteur de (Double,Double) (chaque vecteur de (Double,Double) vient de un i : on suit une traj)
+    // à on regroupe les angles/ positions associés à un même temps pour differend i: vecteur de m vecteurs de N (double,double)
+
+    val vecteur_variance_angle = res.map(x=> x.map(y=>y._1)).map(z=> variance(z.toArray).getOrElse(0.0)).toVector
+    val vecteur_somme_position = res.map(x=> x.map(y=>y._2)).map(z=> z.sum).toVector
+
+    (vecteur_variance_angle,vecteur_somme_position) // une valeur petite pour les deux indique qu'on est périodique
+  }
+*/
+
+
+/*
+  def find_symetrie_rotation (res:TrajectoryStationnary, N:Int, seuilAngle:Double, seuilDistance:Double) ={
+
+    val trajB= if(res.Bx.isEmpty){res.time.map(x=>(0.0,0.0)).toVector}else{res.Bx.zip(res.By)}
+    val trajC= if(res.Cx.isEmpty){res.time.map(x=>(0.0,0.0)).toVector}else{res.Cx.zip(res.Cy)}
+    val trajD= if(res.Dx.isEmpty){res.time.map(x=>(0.0,0.0)).toVector}else{res.Dx.zip(res.Dy)}
+    val trajE= if(res.Ex.isEmpty){res.time.map(x=>(0.0,0.0)).toVector}else{res.Ex.zip(res.Ey)}
+    val trajF= if(res.Fx.isEmpty){res.time.map(x=>(0.0,0.0)).toVector}else{res.Fx.zip(res.Fy)}
+    val trajG= if(res.Gx.isEmpty){res.time.map(x=>(0.0,0.0)).toVector}else{res.Gx.zip(res.Gy)}
+
+    val nb_traj_non_vide = Vector(trajB,trajC,trajD,trajE,trajF,trajG).map(x=> if(x.isEmpty){1}else 0).sum
+
+    // sommer les distance
+    val temp  = Vector(trajB,trajC,trajD,trajE,trajF,trajG).map(x=>calculeVarianceAngle_SumDistance_onN(x,N))
+    // vecteur de 6 vecteurs de (Double,Double) =  la variance des N angles et la somme des N distances, de taille m
+
+    val vecteur_all_traj_variance_angle = temp.map(x=>x._1).transpose.map(x=> x.sum)
+    val vecteur_all_traj_somme_distance = temp.map(x=>x._2).transpose.map(x=> x.sum)
+
+    val vecteur_seuil_angle = vecteur_all_traj_variance_angle.map(x=> if(x< (seuilAngle/nb_traj_non_vide).toDouble){1} else{0})
+    val vecteur_seuil_distance = vecteur_all_traj_somme_distance.map(x=> if(x< (seuilDistance/nb_traj_non_vide).toDouble){1} else{0})
+
+    val vecteurBinaire = vecteur_seuil_angle.zip(vecteur_all_traj_somme_distance).map(x=> (x._1*x._2).toInt)
+
+    val temp2 = nextEraseFirstOne(vecteurBinaire.zipWithIndex)  // erase the first ones
+    nextFindFirstOne(temp2)
+
+  }
+
+*/
+
+    // on l'aaplique à un vecteur qui commencera par un 0 (ou vide)
+    def nextFindIndexSymetrie(vec:Vector[(Int,Int)],res:Vector[Int]):Vector[Int]={
+      if (vec.isEmpty){res}else{
+        // si le vecteur est non vide
+      val vec_erased_firsts_0 = nextEraseFirstsZeros(vec)
+      if (vec_erased_firsts_0 .isEmpty){res}else {
+        val newRes = res :+ vec_erased_firsts_0(0)._2 // on ajoute l'indice du 1 correspondant
+        val newVec = nextEraseFirstOne(vec_erased_firsts_0)
+        nextFindIndexSymetrie(newVec,newRes)
+      }
+      }
+
+    }
+
+
+  def findIndexSymetrie(vec:Vector[(Int,Int)]):Vector[Int]= {
+    val res = Vector[Int]()
+    nextFindIndexSymetrie(nextEraseFirstOne(vec),res)
+  }
+
+
+
+  // ne fait pas la bonne chose: compare des points des différentes trajectoires
+/*
+  def find_symetrie_rotation (res:TrajectoryStationnary, N:Int, seuilAngle:Double, seuilDistance:Double) = {
+
+    val nb_traj_non_vide = Vector(res.Bx, res.Cx, res.Dx, res.Ex, res.Fx, res.Gx).map(x => if (x.isEmpty) {
+      0
+    } else 1).sum
+
+
+
+    val trajB = if (res.Bx.isEmpty) {
+      res.time.map(x => (1.0, 1.0)).toVector
+    } else {
+      res.Bx.zip(res.By)
+    }
+    val trajC = if (res.Cx.isEmpty) {
+      res.time.map(x => (1.0, 1.0)).toVector
+    } else {
+      res.Cx.zip(res.Cy)
+    }
+    val trajD = if (res.Dx.isEmpty) {
+      res.time.map(x => (1.0, 1.0)).toVector
+    } else {
+      res.Dx.zip(res.Dy)
+    }
+    val trajE = if (res.Ex.isEmpty) {
+      res.time.map(x => (1.0, 1.0)).toVector
+    } else {
+      res.Ex.zip(res.Ey)
+    }
+    val trajF = if (res.Fx.isEmpty) {
+      res.time.map(x => (1.0, 1.0)).toVector
+    } else {
+      res.Fx.zip(res.Fy)
+    }
+    val trajG = if (res.Gx.isEmpty) {
+      res.time.map(x => (1.0, 1.0)).toVector
+    } else {
+      res.Gx.zip(res.Gy)
+    }
+
+    val m = res.time.length
+
+
+
+    // sommer les distance
+    val temp = Vector(trajB, trajC, trajD, trajE, trajF, trajG).map(x => calculAngleEtDistanceVector(x, N))
+    // vecteur de 6 vecteurs de N vecteurs de(Double,Double) =  la variance des N angles et la somme des N distances, de taille m
+
+    val variance_angle = temp.transpose.map(x => x.transpose.map(y => variance(y.map(z => z._1).toArray).getOrElse(0.0)))
+    // vecteur de N vecteur de taille resp m, puis m-1,... m-N+1
+    val sommeDistance = temp.transpose.map(x => x.transpose.map(y => (y.map(z => z._2).sum)))
+
+    // reste à sommer element wise les variance de chacun des N vecteurs (sur les m-N+1 premieres coordonnées)
+    val somme_Nvariance_angle = variance_angle.map(x=>x.take(m-N+1)).transpose.map(x=>x.sum)
+    val somme_Nsomme_distance = sommeDistance.map(x=>x.take(m-N+1)).transpose.map(x=>x.sum)
+
+
+    val vecteur_seuil_angle = somme_Nvariance_angle.map(x=> if(x< (seuilAngle*N).toDouble){1} else{0})
+    val vecteur_seuil_distance = somme_Nsomme_distance.map(x=> if(x< (seuilDistance*nb_traj_non_vide*N).toDouble){1} else{0})
+
+    val vecteurBinaire = vecteur_seuil_angle.zip(vecteur_seuil_distance).map(x=> (x._1*x._2).toInt)
+
+
+
+    val temp2 = nextEraseFirstOne(vecteurBinaire.zipWithIndex)  // erase the first ones
+    //findIndexSymetrie(temp2)
+
+    ////////////
+    vecteur_seuil_angle
+
+
+
+
+  }
+
+*/
+
+
+  def find_symetrie_rotation_1traj (traj:Vector[(Double,Double)], N:Int) = {
+
+    // suppose la trajectoire non vide
+    if (traj.isEmpty){0}else {
+      val m = traj.length
+
+      val res = calculAngleEtDistanceVector(traj, N).map(x => x.take(m - N + 1))
+      // pour avoir un vecteur N vecteurs de même taille m-N+1
+      // transpose: pour avoir m-N+1 vecteurs de taille N
+      val resVarianceAngle = res.transpose.map(x => variance(x.map(y => y._1).toArray).getOrElse(1.0))
+      // vecteur de double de taille m-N+1 : la variance dans les N angles d'un même t (si rotation: presque nulle, pas pas grand sinon par continuité)
+      val resSommeDistance = res.transpose.map(x => (x.map(y => y._2).sum))
+
+
+      /*
+    val minAngle = resVarianceAngle.filter(_ != 0).take( floor(1/(deltaT*v1)-2).toInt).reduceLeft(_ min _)
+    val minDistance = resSommeDistance.filter(_ != 0).take( floor(1/(deltaT*v1)-2).toInt).reduceLeft(_ min _)
+
+    val vecteur_seuil_angle = resVarianceAngle.map(x=> if(x< (minAngle*N*seuilAngleMult)){1} else{0})
+    val vecteur_seuil_distance = resSommeDistance.map(x=> if(x< (minDistance*N*seuilDistanceMult).toDouble){1} else{0})
+*/
+
+      val seuilAngleMult = resVarianceAngle(1)
+      val seuilDistanceMult = resSommeDistance(1)
+
+      val vecteur_seuil_angle = resVarianceAngle.map(x => if (x < seuilAngleMult) {
+        1
+      } else {
+        0
+      })
+      val vecteur_seuil_distance = resSommeDistance.map(x => if (x < seuilDistanceMult) {
+        1
+      } else {
+        0
+      })
+
+
+      val vecteurBinaire = vecteur_seuil_angle.zip(vecteur_seuil_distance).map(x => (x._1 * x._2).toInt).toVector
+
+      val temp2 = nextEraseFirstOne(vecteurBinaire.zipWithIndex) // erase the first ones
+
+      val indices_symetrie = findIndexSymetrie(temp2)
+
+      val diff_indice = diff(indices_symetrie.toArray)
+
+
+      val mean_diff_indice = mean(diff_indice.map(x => x.toDouble)).getOrElse(0.0)
+      val variance_diff_indice = variance(diff_indice.map(x => x.toDouble)).getOrElse(0.0)
+
+      //diff_indice
+      //(indices_symetrie, diff_indice.toVector)
+      //(floor(1/(deltaT*v1)) / mean_diff_indice  ).toInt
+
+
+      //(vecteur_seuil_angle,vecteur_seuil_distance)
+      //vecteurBinaire
+      //temp2
+
+      //(minAngle,minDistance)
+
+      mean_diff_indice
+
+    }
+
+
+  }
+
+
+
+  //  pour NSGA: ranger les points d'une trajectoire par angle et calculer leur distance au centre
+  // idée: comparer des trajectoires qui n'irait pas à la même vitesse
+
+  def findPlageAngulaire(angle:Double,N:Int)={
+    floor(angle/(2*Pi/N)).toInt
+  }
+
+
+  def calculePlageAngleEtDistanceTraj(traj:Vector[(Double,Double)],N:Int)={
+    // N: le nombre de plage angulaire (de mesure 2pi/N)
+
+    val trajAngle = traj.map(x=> (x,calculAngle(x._1,x._2)))  // result (Point,angle)
+    val trajIndiceAngle = trajAngle.map(x=> (x._1,x._2,findPlageAngulaire(x._2,N)))  // result (Point,angle, indice_angle:Int)
+    val trajIndiceAngleEtDistanceProjetee = trajIndiceAngle.map(x=> (x._1,x._2,x._3,produitScalaire(x._1,(cos(2*Pi*x._3/N+Pi/N),sin(2*Pi*x._3/N+Pi/N)))))
+    // result (Point,angle, indice_angle:Int, distance projeté) la distance projeté c'est la distance de l'origine au pojeté du point sur la bissectrice de la plage angulaire auquel il appartient
+    // trajIndiceAngleEtDistanceProjetee
+    // on ajoute l'indice de la traj en dernier
+    trajIndiceAngleEtDistanceProjetee.zipWithIndex.map( x => (x._1._1,x._1._2,x._1._3,x._1._4,x._2))
+
+  }
+
+
+  def transformTrajByPlageAngle(traj:Vector[((Double,Double),Double,Int,Double,Int)],N:Int):Vector[Vector[((Double,Double),Double,Int,Double,Int)]]={
+    //val indiceAngleTraj = traj.map(x=> x._3)
+    //(0 to (N-1)).map(i => indiceAngleTraj.filter(_ == i) )
+    (0 to (N-1)).toVector.map(i => traj.filter( _._3 == i).toVector )
+    // on obtient un vecteur de taille N, de vecteur qui sont les points qui sont dans la plage angulaire i (le ._3)
+
+  }
+
+
+
+  def slaveNextGroupTrajByPlageAndInd(trajCurrentPlage:Vector[((Double,Double),Double,Int,Double,Int)],tempBef:((Double,Double),Double,Int,Double,Int),res:Vector[Vector[((Double,Double),Double,Int,Double,Int)]]) : Vector[Vector[((Double,Double),Double,Int,Double,Int)]]={
+    // on est dans une plage angulaire, il peut y avoir des points qui ne se suivent pas dans la trajectoire, les regrouper par indice successifs
+    if (trajCurrentPlage.length == 0){res} else{
+        val temp2 = trajCurrentPlage(0)
+        if (temp2._5 == (tempBef._5 +1)) { // si l'indice se suit
+          val newTrajCurrent = trajCurrentPlage.tail
+          val newTempBef = temp2
+          val newRes  = res.dropRight(1) :+ (res.last :+ temp2)
+          slaveNextGroupTrajByPlageAndInd(newTrajCurrent,newTempBef,newRes) }
+          else{  // si les indices ne se suivent pas
+            val newTrajCurrent = trajCurrentPlage.tail
+            val newTempBef = temp2
+            val newRes  = res :+ Vector(temp2)
+            slaveNextGroupTrajByPlageAndInd(newTrajCurrent,newTempBef,newRes)
+          }
+        }
+  }
+
+  // on applique la fonction slave aux N plages de la trajectoire
+  def groupTrajByPlageAndInd(traj:Vector[Vector[((Double,Double),Double,Int,Double,Int)]])={
+    traj.map( trajPlage =>
+    //val trajCurrentPlage = trajPlage.tail
+    //val tempBef  = trajPlage(0)
+    //val res = Vector(tempBef)
+    slaveNextGroupTrajByPlageAndInd(trajPlage.tail,trajPlage(0),Vector(Vector(trajPlage(0))) )
+    )
+
+  }
+
+
+
+  // la moyenne ce n'est peut être pas la meilleur chose a faire si les points sont en cluster, il faudrait une moyenne par cluster, mais bon
+  def slaveMeanPointDistanceByPlage(trajByAngle:Vector[Vector[((Double,Double),Double,Int,Double,Int)]],N:Int)={
+    trajByAngle.map(x=> mean(x.map(p=>p._4).toArray).getOrElse(0))  // ._4 fait ref à la distance
+  }
+
+
+  // comme au dessus, mais on fait la moyenne par groupe d'indice au sein de la plage
+  def slaveMeanPointDistanceByPlageAndInd(trajByAngle:Vector[Vector[Vector[((Double,Double),Double,Int,Double,Int)]]],N:Int)={
+    trajByAngle.map(trajSPlage => trajSPlage.map( pieceTrajPlage => mean(pieceTrajPlage.map(p=>p._4).toArray).getOrElse(0)))  // ._4 fait ref à la distance
+  }
+
+
+
+  def meanPointDistanceByPlage(traj:Vector[(Double,Double)],N:Int)={
+    slaveMeanPointDistanceByPlage(transformTrajByPlageAngle(calculePlageAngleEtDistanceTraj(traj,N),N),N)
+  }
+
+
+  def meanPointDistanceByPlageAndInd(traj:Vector[(Double,Double)],N:Int)={
+    slaveMeanPointDistanceByPlageAndInd(groupTrajByPlageAndInd(transformTrajByPlageAngle(calculePlageAngleEtDistanceTraj(traj,N),N)),N)
+  }
+
+  // remarque: pas besoin en fait de projeter pour calculer la distance
+  // remarque : par plage d'angle il y a differend groupes de points, peut etre trouver les cluster, puis prendre la distance
+  // du centre du cluster (mais on se recupere donc un vecteur de vecteur (petit normalement) de moyenne
+
+
+
+
+  def resForMotifDetE(res:TrajectoryStationnary,N:Int):TrajectoryStationnary = {
+
+    val time = res.time
+
+    // Positions
+    val Bx = res.Bx
+    val By = res.By
+    val Cx = res.Cx
+    val Cy = res.Cy
+
+    val Dx = res.Dx.take(N)
+    val Dy = res.Dy.take(N)
+    val Ex = res.Ex.take(N)
+    val Ey = res.Ey.take(N)
+
+    val Fx = res.Fx
+    val Fy = res.Fy
+    val Gx = res.Gx
+    val Gy = res.Gy
+
+    // speed
+    val speedBx = res.speedBx
+    val speedBy = res.speedBy
+    val speedCx = res.speedCx
+    val speedCy = res.speedCy
+
+    val speedDx = res.speedDx.take(N)
+    val speedDy = res.speedDy.take(N)
+    val speedEx = res.speedEx.take(N)
+    val speedEy = res.speedEy.take(N)
+
+    val speedFx = res.speedFx
+    val speedFy = res.speedFy
+    val speedGx = res.speedGx
+    val speedGy = res.speedGy
+
+
+    // acc
+    val accBx = res.accBx
+    val accBy = res.accBy
+    val accCx = res.accCx
+    val accCy = res.accCy
+
+    val accDx = res.accDx.take(N)
+    val accDy = res.accDy.take(N)
+    val accEx = res.accEx.take(N)
+    val accEy = res.accEy.take(N)
+
+    val accFx = res.accFx
+    val accFy = res.accFy
+    val accGx = res.accGx
+    val accGy = res.accGy
+
+
+    new TrajectoryStationnary(time = time, Bx = Bx,By = By,Cx = Cx,Cy = Cy,Dx = Dx,Dy = Dy,
+      Ex = Ex,Ey = Ey,Fx = Fx,Fy = Fy,Gx = Gx,Gy = Gy,
+      speedBx = speedBx,speedBy = speedBy,speedCx = speedCx,speedCy = speedCy,speedDx = speedDx,speedDy = speedDy,
+      speedEx = speedEx,speedEy = speedEy,speedFx = speedFx,speedFy = speedFy,speedGx = speedGx,speedGy = speedGy,
+      accBx = accBx,accBy = accBy,accCx = accCx,accCy = accCy,accDx = accDx,accDy = accDy,
+      accEx = accEx,accEy = accEy,accFx = accFx,accFy = accFy,accGx = accGx,accGy = accGy)
+
+  }
+
+
+
+
+
+  def resForMotifFetG(res:TrajectoryStationnary,N:Int):TrajectoryStationnary = {
+
+    val time = res.time
+
+    // Positions
+    val Bx = res.Bx
+    val By = res.By
+    val Cx = res.Cx
+    val Cy = res.Cy
+
+    val Dx = res.Dx
+    val Dy = res.Dy
+    val Ex = res.Ex
+    val Ey = res.Ey
+
+    val Fx = res.Fx.take(N)
+    val Fy = res.Fy.take(N)
+    val Gx = res.Gx.take(N)
+    val Gy = res.Gy.take(N)
+
+    // speed
+    val speedBx = res.speedBx
+    val speedBy = res.speedBy
+    val speedCx = res.speedCx
+    val speedCy = res.speedCy
+
+    val speedDx = res.speedDx
+    val speedDy = res.speedDy
+    val speedEx = res.speedEx
+    val speedEy = res.speedEy
+
+    val speedFx = res.speedFx.take(N)
+    val speedFy = res.speedFy.take(N)
+    val speedGx = res.speedGx.take(N)
+    val speedGy = res.speedGy.take(N)
+
+
+    // acc
+    val accBx = res.accBx
+    val accBy = res.accBy
+    val accCx = res.accCx
+    val accCy = res.accCy
+
+    val accDx = res.accDx
+    val accDy = res.accDy
+    val accEx = res.accEx
+    val accEy = res.accEy
+
+    val accFx = res.accFx.take(N)
+    val accFy = res.accFy.take(N)
+    val accGx = res.accGx.take(N)
+    val accGy = res.accGy.take(N)
+
+
+    new TrajectoryStationnary(time = time, Bx = Bx,By = By,Cx = Cx,Cy = Cy,Dx = Dx,Dy = Dy,
+      Ex = Ex,Ey = Ey,Fx = Fx,Fy = Fy,Gx = Gx,Gy = Gy,
+      speedBx = speedBx,speedBy = speedBy,speedCx = speedCx,speedCy = speedCy,speedDx = speedDx,speedDy = speedDy,
+      speedEx = speedEx,speedEy = speedEy,speedFx = speedFx,speedFy = speedFy,speedGx = speedGx,speedGy = speedGy,
+      accBx = accBx,accBy = accBy,accCx = accCx,accCy = accCy,accDx = accDx,accDy = accDy,
+      accEx = accEx,accEy = accEy,accFx = accFx,accFy = accFy,accGx = accGx,accGy = accGy)
+
+  }
+
+
+  def minTriplet(t1:(Double,Double,Double),t2:(Double,Double,Double))={
+    if (t1._1 < t2._1){t1} else {
+      if (t1._1 == t2._1 & t1._2 < t2._2) {t1} else {
+        if (t1._1 == t2._1 &  t1._2 == t2._2 & t1._3 < t2._3) {t1} else {
+          t2
+        }
+      }
+    }
+  }
+
+  def maxTriplet(t1:(Double,Double,Double),t2:(Double,Double,Double))={
+    if (t1 == minTriplet(t1,t2)){t2} else {t1}
   }
 
 

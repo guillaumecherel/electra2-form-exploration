@@ -1,15 +1,16 @@
-*/.Rhistory
-*/.Rdata
+/bak
+.Rhistory
+.Rdata
 *.class
-*/scala/target
-*/scala/project/target
-*/scala/project/*/target
+**/scala/target
+**/scala/project/target
+**/scala/project/**/target
 *.aux
 *.log
 *.pdf
 .idea
-*/.idea
-*/.kaks
+**/.idea
+**/.kaks
 shadow/.stack-work/
 shadow/.ghci
 shadow/data
@@ -19,3 +20,8 @@ rapport/*.aux
 rapport/*.log
 rapport/*.out
 rapport/*.pdf
+**/data
+*.png
+*.svg
+electra video
+
