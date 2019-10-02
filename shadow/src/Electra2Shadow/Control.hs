@@ -11,6 +11,7 @@ module Electra2Shadow.Control where
 
 import Protolude 
 
+import qualified Control.Foldl as Fold
 import qualified Dhall
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Csv as CSV
@@ -63,8 +64,8 @@ quadraticToLinear l c u v
   | u == c = c - sqrt ((v - c) * (l - c))
   | otherwise = 
      if v >= c  
-	  then c + sqrt ((v - c) * (u - c))
-	  else c - sqrt ((v - c) * (l - c))
+          then c + sqrt ((v - c) * (u - c))
+          else c - sqrt ((v - c) * (l - c))
 
 quadraticFromLinear :: Double -> Double -> Double -> Double -> Double
 quadraticFromLinear l c u v 
@@ -74,8 +75,8 @@ quadraticFromLinear l c u v
   | u == c = 1 / (l - c) * (v - c) ** 2 + c 
   | otherwise = 
      if v >= c  
-	  then 1 / (u - c) * (v - c) ** 2 + c
-	  else 1 / (l - c) * (v - c) ** 2 + c
+          then 1 / (u - c) * (v - c) ** 2 + c
+          else 1 / (l - c) * (v - c) ** 2 + c
 
 bounded :: Double -> Double -> Double -> Double
 bounded lower upper x = min upper $ max lower x
@@ -245,7 +246,20 @@ fromMap
   -> Vector Control
   -> Controls
 fromMap cim initialControls =
-  ControlForm (KDM.build (controlsValuesList) cim) initialControls
+  ControlForm (KDM.build (scale . controlsValuesList) cim) initialControls
+  where scale :: [Double] -> [Double]
+        scale xs = List.zipWith (\x (m, v) -> (x - m) / v) xs meanVars
+        meanVars :: [(Double, Double)]
+        meanVars = Fold.fold foldMeanVar cim
+        foldZ :: Fold.Fold a b -> Fold.Fold [a] [b]
+        foldZ (Fold.Fold s i e) = Fold.Fold
+          (\xs as -> zipWith s xs as)
+          (repeat i)
+          (\xs -> fmap e xs)
+        foldMeanVar :: Fold.Fold (ControlsValues, ModelInputValues) [(Double, Double)]
+        foldMeanVar = Fold.premap (controlsValuesList . fst)
+          $ foldZ
+          $ ((,) <$> Fold.mean <*> Fold.variance)
 
 mapFromCSV
   :: [Text]
