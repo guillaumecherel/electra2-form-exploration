@@ -8,7 +8,7 @@ La surprise a allumé notre curiosité et nous avons voulu chercher les formes q
 
 Il y a quelques années à l'Institut des Systèmes Complexes, nous avons développé un algorithme pour rechercher les différents résultats que peut donner un programme informatique dont l'exécution dépend de données d'entrée. L'objectif était de rechercher ses comportements inattendus, par exemple pour repérer des erreurs. Nous avons eu l'idée de l'utiliser pour trouver des formes dessinées par Electra 2.
 
-Pour employer cet algorithme, nous devions donc modéliser Electra 2 sous forme d'un programme informatique. Nous avons modélisé les trajectoires par de simples calculs géométriques à partir des longueurs des bras et de leurs vitesses de rotation.   
+Pour employer cet algorithme, nous devions donc modéliser Electra 2 sous forme d'un programme informatique. Il calcule les trajectoires des ampoules par de simples formules géométriques, à partir des longueurs des bras et de leurs vitesses de rotation.
 
 Pour pouvoir distinguer les formes rares des plus fréquentes, l'algorithme a besoin d'une description succinte, en quelques nombres, de chaque forme dessinée. La plus grande difficulté a été de trouver une telle description qui permettait de distinguer les formes qui nous semblent différentes à l'œil nu.
 
