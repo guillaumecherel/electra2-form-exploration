@@ -9,7 +9,7 @@ in { csvPath = Some "data/controlInputMap.csv" -- None Text
    , hideControls = False
    , initialWindowSize  =  {width = 400, height = 600}
    , initialWindowPosition = {x = 0, y = 0}
-   , fps = 60
+   , fps = 30
    , timeResolution = 0.005
    , traceDuration = 0.4
    , controlKeys = "auieyx"
@@ -48,7 +48,7 @@ in { csvPath = Some "data/controlInputMap.csv" -- None Text
         , value = 0.0
         }
      , Control.QuadraticControl 
-        { name = "Longueur de motif 1"
+        { name = "Longueur de motif 2"
         , lowerBound = 0.0 
         , center = 0.0
         , upperBound = 2000.0
