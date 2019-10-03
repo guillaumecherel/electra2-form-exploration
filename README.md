@@ -6,15 +6,17 @@ Dans l'obscurité, quand les ampoules s'allument et que les moteurs s'animent, d
 
 La surprise a allumé notre curiosité et nous avons voulu chercher les formes que la sculpture pouvait dessiner. Les résultats sont exposés ici: une affiche qui donne une vue d'ensemble statique des formes que nous avons découvertes et une interface interactive pour les voir s'animer. La suite explique notre démarche.
 
-Il y a quelques années à l'Institut des Systèmes Complexes, nous avons développé un algorithme pour rechercher les différents résultats que peut donner un programme informatique dont l'exécution dépend de données d'entrée. L'objectif était de rechercher ses comportements inattendus, par exemple pour repérer des erreurs. Nous avons eu l'idée de l'utiliser pour trouver des formes dessinées par Electra 2.
+Il y a quelques années à l'Institut des Systèmes Complexes, nous avons développé un algorithme pour rechercher les différents résultats que peut donner un programme informatique dont l'exécution dépend de paramètres en entrée. L'objectif était de rechercher ses comportements inattendus, par exemple pour repérer des erreurs. Nous avons eu l'idée de l'utiliser pour trouver des formes dessinées par Electra 2.
 
 Pour employer cet algorithme, nous devions donc modéliser Electra 2 sous forme d'un programme informatique. Il calcule les trajectoires des ampoules par de simples formules géométriques, à partir des longueurs des bras et de leurs vitesses de rotation.
 
 Pour pouvoir distinguer les formes rares des plus fréquentes, l'algorithme a besoin d'une description succinte, en quelques nombres, de chaque forme dessinée. La plus grande difficulté a été de trouver une telle description qui permettait de distinguer les formes qui nous semblent différentes à l'œil nu.
 
-Nos premières observations de la sculpture nous avait donné une première idée des caractéristiques que l'on pouvait attendre: boucles, segments rectilignes, pointes, répétitions. Nous avons choisi de décrire les formes par leur courbure, le nombre de points singuliers (les points de la trajectoire où la vitesse d'une lumière est nulle, comme lors de l'apparition de pointes) et le temps que mettent les trajectoires à se répéter. 
+Nos premières observations de la sculpture nous avait donné une première idée des caractéristiques que l'on pouvait attendre: boucles, segments rectilignes, pointes, répétitions. Nous avons choisi de décrire les formes en mesurant pour chaque trajectoire (une trajectoire correspondant à une ampoule) la courbure, le nombre de ralentissements (les points de la trajectoire où la vitesse d'une ampoule passe sous un seuil fixé) et la longueur du motif (c'est-à-dire le temps que met une trajectoire à se répéter). Pour simplifier le travail, nous avons mesuré ces caractéristiques pour seulement deux trajectoires parmi les six possibles, une sur chacun des deux petits bras.
 
-Avec ces mesures, notre algorithme nous a permis de rechercher les formes qui combinaient ces différentes caractéristiques. Avec l'interface interactive, vous pouvez explorer les formes en spécifiant des valeurs qui les décrivent. Pour créer l'affiche, nous avons regroupé les formes similaires. Chaque trajectoire représente un groupe.
+Avec ces mesures, notre algorithme nous a permis de rechercher les formes qui combinaient ces différentes caractéristiques. L'affiche représente un échantillon de celles que nous avons découvertes. Chaque dessin représente les deux trajectoires que nous avons étudiées et elles sont aussi longues que nécessaires pour que les motifs se répètent au moins 6 fois. La transparence reflète la vitesse des lumières.
+
+Avec l'interface interactive, vous pouvez voir ces formes s'animer. Essayez de retrouver celles de l'affiche en contrôlant les caractéristiques de chaque trajectoire: courbure, ralentissements et longueur de motif. 
 
 
 
