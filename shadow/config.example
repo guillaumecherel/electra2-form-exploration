@@ -15,36 +15,43 @@ in { csvPath = Some "data/controlInputMap.csv" -- None Text
    , controlKeys = "auieyx"
    , initialControls = 
      [ Control.LinearControl 
-        { name = "meanSpeed"
+        { name = "Points singuliers 1"
         , lowerBound = 0.0 
-        , upperBound = 30.0
+        , upperBound = 5.0
         , value = 0.0
         }
      , Control.LinearControl 
-        { name = "densite"
+        { name = "Points singuliers 2"
         , lowerBound = 0.0 
-        , upperBound = 1.0
+        , upperBound = 5.0
         , value = 0.0
         }
      , Control.QuadraticControl 
-        { name = "nbPointsSinguliers"
+        { name = "Courbure 1"
         , lowerBound = 0.0
-        , center = 0.0
-        , upperBound = 10.0 
-        , value = 0.0
-        }
-     , Control.QuadraticControl 
-        { name = "courbureMoyenne" 
-        , lowerBound = -50.0
         , center = 0.0
         , upperBound = 50.0 
         , value = 0.0
         }
      , Control.QuadraticControl 
-        { name = "nbPointsRetour"
+        { name = "Courbure 2" 
+        , lowerBound = 0.0
+        , center = 0.0
+        , upperBound = 50.0 
+        , value = 0.0
+        }
+     , Control.QuadraticControl 
+        { name = "Longueur de motif 1"
         , lowerBound = 0.0 
         , center = 0.0
-        , upperBound = 10.0
+        , upperBound = 2000.0
+        , value = 0.0
+        }
+     , Control.QuadraticControl 
+        { name = "Longueur de motif 1"
+        , lowerBound = 0.0 
+        , center = 0.0
+        , upperBound = 2000.0
         , value = 0.0
         }
      ]
