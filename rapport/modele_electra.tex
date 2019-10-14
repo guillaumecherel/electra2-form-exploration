@@ -666,7 +666,27 @@ Pour une trajectoire avec des lumières allumées/ éteintes:
 \item densité totale (+ celle de D/F)
 \item indice Moran total (+ D/F)
 \item courbure moyenne: toutes les trajectoires
+\item la durée d'un motif (si elle existe) (invariance par rotation d'une partie de la trajectoire) 
 \end{itemize}
+
+
+
+\section{Résultat de l'exploration}
+La figure \ref{carte_Kohonen} montre 100 trajectoires différentes des lumières d'électra. Pour l'obtenir, nous avons choisi comme critères de différence pour les trajectoires: la durée du motif (nulle si la trajectoire n'est pas la répétition d'un motif), la courbure absolue moyenne, le nombre de points singuliers. Seules les lumières correspondant aux points D et F peuvent être allumées. Pour chaque trajectoire, il y a donc 6 valeurs calculées. Nous avons ensuite choisi une grille de valeurs pour ces critères. L'algorithme PSE (Pattern Space Exploration) du logiciel OpenMOLE a été utilisé pour trouver des trajectoires, c'est à dire des valeurs de vitesse pour les moteurs, qui permettent de remplir la grille précédente. L'algorithme cherche donc de la diversité dans les trajectoires selon les critères imposés. Notons qu'il peut exister des trajectoires différentes (produites par différentes vitesses de moteur) qui vérifient les mêmes critères, mais l'algorithme n'en sélectionne qu'une. Lorsque l'algorithme a convergé, c'est à dire lorsqu'il ne découvre plus de nouvelle trajectoire pendant une période donnée, nous obtenons une liste de trajectoires (donnée par les vitesses des moteurs), qui vérifient que chacune d'entre elles est dans une case différente de la grille. Nous savons aussi que si une case ne contient pas de trajectoire, c'est qu'il n'existe très certainement pas de trajectoire qui vérifient les critères de la case (sinon l'algorithme l'aurait découvert). Nous avons ensuite réalisé une carte de Kohonen pour sélectionner les 100 trajectoires de la figure \ref{carte_Kohonen}. Cette méthode a projeté les données (les critères, dans un espace de dimension 6) dans un espace à 2 dimensions. La méthode itérative sélectionne 100 représentants et associe les données a l'un d'entre eux. Le représentant donné par cette méthode peut ne pas appartenir à l'ensemble des trajectoires données, nous cherchons donc parmi les trajectoire de chaque classe celle qui en est le plus proche. Notons qu'avec cette méthode, 2 trajectoires proches sur la figure ont plus de proximité sur les valeurs de critères que deux trajectoires éloignées sur la figure.
+
+
+
+
+\begin{figure}[H] 
+\center{\includegraphics[width=0.55\linewidth]{tableauPlot_kohonen_PSE_9_1_twoPoint_ordre_nbMot=6_Taille_grille=100_colorTranspa_vitesse_low}}
+\caption{Carte de Kohonen de 100 trajetoires issues de l'exploration par l'algorithme PSE}
+\label{carte_Kohonen}
+\end{figure}
+
+
+
+Nous avons utilisé l'algorithme PSE du logiciel OpenMOLE. 
+
 
 
 
