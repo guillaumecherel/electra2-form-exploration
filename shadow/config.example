@@ -10,13 +10,39 @@ let Display : Type =
     | InWindow : {width: Natural, height : Natural, x : Natural, y : Natural}
     >
 
-in { display = Display.FullScreen {a = 1}
-   , csvPath = Some "data/controlInputMap.csv" -- None Text
+in 
+   -- Display full screen or in a window with given size and coordinates. 
+   { display = Display.FullScreen {a = 1}
+   -- { display = Display.InWindow {width = 600, height = 400, x = 0, y = 0}
+
+   -- The control of the model is possible either via the form characteristics -- (singular points, curbature and pattern length for both trajectories) or -- via the motor rotation speed. To control the form, pass a csv file that -- maps the form characteristics to rotation speeds (see example file).
+   , csvPath = Some "data/controlInputMap.csv"
+   -- To control the speeds directly, use:
+   -- , csvPath = None Text
+
+   -- Hide or show the control sliders
    , hideControls = False
+
+   -- Frames per second
    , fps = 30
+
+   -- Time resolution for computing the trajectories.
    , timeResolution = 0.005
+
+   -- Control the length of the visible trajectories. 
    , traceDuration = 0.4
+
+   -- Controls can be grabbed from the keyboard by pressing the appropriate 
+   -- keys and moving the mouse up and down. This option specifies which 
+   -- keyboard keys to used.
    , controlKeys = "auieyx"
+
+   -- Configuration of the controls when controlling the form characteristics. -- For each control, the name field must correspond to a column in the csv 
+   -- file given in the option "csvPath". A LinearControl operates a linear 
+   -- mapping between the slider position and the controlled value. A 
+   -- QuadraticControl operates a quadratic mapping, i.e. the slider is 
+   -- "slower" around the center value and faster closer to the bounds, 
+   -- allowing for precise control of the values close to the center.
    , initialControls = 
      [ Control.LinearControl 
         { name = "Points singuliers 1"
@@ -59,6 +85,9 @@ in { display = Display.FullScreen {a = 1}
         , value = 0.0
         }
      ]
+
+   -- The following names must correspond to the appropriate columns in the 
+   -- csv file passed as option "csvPath".
    , v1name = "v1"
    , v2name = "v2"
    , v3name = "v3"
