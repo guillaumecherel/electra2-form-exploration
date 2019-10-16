@@ -9,4 +9,4 @@
     - postProc_OM: R code to analyse results from openmole, sorted by explicit name directory (NSGA,PSE,direcSampling,1run). The final figure is obtained in the PSE folder.
   - scala: contain the scala code of the model. In particular there is a function to produce the stationary trajectory (also a function for the non stationary bu not used yet),  It also contains functions that compute measures on the trajectories (loop points, Moran index, density index, curvature and singular points.
 - shadow/
-  - interactive interface for running and visualising the model. Control either the motor speeds or the form characteristics.
+  - interactive interface for running and visualising the model. See `shadow/README.md`.
