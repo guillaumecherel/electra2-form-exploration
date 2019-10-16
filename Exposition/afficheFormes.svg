@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="100cm"
+   height="104.80145cm"
+   viewBox="0 0 1000 1048.0145"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.1 r15371"
+   sodipodi:docname="afficheFormes.svg"
+   inkscape:export-filename="/home/guillaume/Work/CasDEtude/2019/Electra2FormExploration/Exposition/afficheFormes.png"
+   inkscape:export-xdpi="300.00003"
+   inkscape:export-ydpi="300.00003">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.175"
+     inkscape:cx="1104.4081"
+     inkscape:cy="2100.3406"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     units="cm"
+     inkscape:snap-global="true"
+     inkscape:window-width="1916"
+     inkscape:window-height="1037"
+     inkscape:window-x="0"
+     inkscape:window-y="20"
+     inkscape:window-maximized="0"
+     inkscape:pagecheckerboard="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0">
+    <inkscape:grid
+       type="xygrid"
+       id="grid4553"
+       originx="0"
+       originy="-52.652098" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by/4.0/" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Guillaume Chérel (Institut des Systèmes Complexes - Paris IdF, CNRS), François Lavallée (Irstea)</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:date>2019</dc:date>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by/4.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,803.66663)">
+    <rect
+       style="opacity:1;vector-effect:none;fill:#040333;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;marker-start:none;marker-mid:none;marker-end:none"
+       id="rect4563"
+       width="1000.125"
+       height="74.347824"
+       x="0"
+       y="170.00005"
+       ry="1.4913737e-05" />
+    <image
+       sodipodi:absref="/home/guillaume/Work/CasDEtude/2019/Electra2FormExploration/Exposition/tableauPlot_kohonen_PSE_9_1_twoPoint_ordre_nbMot=6_Taille_grille=100_colorTranspa_vitesse.png"
+       xlink:href="tableauPlot_kohonen_PSE_9_1_twoPoint_ordre_nbMot=6_Taille_grille=100_colorTranspa_vitesse.png"
+       y="-803.66663"
+       x="0"
+       id="image4550"
+       preserveAspectRatio="none"
+       height="999.99799"
+       width="999.99799" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4555"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:53.33333588px;line-height:1.25;font-family:'Latin Modern Sans';-inkscape-font-specification:'Latin Modern Sans';text-align:end;letter-spacing:0px;word-spacing:0px;text-anchor:end;fill:#989898;fill-opacity:1;stroke:none"
+       transform="matrix(0.26458333,0,0,0.26458333,-475.84741,-810.3603)"><flowRegion
+         id="flowRegion4557"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:53.33333588px;font-family:'Latin Modern Sans';-inkscape-font-specification:'Latin Modern Sans';text-align:end;text-anchor:end;fill:#989898;fill-opacity:1"><rect
+           id="rect4559"
+           width="3478.4785"
+           height="147.81825"
+           x="2080"
+           y="3837.4805"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:53.33333588px;font-family:'Latin Modern Sans';-inkscape-font-specification:'Latin Modern Sans';text-align:end;text-anchor:end;fill:#989898;fill-opacity:1" /></flowRegion><flowPara
+         id="flowPara4561">Guillaume Chérel (Institut des Systèmes Complexes - Paris IdF, CNRS), François Lavallée (Irstea), 2019</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5238"
+       style="font-style:normal;font-weight:normal;font-size:26.66666794px;line-height:1.25;font-family:sans-serif;text-align:end;letter-spacing:0px;word-spacing:0px;text-anchor:end;fill:#a7a7a7;fill-opacity:1;stroke:none"
+       transform="matrix(0.26458333,0,0,0.26458333,0,-809.48753)"><flowRegion
+         id="flowRegion5240"
+         style="font-size:26.66666794px;text-align:end;text-anchor:end;fill:#a7a7a7;fill-opacity:1"><rect
+           id="rect5242"
+           width="3080"
+           height="80"
+           x="680"
+           y="3919.9998"
+           style="font-size:26.66666794px;text-align:end;text-anchor:end;fill:#a7a7a7;fill-opacity:1" /></flowRegion><flowPara
+         id="flowPara5244">This work is licensed under the Creative Commons Attribution 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/.</flowPara></flowRoot>  </g>
+</svg>

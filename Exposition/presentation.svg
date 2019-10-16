@@ -26,9 +26,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="431.54089"
-     inkscape:cy="542.78385"
+     inkscape:zoom="1.979899"
+     inkscape:cx="612.62742"
+     inkscape:cy="205.00528"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -37,9 +37,9 @@
      inkscape:measure-start="757.143,927.143"
      inkscape:measure-end="795.714,928.571"
      inkscape:window-width="1916"
-     inkscape:window-height="1008"
+     inkscape:window-height="1037"
      inkscape:window-x="0"
-     inkscape:window-y="49"
+     inkscape:window-y="20"
      inkscape:window-maximized="0"
      inkscape:pagecheckerboard="true"
      borderlayer="true">
@@ -186,5 +186,32 @@
          y="12.761905"
          id="tspan8109"
          style="font-size:11.28888893px;line-height:1.25;-inkscape-font-specification:'Nimbus Roman No9 L';font-family:'Nimbus Roman No9 L';font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;"> </tspan></text>
-  </g>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4522"
+       style="font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333397px;line-height:1.25;font-family:'Latin Modern Sans';-inkscape-font-specification:'Latin Modern Sans Oblique';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.26458333,0,0,0.26458333,-16.475918,3.2642172)"><flowRegion
+         id="flowRegion4524"
+         style="font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333397px;font-family:'Latin Modern Sans';-inkscape-font-specification:'Latin Modern Sans Oblique';text-align:start;text-anchor:start"><rect
+           id="rect4526"
+           width="311.2572"
+           height="79.933189"
+           x="521.23871"
+           y="1024.5349"
+           style="font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333397px;font-family:'Latin Modern Sans';-inkscape-font-specification:'Latin Modern Sans Oblique';text-align:start;text-anchor:start" /></flowRegion><flowPara
+         id="flowPara4532">Guillaume Chérel (Institut des Systèmes Complexes -  Paris IdF, CNRS), François Lavallée (Irstea), 2019</flowPara><flowPara
+         id="flowPara5118" /></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5120"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.66666698px;line-height:1.25;font-family:'Latin Modern Sans';-inkscape-font-specification:'Latin Modern Sans';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.26458333,0,0,0.26458333,0,-2.6458332)"><flowRegion
+         id="flowRegion5122"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.66666698px;font-family:'Latin Modern Sans';-inkscape-font-specification:'Latin Modern Sans'"><rect
+           id="rect5124"
+           width="321.42856"
+           height="42.142857"
+           x="461.42856"
+           y="1090.3768"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.66666698px;font-family:'Latin Modern Sans';-inkscape-font-specification:'Latin Modern Sans'" /></flowRegion><flowPara
+         id="flowPara5215">This work is licensed under the CC BY license. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/.</flowPara></flowRoot>  </g>
 </svg>
