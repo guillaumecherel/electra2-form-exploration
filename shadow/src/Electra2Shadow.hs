@@ -34,14 +34,12 @@ import qualified Electra2Shadow.GUI as GUI
 import qualified Electra2Shadow.Model as Model
 
 displayMode :: Config -> Gloss.Display
-displayMode options =
-  (Gloss.InWindow "Nice Window"
-    (case Config.initialWindowSize options of
-       Config.Size {Config.width = w, Config.height = h} ->
-         (fromIntegral w, fromIntegral h))
-    (case Config.initialWindowPosition options of
-       Config.Position {Config.x = x, Config.y = y} ->
-         (fromIntegral x, fromIntegral y)))
+displayMode options = case Config.display options of
+  Config.FullScreen _ -> Gloss.FullScreen
+  Config.InWindow w h x y ->
+    Gloss.InWindow "Electra2Shadow"
+      (fromIntegral w, fromIntegral h)
+      (fromIntegral x, fromIntegral y)
 
 backgroundColor :: Gloss.Color
 backgroundColor = Gloss.black
@@ -100,14 +98,9 @@ grabbedControls world =
   getWorldKeyboardGrabControl identity world
   <> Set.fromList (toList $ getWorldMouseGrabControl identity world)
 
-initialWorld :: Config -> Controls -> World
-initialWorld options controls =
-  let windowSize = case displayMode options of
-        (Gloss.InWindow _ xy _) -> xy
-        Gloss.FullScreen -> case Config.initialWindowSize options of
-          Config.Size {Config.width = w, Config.height = h} ->
-            (fromIntegral w, fromIntegral h)
-  in World
+initialWorld :: Config -> Controls -> (Int, Int) -> World
+initialWorld options controls windowSize =
+  World
       { worldWindow = windowSize
       , worldControls = controls
       , worldTime = 0

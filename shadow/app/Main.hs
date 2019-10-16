@@ -10,7 +10,8 @@ import Protolude hiding (option)
 
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Vector as Vector
-import           Graphics.Gloss (play)
+import qualified Graphics.Gloss as Gloss
+import qualified Graphics.Gloss.Interface.Environment as Gloss
 import           Electra2Shadow
 import           Electra2Shadow.Options
 import           Electra2Shadow.Config
@@ -55,11 +56,14 @@ main = do
             csv
       putStrLn $ (show names :: Text)
       return $ Control.fromMap ctrlMap $ initialControls config
-  play
+  windowSize <- case displayMode config of
+    (Gloss.InWindow _ xy _) -> return xy
+    Gloss.FullScreen -> Gloss.getScreenSize
+  Gloss.play
     (displayMode config)
     backgroundColor
     (fromIntegral $ Electra2Shadow.Config.fps config)
-    (initialWorld config controls)
+    (initialWorld config controls windowSize)
     view
     (updateInputs config)
     (updateTime config)

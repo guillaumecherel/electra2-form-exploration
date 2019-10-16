@@ -16,10 +16,9 @@ import qualified Electra2Shadow.Options as Options
 import           Electra2Shadow.Options (Options)
 
 data Config = Config
-  { csvPath :: Maybe FilePath
+  { display :: Display
+  , csvPath :: Maybe FilePath
   , hideControls :: Bool
-  , initialWindowSize :: Size
-  , initialWindowPosition :: Position
   , fps :: Natural
   , timeResolution :: Double
   , traceDuration :: Double
@@ -40,29 +39,25 @@ data Config = Config
   }
   deriving (Generic, Show, Eq)
 
-data Size = Size {width :: Natural, height :: Natural}
+data Display =
+    FullScreen {a :: Natural}
+  | InWindow {width :: Natural, height :: Natural, x :: Natural, y :: Natural }
   deriving (Generic, Show, Eq)
-data Position = Position {x :: Natural, y :: Natural}
-  deriving (Generic, Show, Eq)
-
-instance Interpret Size
-instance Interpret Position
+  
+instance Interpret Display
 instance Interpret Config
 
 getConfig :: Options -> IO Config
 getConfig opt = do
   conf <- (Dhall.inputFile Dhall.auto (Options.configFile opt))
   return $ Config
-    { csvPath = (Options.csvPath opt) <|> (csvPath conf)
+    { display = fromMaybe
+        (display conf)
+        ((\(w,h,x,y) -> InWindow w h x y) <$> Options.display opt)
+    , csvPath = (Options.csvPath opt) <|> (csvPath conf)
     , hideControls = fromMaybe
         (hideControls conf)
         (Options.hideControls opt)
-    , initialWindowSize = fromMaybe
-        (initialWindowSize conf)
-        ((\(w, h) -> Size w h) <$> Options.initialWindowSize opt)
-    , initialWindowPosition = fromMaybe
-        (initialWindowPosition conf)
-        ((\(x', y') -> Position x' y') <$> Options.initialWindowPosition opt)
     , fps = fromMaybe
         (fps conf)
         (Options.fps opt)

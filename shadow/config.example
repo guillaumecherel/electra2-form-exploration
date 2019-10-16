@@ -5,10 +5,14 @@ let Control : Type =
                          , upperBound : Double, value : Double }
     >
 
-in { csvPath = Some "data/controlInputMap.csv" -- None Text
+let Display : Type =
+    < FullScreen : {a : Natural} 
+    | InWindow : {width: Natural, height : Natural, x : Natural, y : Natural}
+    >
+
+in { display = Display.FullScreen {a = 1}
+   , csvPath = Some "data/controlInputMap.csv" -- None Text
    , hideControls = False
-   , initialWindowSize  =  {width = 400, height = 600}
-   , initialWindowPosition = {x = 0, y = 0}
    , fps = 30
    , timeResolution = 0.005
    , traceDuration = 0.4
