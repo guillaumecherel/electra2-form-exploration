@@ -15,7 +15,10 @@ in
    { display = Display.FullScreen {a = 1}
    -- { display = Display.InWindow {width = 600, height = 400, x = 0, y = 0}
 
-   -- The control of the model is possible either via the form characteristics -- (singular points, curbature and pattern length for both trajectories) or -- via the motor rotation speed. To control the form, pass a csv file that -- maps the form characteristics to rotation speeds (see example file).
+   -- The control of the model is possible either via the form characteristics 
+   -- (singular points, curbature and pattern length for both trajectories) or 
+   -- via the motor rotation speed. To control the form, pass a csv file that 
+   -- maps the form characteristics to rotation speeds (see example file).
    , csvPath = Some "data/controlInputMap.csv"
    -- To control the speeds directly, use:
    -- , csvPath = None Text
@@ -37,7 +40,8 @@ in
    -- keyboard keys to used.
    , controlKeys = "auieyx"
 
-   -- Configuration of the controls when controlling the form characteristics. -- For each control, the name field must correspond to a column in the csv 
+   -- Configuration of the controls when controlling the form characteristics. 
+   -- For each control, the name field must correspond to a column in the csv 
    -- file given in the option "csvPath". A LinearControl operates a linear 
    -- mapping between the slider position and the controlled value. A 
    -- QuadraticControl operates a quadratic mapping, i.e. the slider is 
