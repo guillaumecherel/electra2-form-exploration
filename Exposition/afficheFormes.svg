@@ -30,7 +30,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.175"
-     inkscape:cx="1104.4081"
+     inkscape:cx="-158.44904"
      inkscape:cy="2100.3406"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
@@ -66,7 +66,7 @@
            rdf:resource="http://creativecommons.org/licenses/by/4.0/" />
         <dc:creator>
           <cc:Agent>
-            <dc:title>Guillaume Chérel (Institut des Systèmes Complexes - Paris IdF, CNRS), François Lavallée (Irstea)</dc:title>
+            <dc:title>Guillaume Chérel (Institut des Systèmes Complexes - Paris IdF, CNRS), François Lavallée (LISC, Irstea)</dc:title>
           </cc:Agent>
         </dc:creator>
         <dc:date>2019</dc:date>
@@ -102,12 +102,12 @@
     <image
        sodipodi:absref="/home/guillaume/Work/CasDEtude/2019/Electra2FormExploration/Exposition/tableauPlot_kohonen_PSE_9_1_twoPoint_ordre_nbMot=6_Taille_grille=100_colorTranspa_vitesse.png"
        xlink:href="tableauPlot_kohonen_PSE_9_1_twoPoint_ordre_nbMot=6_Taille_grille=100_colorTranspa_vitesse.png"
-       y="-803.66663"
-       x="0"
-       id="image4550"
-       preserveAspectRatio="none"
+       width="999.99799"
        height="999.99799"
-       width="999.99799" />
+       preserveAspectRatio="none"
+       id="image4550"
+       x="0"
+       y="-803.66663" />
     <flowRoot
        xml:space="preserve"
        id="flowRoot4555"
@@ -121,7 +121,7 @@
            x="2080"
            y="3837.4805"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:53.33333588px;font-family:'Latin Modern Sans';-inkscape-font-specification:'Latin Modern Sans';text-align:end;text-anchor:end;fill:#989898;fill-opacity:1" /></flowRegion><flowPara
-         id="flowPara4561">Guillaume Chérel (Institut des Systèmes Complexes - Paris IdF, CNRS), François Lavallée (Irstea), 2019</flowPara></flowRoot>    <flowRoot
+         id="flowPara4561">Guillaume Chérel (Institut des Systèmes Complexes - Paris IdF, CNRS), François Lavallée (LISC, Irstea), 2019</flowPara></flowRoot>    <flowRoot
        xml:space="preserve"
        id="flowRoot5238"
        style="font-style:normal;font-weight:normal;font-size:26.66666794px;line-height:1.25;font-family:sans-serif;text-align:end;letter-spacing:0px;word-spacing:0px;text-anchor:end;fill:#a7a7a7;fill-opacity:1;stroke:none"
